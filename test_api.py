@@ -250,7 +250,7 @@ class TestDateValidation:
     
     def test_valid_date_format(self, valid_pattern_data):
         """Test valid ISO date format."""
-        valid_pattern_data["metadata"]["last-updated"] = "2025-11-22"
+        valid_pattern_data["metadata"]["last_updated"] = "2025-11-22"
         pattern = Pattern(**valid_pattern_data)
         assert pattern.metadata.last_updated == "2025-11-22"
     

@@ -190,9 +190,16 @@ async def root():
         "version": "1.0.0",
         "documentation": "/docs",
         "endpoints": {
-            "patterns": "/patterns",
-            "pattern_by_id": "/patterns/{pattern_id}",
-            "health": "/health"
+            "create_pattern": "POST /patterns",
+            "list_patterns": "GET /patterns",
+            "get_pattern": "GET /patterns/{pattern_id}",
+            "get_pattern_xml": "GET /patterns/{pattern_id}/xml",
+            "update_pattern": "PUT /patterns/{pattern_id}",
+            "partial_update_pattern": "PATCH /patterns/{pattern_id}",
+            "delete_pattern": "DELETE /patterns/{pattern_id}",
+            "get_dependencies": "GET /patterns/{pattern_id}/dependencies",
+            "statistics": "GET /statistics",
+            "health": "GET /health"
         }
     }
 
@@ -343,6 +350,70 @@ async def update_pattern(pattern_id: str, pattern: Pattern, db: Session = Depend
     
     try:
         updated_pattern = repo.update(pattern_id, pattern)
+        if not updated_pattern:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Pattern with ID '{pattern_id}' not found"
+            )
+        return updated_pattern
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+
+
+@app.patch("/patterns/{pattern_id}", response_model=Pattern, tags=["Patterns"])
+async def partial_update_pattern(
+    pattern_id: str, 
+    update_data: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Partially update an existing pattern.
+    
+    Only updates the fields provided in the request body. Nested objects
+    are deep-merged, so you can update specific nested fields without
+    replacing the entire object.
+    
+    Examples:
+        Update status only:
+            {"metadata": {"status": "deprecated"}}
+        
+        Update complexity and add a new property:
+            {
+                "metadata": {"complexity": "high"},
+                "properties": {
+                    "property": [
+                        {"id": "P.P1.5", "name": "New Property", ...}
+                    ]
+                }
+            }
+        
+        Update operation signature:
+            {
+                "operations": {
+                    "operation": [
+                        {"name": "Execute", "signature": "execute: Input → Output"}
+                    ]
+                }
+            }
+    
+    Args:
+        pattern_id: Pattern identifier
+        update_data: Dictionary with fields to update (partial)
+        db: Database session
+        
+    Returns:
+        The updated pattern
+        
+    Raises:
+        HTTPException: If pattern not found or invalid update data
+    """
+    repo = PatternRepository(db)
+    
+    try:
+        updated_pattern = repo.partial_update(pattern_id, update_data)
         if not updated_pattern:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

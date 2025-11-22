@@ -224,6 +224,72 @@ class PatternRepository:
         self.db.refresh(db_pattern)
         return db_pattern.to_pattern()
     
+    def partial_update(self, pattern_id: str, update_data: dict) -> Optional[Pattern]:
+        """
+        Partially update an existing pattern.
+        
+        Only updates fields that are provided in update_data. Uses deep merge
+        to update nested structures without losing existing data.
+        
+        Args:
+            pattern_id: ID of pattern to update
+            update_data: Dictionary containing fields to update (can be partial)
+            
+        Returns:
+            Updated pattern if found, None otherwise
+        """
+        db_pattern = self.db.query(PatternDB).filter(PatternDB.id == pattern_id).first()
+        if not db_pattern:
+            return None
+        
+        # Load current pattern data
+        current_data = json.loads(db_pattern.data)
+        
+        # Deep merge update_data into current_data
+        merged_data = self._deep_merge(current_data, update_data)
+        
+        # Validate the merged data by creating a Pattern instance
+        try:
+            updated_pattern = Pattern(**merged_data)
+        except Exception as e:
+            raise ValueError(f"Invalid partial update data: {e}")
+        
+        # Update database fields
+        db_pattern.version = updated_pattern.version
+        db_pattern.name = updated_pattern.metadata.name
+        db_pattern.category = updated_pattern.metadata.category
+        db_pattern.status = updated_pattern.metadata.status
+        db_pattern.complexity = updated_pattern.metadata.complexity
+        db_pattern.data = updated_pattern.model_dump_json()
+        db_pattern.updated_at = datetime.utcnow()
+        
+        self.db.commit()
+        self.db.refresh(db_pattern)
+        return db_pattern.to_pattern()
+    
+    def _deep_merge(self, base: dict, update: dict) -> dict:
+        """
+        Recursively merge update dict into base dict.
+        
+        Args:
+            base: Base dictionary
+            update: Updates to apply
+            
+        Returns:
+            Merged dictionary
+        """
+        result = base.copy()
+        
+        for key, value in update.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                # Recursively merge nested dicts
+                result[key] = self._deep_merge(result[key], value)
+            else:
+                # Overwrite with new value
+                result[key] = value
+        
+        return result
+    
     def delete(self, pattern_id: str) -> bool:
         """
         Delete a pattern by ID.
