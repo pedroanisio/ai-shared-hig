@@ -1,0 +1,299 @@
+pattern_id,pattern_name,pattern_type,type_name,definition
+F1.1,,flow,Input,External data or event
+F1.1,,flow,Valid,Validated input that passed checks
+F1.1,,flow,Internal,Normalized internal representation
+F1.1,,flow,Effect,Side effect of storage operation
+F1.2,,flow,ExternalFormat,File | Stream | API Response
+F1.2,,flow,ParsedData,Structured representation of external data
+F1.2,,flow,InternalData,Data conforming to internal schema
+F1.2,,flow,MergeStrategy,Replace | Merge | Append
+F1.3,,flow,Event,"(timestamp: Time, data: Data, metadata: Metadata)"
+F1.3,,flow,ProcessedEvent,Validated and enriched event
+F1.3,,flow,Subscriber,"(id: String, callback: ProcessedEvent → Effect)"
+C2,Document/Artifact,concept,Input,$\text{Input} = \text{Data}$
+C2,Document/Artifact,concept,Output,$\text{Output} = \text{Result}$
+C2,Document/Artifact,concept,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+F2.1,,flow,Stage,"(name: String, transform: Input → Output | Error)"
+F2.1,,flow,IR,Intermediate representation between stages
+F2.1,,flow,Recovery,Retry | Skip | Abort | Fallback
+F2.2,,flow,Agent,"(id: String, capabilities: Set⟨Capability⟩,"
+F2.2,,flow,Task,"(id: String, requirements: Set⟨Capability⟩,"
+F2.2,,flow,Result,Success(value: Value) | Failure(error: Error)
+F2.3,,flow,Node,"(id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)"
+F2.3,,flow,Dependency,"(source: Node, target: Node)"
+F2.4,,flow,BaseData,Core data requiring enrichment
+F2.4,,flow,Enricher,"(source: String, enrich: BaseData → Enrichment)"
+F2.4,,flow,Enrichment,Additional data from external source
+F2.4,,flow,EnrichedData,BaseData + aggregated Enrichments
+F3.1,,flow,Observations,"Sequence⟨(State, Action, Reward)⟩"
+F3.1,,flow,Model,Learned representation of environment
+F3.1,,flow,Policy,Decision-making strategy
+F3.1,,flow,Actions,Commands applied to environment
+F3.2,,flow,Violation,"(rule: Rule, location: Location, severity: Severity)"
+F3.2,,flow,Rule,"(id: String, check: Data → 𝔹, message: String)"
+F3.2,,flow,Correction,Automatic(fix: Fix) | Manual(suggestion: String)
+F3.2,,flow,Severity,Error | Warning | Info
+F3.3,,flow,Metrics,"Map⟨String, Value⟩"
+F3.3,,flow,Anomaly,"(metric: String, threshold: ℝ, actual: ℝ, severity: ℕ)"
+F3.3,,flow,Adjustment,"(parameter: String, old_value: Value, new_value: Value)"
+F3.3,,flow,Performance,Improvement | Degradation | Neutral
+F3.4,,flow,UserAction,Click | View | Purchase | Search | Rate | Configure
+F3.4,,flow,Event,"(user: UserId, action: UserAction, context: Context, timestamp: Time)"
+F3.4,,flow,Preferences,"Map⟨Feature, Score⟩"
+F3.4,,flow,Configuration,Personalized settings and content
+F4.1,,flow,State,Application data that drives rendering
+F4.1,,flow,VirtualDOM,Tree representation of UI
+F4.1,,flow,Patch,Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move
+F4.1,,flow,RealDOM,Actual browser DOM
+F4.2,,flow,Notification,"(id: String, type: NotificationType,"
+F4.2,,flow,Channel,Email | Push | SMS | InApp | Webhook
+F4.2,,flow,Priority,Urgent | High | Normal | Low
+F4.2,,flow,NotificationType,Alert | Info | Success | Warning | Error
+F4.3,,flow,InternalData,Data in system's internal representation
+F4.3,,flow,ExternalFormat,JSON | XML | CSV | PDF | HTML | Binary
+F4.3,,flow,Destination,File | URL | API | Stream | Storage
+F4.3,,flow,PublishResult,Success(url: URL) | Failure(error: Error)
+F4.4,,flow,Query,"(select: Projection, from: Source, where: Predicate, aggregate: Function)"
+F4.4,,flow,Result,Computed and cached query result
+F4.4,,flow,Trigger,OnDemand | OnChange | Scheduled(interval: Time)
+F4.4,,flow,Staleness,Time since last refresh
+F6,Error Recovery Flow,flow,ErrorType,Transient | Permanent | Recoverable
+F6,Error Recovery Flow,flow,RecoveryStrategy,"Retry(max: ℕ, backoff: Time → Time) |"
+F6,Error Recovery Flow,flow,Operation,() → Result | Error
+P6,Palette/Toolbar,pattern,Input,$\text{Input} = \text{Data}$
+P6,Palette/Toolbar,pattern,Output,$\text{Output} = \text{Result}$
+P6,Palette/Toolbar,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P9,Backlinks/References,pattern,Input,$\text{Input} = \text{Data}$
+P9,Backlinks/References,pattern,Output,$\text{Output} = \text{Result}$
+P9,Backlinks/References,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P10,Parser/Compiler Pipeline,pattern,Input,$\text{Input} = \text{Data}$
+P10,Parser/Compiler Pipeline,pattern,Output,$\text{Output} = \text{Result}$
+P10,Parser/Compiler Pipeline,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P11,Validator/Checker,pattern,Input,$\text{Input} = \text{Data}$
+P11,Validator/Checker,pattern,Output,$\text{Output} = \text{Result}$
+P11,Validator/Checker,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P12,Solver/Optimizer,pattern,Input,$\text{Input} = \text{Data}$
+P12,Solver/Optimizer,pattern,Output,$\text{Output} = \text{Result}$
+P12,Solver/Optimizer,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P13,Indexer/Query Engine,pattern,Input,$\text{Input} = \text{Data}$
+P13,Indexer/Query Engine,pattern,Output,$\text{Output} = \text{Result}$
+P13,Indexer/Query Engine,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P14,Agent Swarm,pattern,Agent,"(id: ID, status: Status, execute: Task → Result)"
+P14,Agent Swarm,pattern,Status,Idle | Busy(task: Task) | Failed(error: Error)
+P14,Agent Swarm,pattern,Task,"(id: ID, work: Work, priority: ℕ)"
+P14,Agent Swarm,pattern,Coordinator,"(assign: Agent × Task → Effect, aggregate: () → Result)"
+P15,Reasoning Chain,pattern,Step,"(id: ℕ, operation: Operation, inputs: Set⟨ℕ⟩, output: Value)"
+P15,Reasoning Chain,pattern,Operation,Infer | Deduce | Calculate | Verify | ...
+P15,Reasoning Chain,pattern,State,"Map⟨String, Value⟩  // Variable bindings"
+P16,Suggestion/Recommendation System,pattern,Input,$\text{Input} = \text{Data}$
+P16,Suggestion/Recommendation System,pattern,Output,$\text{Output} = \text{Result}$
+P16,Suggestion/Recommendation System,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P18,Relational Database,pattern,Table,Set⟨Row⟩
+P18,Relational Database,pattern,Row,"Map⟨String, Value⟩  // column → value"
+P18,Relational Database,pattern,Schema,"Sequence⟨(name: String, type: Type, constraints: Set⟨Constraint⟩)⟩"
+P18,Relational Database,pattern,Constraint,PrimaryKey | ForeignKey | Unique | NotNull | Check(predicate)
+P19,Graph Database,pattern,Node,"(id: ID, labels: Set⟨String⟩)"
+P19,Graph Database,pattern,Edge,"(id: ID, from: Node, to: Node, type: String)"
+P19,Graph Database,pattern,Path,Sequence⟨(Node | Edge)⟩
+P19,Graph Database,pattern,Query,"pattern matching query (Cypher, SPARQL, etc.)"
+P20,Document Store,pattern,Document,"Map⟨String, Value⟩  // JSON-like structure"
+P20,Document Store,pattern,Value,"String | ℕ | ℝ | 𝔹 | null | Sequence⟨Value⟩ | Map⟨String,Value⟩"
+P20,Document Store,pattern,Query,"(filters: Map⟨Path, Predicate⟩, projection: Set⟨Path⟩)"
+P21,Time-Series Store,pattern,TimeSeries,"Sequence⟨(timestamp: Time, value: Value)⟩"
+P21,Time-Series Store,pattern,Aggregation,Sum | Avg | Min | Max | Count | ...
+P22,Event Bus,pattern,Publisher,"(id: ID, publish: (Topic, Event) → Effect)"
+P22,Event Bus,pattern,Subscriber,"(id: ID, handle: Event → Effect)"
+P22,Event Bus,pattern,Topic,String
+P22,Event Bus,pattern,Event,"(type: String, payload: Map⟨String, Value⟩, timestamp: Time)"
+P23,Real-Time Sync,pattern,State,"Map⟨Path, Value⟩  // Complete state snapshot"
+P23,Real-Time Sync,pattern,Delta,Sequence⟨Change⟩  // Incremental changes
+P23,Real-Time Sync,pattern,Conflict,"(path: Path, local_value: Value, remote_value: Value)"
+P24,Request-Response API,pattern,Endpoint,"(method: Method, path: Path)"
+P24,Request-Response API,pattern,Method,GET | POST | PUT | DELETE | PATCH
+P24,Request-Response API,pattern,Handler,Request → Response
+P24,Request-Response API,pattern,Middleware,"(Request, Next) → Response"
+P24,Request-Response API,pattern,Request,"(method: Method, path: Path, headers: Map, body: Value)"
+P24,Request-Response API,pattern,Response,"(status: ℕ, headers: Map, body: Value)"
+P25,Streaming Protocol,pattern,Producer,"(generate: () → Chunk | EndOfStream, pause: () → Effect, resume: () → Effect)"
+P25,Streaming Protocol,pattern,Consumer,(consume: Chunk → Effect)
+P25,Streaming Protocol,pattern,Chunk,Sequence⟨Byte⟩ | Value
+P26,Status Bar/Indicator,pattern,Input,$\text{Input} = \text{Data}$
+P26,Status Bar/Indicator,pattern,Output,$\text{Output} = \text{Result}$
+P26,Status Bar/Indicator,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P27,Toast/Notification,pattern,Input,$\text{Input} = \text{Data}$
+P27,Toast/Notification,pattern,Output,$\text{Output} = \text{Result}$
+P27,Toast/Notification,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P28,Progress Indicator,pattern,Time,$\text{Time} = \mathbb{R}_{\geq 0}$ (non-negative real)
+P28,Progress Indicator,pattern,ProgressState,"$\text{State} = \{\text{running}, \text{paused}, \text{complete}, \text{error}\}$"
+P29,Centralized State Store,pattern,State,"Map⟨String, Value⟩"
+P29,Centralized State Store,pattern,Action,"(type: String, payload: Value)"
+P29,Centralized State Store,pattern,Reducer,"(State, Action) → State"
+P29,Centralized State Store,pattern,Selector,State → Value
+P29,Centralized State Store,pattern,Subscriber,State → Effect
+P30,Command Pattern,pattern,Command,"(execute: () → Effect, undo: () → Effect, redo: () → Effect)"
+P31,Observer Pattern,pattern,Subject,"(state: State, attach: Observer → Effect, detach: Observer → Effect)"
+P31,Observer Pattern,pattern,Observer,(update: State → Effect)
+P32,Plugin Architecture,pattern,Plugin,"(id: ID, metadata: Metadata, hooks: Map⟨HookPoint, Handler⟩)"
+P32,Plugin Architecture,pattern,Metadata,"(name: String, version: Version, dependencies: Set⟨ID⟩)"
+P32,Plugin Architecture,pattern,Phase,Initialize | Activate | Deactivate | Destroy
+P33,Hook System,pattern,HookPoint,"String  // e.g., ""before:save"", ""after:render"""
+P33,Hook System,pattern,Handler,Context → Effect
+P33,Hook System,pattern,Context,"Map⟨String, Value⟩  // Hook-specific data"
+P34,Strategy Pattern,pattern,Interface,Set⟨MethodSignature⟩
+P34,Strategy Pattern,pattern,Implementation,"(id: ID, methods: Map⟨String, Function⟩)"
+P34,Strategy Pattern,pattern,Context,"Map⟨String, Value⟩  // Decision criteria"
+P36,Selection-Driven Panel,pattern,Element,Any selectable entity
+P36,Selection-Driven Panel,pattern,Component,Rendered UI content
+P36,Selection-Driven Panel,pattern,SelectionEvent,"(previous: Element | null, current: Element | null)"
+P38,Badge/Indicator Pattern,pattern,Input,$\text{Input} = \text{Data}$
+P38,Badge/Indicator Pattern,pattern,Output,$\text{Output} = \text{Result}$
+P38,Badge/Indicator Pattern,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P42,Tooltip/Hint System,pattern,Input,$\text{Input} = \text{Data}$
+P42,Tooltip/Hint System,pattern,Output,$\text{Output} = \text{Result}$
+P42,Tooltip/Hint System,pattern,State,"$\text{State} = (\text{data}, \text{timestamp})$"
+P48,Form Validation Pattern,pattern,Field,"(value: Value, dirty: 𝔹, touched: 𝔹)"
+P48,Form Validation Pattern,pattern,Validator,Value → ValidationResult
+P48,Form Validation Pattern,pattern,ValidationResult,Valid | Invalid(errors: Sequence⟨String⟩)
+P48,Form Validation Pattern,pattern,ValidationState,Pristine | Valid | Invalid | Validating
+P49,Multi-Step Form (Wizard) Pattern,pattern,Step,"(title: String, fields: Set⟨Field⟩, validate: () → 𝔹)"
+P49,Multi-Step Form (Wizard) Pattern,pattern,Navigation,"{prev: () → Effect, next: () → Effect, goto: ℕ → Effect}"
+P50,Form Dependency Pattern,pattern,Dependency,"(source: String, targets: Set⟨String⟩,"
+P51,Responsive Layout Pattern (NEW),pattern,Breakpoint,"(width: ℝ, name: String)"
+P51,Responsive Layout Pattern (NEW),pattern,Layout,"(structure: Component, visibility: Map⟨Element, 𝔹⟩)"
+P52,Pagination Pattern,pattern,Navigation,{
+P53,Filtering Pattern,pattern,Filter,(
+P53,Filtering Pattern,pattern,FilterType,Range | Select | MultiSelect | Search | Boolean
+P53,Filtering Pattern,pattern,FilterValue,"Value | Range(min, max) | Set⟨Value⟩"
+P53,Filtering Pattern,pattern,Facet,"Map⟨Value, ℕ⟩  // value → count"
+P54,Sorting Pattern,pattern,Column,"(name: String, type: Type, extract: Item → Value)"
+P54,Sorting Pattern,pattern,Direction,Asc | Desc
+P54,Sorting Pattern,pattern,Order,"Sequence⟨(Column, Direction)⟩  // Multi-column sort"
+P56,Cache Strategy Pattern,pattern,EvictionPolicy,LRU | LFU | FIFO | TTL | Custom
+P56,Cache Strategy Pattern,pattern,Metadata,"(last_accessed: Time, access_count: ℕ, inserted: Time)"
+P56,Cache Strategy Pattern,pattern,Duration,ℕ  // milliseconds
+P57,Data Migration Pattern,pattern,Version,"(number: ℕ, schema: Schema)"
+P57,Data Migration Pattern,pattern,Migration,"(up: Data → Data, down: Data → Data)"
+P57,Data Migration Pattern,pattern,Schema,description of data structure
+P58,Authentication Pattern,pattern,User,"(id: UserID, username: String, email: String, roles: Set⟨Role⟩)"
+P58,Authentication Pattern,pattern,HashedPassword,"String  // bcrypt, argon2, etc."
+P58,Authentication Pattern,pattern,Session,"(id: SessionID, user: UserID, created: Time, expires: Time, data: Map⟨String,Value⟩)"
+P58,Authentication Pattern,pattern,Token,"String  // JWT, opaque token, etc."
+P59,Authorization Pattern,pattern,Subject,User | Service | Group
+P59,Authorization Pattern,pattern,Object,"Resource(id: ID, type: Type, owner: Subject)"
+P59,Authorization Pattern,pattern,Permission,"(subject: Subject, object: Object, actions: Set⟨Action⟩)"
+P59,Authorization Pattern,pattern,Action,Read | Write | Execute | Delete | Share | Admin
+P59,Authorization Pattern,pattern,Policy,"(condition: Predicate, effect: Allow | Deny)"
+P60,Input Sanitization Pattern,pattern,InputType,Text | HTML | SQL | URL | Email | ...
+P60,Input Sanitization Pattern,pattern,Validator,Input → ValidationResult
+P60,Input Sanitization Pattern,pattern,Sanitizer,Input → SanitizedInput
+P60,Input Sanitization Pattern,pattern,Encoder,Input → EncodedOutput
+P60,Input Sanitization Pattern,pattern,SecurityRule,"(pattern: Regex, action: Block | Sanitize | Warn)"
+P61,Unit Test Pattern,pattern,System,Function | Class | Module
+P61,Unit Test Pattern,pattern,Context,"(mocks: Set⟨Mock⟩, fixtures: Set⟨Fixture⟩, state: State)"
+P61,Unit Test Pattern,pattern,Mock,"(target: Dependency, behavior: Specification)"
+P61,Unit Test Pattern,pattern,Fixture,"(data: Data, setup: () → Effect, teardown: () → Effect)"
+P62,Integration Test Pattern,pattern,Component,Service | Module | System
+P62,Integration Test Pattern,pattern,Interaction,"(from: Component, to: Component, message: Message)"
+P62,Integration Test Pattern,pattern,Environment,"(database: DB, services: Set⟨Service⟩, config: Config)"
+P63,End-to-End Test Pattern,pattern,UserStory,"(actor: Actor, action: Action, outcome: Outcome)"
+P63,End-to-End Test Pattern,pattern,Browser,"(driver: WebDriver, capabilities: Set⟨Capability⟩)"
+P63,End-to-End Test Pattern,pattern,PageObject,"(locators: Map⟨String, Locator⟩, actions: Map⟨String, Action⟩)"
+P63,End-to-End Test Pattern,pattern,Locator,CSS(selector: String) | XPath(expression: String) | ID(id: String)
+P64,Generative UI,pattern,ComponentTemplate,"$\text{ComponentTemplate} = (\text{name}, \text{props\_schema}, \text{render\_fn})$"
+P64,Generative UI,pattern,ComponentSpec,"$\text{ComponentSpec} = (\text{template}, \text{props}, \text{data}, \text{children})$"
+P64,Generative UI,pattern,Context,"$\text{Context} = \text{Map}(\text{Key}, \text{Value})$ (application state)"
+P64,Generative UI,pattern,Token,$\text{Token} = \text{String}$ (LLM output token)
+P65,Streaming Component,pattern,Token,$\text{Token} = \text{String}$ (atomic unit of LLM output)
+P65,Streaming Component,pattern,RenderTask,"$\text{RenderTask} = (\text{tokens}, \text{priority}, \text{callback})$"
+P65,Streaming Component,pattern,BoundedQueue,$\text{BoundedQueue}\langle T \rangle = \{q \mid |q| \leq \text{capacity}\}$
+P66,Context-Adaptive Interface,pattern,Context,"$\text{Context} = (\text{user}, \text{task}, \text{environment}, \text{history})$"
+P66,Context-Adaptive Interface,pattern,ContextVector,$\text{ContextVector} = \mathbb{R}^d$ (embedded representation)
+P66,Context-Adaptive Interface,pattern,UIVariant,"$\text{UIVariant} = (\text{layout}, \text{components}, \text{interactions}, \text{metadata})$"
+P66,Context-Adaptive Interface,pattern,ApplicationState,"$\text{ApplicationState} = \text{Map}(\text{Key}, \text{Value})$"
+P67,Progressive Disclosure by AI,pattern,InfoNode,"$\text{InfoNode} = (\text{content}, \text{children}, \text{depth}, \text{importance})$"
+P67,Progressive Disclosure by AI,pattern,Hierarchy,"$\text{Hierarchy}\langle T \rangle = (\text{root}, \text{parent}: T \to T, \text{children}: T \to \text{Set}\langle T \rangle)$"
+P67,Progressive Disclosure by AI,pattern,DisclosureStrategy,"$\text{Strategy} = \{\text{depth-first}, \text{breadth-first}, \text{relevance-first}, \text{adaptive}\}$"
+P67,Progressive Disclosure by AI,pattern,Revealed,$\text{Revealed}_t = \{n \in H_{info} \mid t_{reveal}(n) \leq t\}$ (time-dependent)
+P68,Agent Team Visualization,pattern,Agent,"$\text{Agent} = (\text{id}, \text{capabilities}, \text{model}, \text{state})$"
+P68,Agent Team Visualization,pattern,Role,"$\text{Role} = \{\text{coordinator}, \text{worker}, \text{specialist}, \text{reviewer}, \text{observer}\}$"
+P68,Agent Team Visualization,pattern,Status,"$\text{Status} = \{\text{idle}, \text{thinking}, \text{executing}, \text{waiting}, \text{complete}, \text{error}\}$"
+P68,Agent Team Visualization,pattern,Coordination,"$\text{Coordination} = (\text{source}, \text{target}, \text{relation}, \text{data})$"
+P69,Agent Activity Timeline,pattern,Event,"$\text{Event} = (\text{agent}, \text{action}, \text{timestamp}, \text{data}, \text{outcome})$"
+P69,Agent Activity Timeline,pattern,ActionType,"$\text{ActionType} = \{\text{start}, \text{think}, \text{tool\_call}, \text{decision}, \text{complete}, \text{handoff}\}$"
+P69,Agent Activity Timeline,pattern,ActivityLog,$\text{Activity}_{log} = \text{Seq}\langle \text{Event} \rangle$ (ordered by timestamp)
+P70,Agent Handoff,pattern,State,"$\text{State} = (\text{context}, \text{progress}, \text{data}, \text{history})$"
+P70,Agent Handoff,pattern,TransferProtocol,"$\text{TransferProtocol} = \{\text{synchronous}, \text{asynchronous}, \text{atomic}, \text{gradual}\}$"
+P70,Agent Handoff,pattern,Transfer,"$\text{Transfer} = (\text{state}, \text{status}, \text{timestamp}, \text{acknowledgment})$"
+P71,Orchestration Dashboard,pattern,WorkflowGraph,"$\text{WorkflowGraph} = (V, E, \lambda)$ where $V$ = nodes (tasks), $E$ = edges (dependencies), $\lambda$ = labels"
+P71,Orchestration Dashboard,pattern,Metrics,"$\text{Metrics} = (\text{throughput}, \text{latency}, \text{cost}, \text{success\_rate}, \text{bottlenecks})$"
+P71,Orchestration Dashboard,pattern,Control,"$\text{Control} = \{\text{pause}, \text{resume}, \text{cancel}, \text{retry}, \text{scale}, \text{route}\}$"
+P72,Agent Role Selector,pattern,Role,"$\text{Role} = (\text{name}, \text{capabilities}, \text{expertise}, \text{constraints})$"
+P72,Agent Role Selector,pattern,TaskSpec,"$\text{TaskSpec} = (\text{description}, \text{requirements}, \text{priority}, \text{deadline})$"
+P72,Agent Role Selector,pattern,Agent,"$\text{Agent} = (\text{id}, \text{model}, \text{role}, \text{state})$"
+P73,Composite Action,pattern,AtomicAction,"$\text{AtomicAction} = (\text{name}, \text{params}, \text{execute}, \text{undo})$"
+P73,Composite Action,pattern,CompositeAction,"$\text{CompositeAction} = (\text{actions}, \text{order}, \text{dependencies}, \text{compensation})$"
+P73,Composite Action,pattern,Result,"$\text{Result} = \{\text{success}, \text{partial}, \text{failure}\} \times \text{Data}$"
+P74,Continuous AI Monitoring,pattern,State,"$\text{State} = (\text{metrics}, \text{context}, \text{timestamp})$"
+P74,Continuous AI Monitoring,pattern,Anomaly,"$\text{Anomaly} = (\text{type}, \text{severity}, \text{metric}, \text{value}, \text{expected})$"
+P74,Continuous AI Monitoring,pattern,Alert,"$\text{Alert} = (\text{anomaly}, \text{priority}, \text{actions}, \text{recipients})$"
+P75,Proactive Intervention,pattern,Prediction,"$\text{Prediction} = (\text{need}, \text{confidence}, \text{urgency}, \text{impact})$"
+P75,Proactive Intervention,pattern,Intervention,"$\text{Intervention} = (\text{action}, \text{timing}, \text{modality}, \text{priority})$"
+P75,Proactive Intervention,pattern,UserState,"$\text{UserState} = (\text{attention}, \text{load}, \text{task}, \text{mood})$"
+P80,Voice Conversation,pattern,AudioStream,$\text{AudioStream} = \text{Time} \to \mathbb{R}^n$ (time-series audio signal)
+P80,Voice Conversation,pattern,Intent,$\text{Intent} = \text{String} \times \text{Parameters}$ (action with params)
+P80,Voice Conversation,pattern,Confidence,"$\text{Confidence} = [0, 1] \subset \mathbb{R}$ (probability score)"
+P80,Voice Conversation,pattern,Turn,"$\text{Turn} = \{\text{user}, \text{agent}\} \times \text{String} \times \text{Timestamp}$"
+P100,Source Citation,pattern,Source,"$\text{Source} = (\text{id}, \text{title}, \text{author}, \text{date}, \text{URI}, \text{confidence})$"
+P100,Source Citation,pattern,TextSpan,"$\text{TextSpan} = (\text{start}, \text{end}) \subset \mathbb{N} \times \mathbb{N}$ (character range)"
+P100,Source Citation,pattern,Confidence,"$\text{Confidence} = [0, 1] \subset \mathbb{R}$ (source reliability score)"
+P101,Retrieval Path Visualization,pattern,Node,"$\text{Node} = (\text{id}, \text{content}, \text{embedding}, \text{type})$ (knowledge graph vertex)"
+P101,Retrieval Path Visualization,pattern,Edge,"$\text{Edge} = (\text{source}, \text{target}, \text{relation}, \text{weight})$ (knowledge graph edge)"
+P101,Retrieval Path Visualization,pattern,Embedding,$\text{Embedding} = \mathbb{R}^d$ (dense vector representation)
+P102,Confidence-Based Highlighting,pattern,TextSpan,"$\text{TextSpan} = (\text{start}, \text{end}, \text{content})$ where $\text{start}, \text{end} \in \mathbb{N}$"
+P102,Confidence-Based Highlighting,pattern,RGB,"$\text{RGB} = [0, 255]^3 \subset \mathbb{N}^3$ (red, green, blue color components)"
+P102,Confidence-Based Highlighting,pattern,ConfidenceLevel,"$\text{Level} = \{\text{high}, \text{medium}, \text{low}, \text{uncertain}\}$"
+P103,Multi-Source Reconciliation,pattern,Claim,"$\text{Claim} = (\text{statement}, \text{timestamp}, \text{confidence})$ (factual assertion)"
+P103,Multi-Source Reconciliation,pattern,ConflictType,"$\text{ConflictType} = \{\text{contradiction}, \text{uncertainty}, \text{temporal}, \text{partial}\}$"
+P103,Multi-Source Reconciliation,pattern,ResolvedClaim,"$\text{ResolvedClaim} = (\text{merged\_claim}, \text{consensus\_score}, \text{dissenting\_sources})$"
+P104,Graph Query Builder,pattern,Graph,"$\text{Graph} = (V, E, \lambda_V, \lambda_E)$ where $V$ are vertices, $E \subseteq V \times V$ edges, $\lambda$ label functions"
+P104,Graph Query Builder,pattern,VisualQuery,"$\text{VisualQuery} = (\text{nodes}, \text{edges}, \text{constraints})$ (pattern graph)"
+P104,Graph Query Builder,pattern,ResultSet,$\text{ResultSet} = \text{Set}\langle \text{Binding} \rangle$ where $\text{Binding} = \text{Var} \to \text{Node}$
+P105,Semantic Similarity Visualizer,pattern,Concept,"$\text{Concept} = (\text{id}, \text{label}, \text{embedding})$ where $\text{embedding} \in \mathbb{R}^d$"
+P105,Semantic Similarity Visualizer,pattern,SimilarityMetric,"$\text{SimilarityMetric} = \{\text{cosine}, \text{euclidean}, \text{jaccard}, \text{semantic}\}$"
+P105,Semantic Similarity Visualizer,pattern,LayoutAlgorithm,"$\text{LayoutAlgorithm} = \{\text{force-directed}, \text{tsne}, \text{umap}, \text{mds}\}$"
+P107,Suggested Edits,pattern,Edit,"$\text{Edit} = (\text{span}, \text{original}, \text{replacement}, \text{reason}, \text{category})$"
+P107,Suggested Edits,pattern,EditCategory,"$\text{Category} = \{\text{grammar}, \text{clarity}, \text{factual}, \text{style}, \text{structure}\}$"
+P107,Suggested Edits,pattern,Span,"$\text{Span} = (\text{start}, \text{end}) \subset \mathbb{N} \times \mathbb{N}$"
+P108,Cross-Document Linking,pattern,Link,"$\text{Link} = (\text{source}, \text{target}, \text{relation\_type}, \text{bidirectional})$"
+P108,Cross-Document Linking,pattern,RelationType,"$\text{RelationType} = \{\text{references}, \text{extends}, \text{contradicts}, \text{supports}, \text{related}\}$"
+P108,Cross-Document Linking,pattern,Document,"$\text{Document} = (\text{id}, \text{content}, \text{metadata}, \text{embedding})$"
+P109,Outdated Content Detection,pattern,Alert,"$\text{Alert} = (\text{span}, \text{reason}, \text{severity}, \text{suggested\_update})$"
+P109,Outdated Content Detection,pattern,Severity,"$\text{Severity} = \{\text{info}, \text{warning}, \text{critical}\}$"
+P109,Outdated Content Detection,pattern,FreshnessScore,"$\text{FreshnessScore} = [0, 1] \subset \mathbb{R}$ (0 = stale, 1 = fresh)"
+P110,Collaborative Document Intelligence,pattern,Agent,"$\text{Agent} = (\text{id}, \text{role}, \text{capabilities}, \text{state})$"
+P110,Collaborative Document Intelligence,pattern,Contribution,"$\text{Contribution} = (\text{agent\_id}, \text{edit}, \text{timestamp}, \text{rationale})$"
+P110,Collaborative Document Intelligence,pattern,Protocol,"$\text{Protocol} = \{\text{sequential}, \text{parallel}, \text{consensus}, \text{leader-follower}\}$"
+P111,Document Evolution Timeline,pattern,Version,"$\text{Version} = (\text{id}, \text{content}, \text{metadata}, \text{parent})$"
+P111,Document Evolution Timeline,pattern,Delta,$\text{Delta} = \text{Set}\langle \text{Edit} \rangle$ (set of atomic edits)
+P111,Document Evolution Timeline,pattern,Actor,$\text{Actor} = \text{Human} \mid \text{Agent}$ (union type)
+P112,Event Stream Visualization,pattern,Event,"$\text{Event} = (\text{id}, \text{type}, \text{payload}, \text{timestamp}, \text{source})$"
+P112,Event Stream Visualization,pattern,Stream,$\text{Stream}\langle T \rangle = \text{Time} \to \text{Option}\langle T \rangle$ (potentially infinite)
+P112,Event Stream Visualization,pattern,Aggregate,"$\text{Aggregate} = (\text{count}, \text{rate}, \text{distribution}, \text{statistics})$"
+P113,Event Replay Control,pattern,PlaybackControl,"$\text{PlaybackControl} = (\text{speed}, \text{position}, \text{mode})$ where $\text{speed} \in \mathbb{R}_{> 0}$"
+P113,Event Replay Control,pattern,PlaybackMode,"$\text{Mode} = \{\text{play}, \text{pause}, \text{step-forward}, \text{step-backward}, \text{reverse}\}$"
+P113,Event Replay Control,pattern,TimeRange,"$\text{TimeRange} = (t_{start}, t_{end})$ where $t_{start}, t_{end} \in \text{Time}$"
+P114,Stream Backpressure,pattern,Strategy,"$\text{Strategy} = \{\text{drop-oldest}, \text{drop-newest}, \text{drop-random}, \text{drop-lowest-priority}\}$"
+P114,Stream Backpressure,pattern,BoundedQueue,$\text{BoundedQueue}\langle T \rangle = \{q \mid |q| \leq \text{capacity}\}$
+P114,Stream Backpressure,pattern,Rate,$\text{Rate} = \frac{\text{events}}{\text{second}} \in \mathbb{R}_{\geq 0}$
+P115,Event-Driven State Updates,pattern,ApplicationState,"$\text{State} = \text{Map}(\text{Key}, \text{Value})$ (immutable state tree)"
+P115,Event-Driven State Updates,pattern,Reducer,"$\text{Reducer}: (S, E) \to S$ (pure, deterministic function)"
+P115,Event-Driven State Updates,pattern,Effect,$\text{Effect} = \text{IO}()$ (side-effectful operation)
+P116,Multi-Stream Coordination UI,pattern,SyncStrategy,"$\text{SyncStrategy} = \{\text{wall-clock}, \text{logical-clock}, \text{causal}, \text{vector-clock}\}$"
+P116,Multi-Stream Coordination UI,pattern,MergeOperation,"$\text{MergeOp} = \{\text{union}, \text{interleave}, \text{zip}, \text{priority}\}$"
+P116,Multi-Stream Coordination UI,pattern,Timestamp,$\text{Timestamp} = \mathbb{N}$ (logical) or $\mathbb{R}_{\geq 0}$ (wall-clock)
+P117,Event Filter & Query,pattern,Predicate,$\text{Predicate} = \text{Event} \to \text{Boolean}$ (filter function)
+P117,Event Filter & Query,pattern,QueryLanguage,"$\text{QueryLanguage} = \{\text{SQL-like}, \text{CEP}, \text{pattern-matching}, \text{temporal-logic}\}$"
+P117,Event Filter & Query,pattern,Query,"$\text{Query} = (\text{select}, \text{where}, \text{window}, \text{aggregate})$"
+P119,Cross-Domain Integration View,pattern,Domain,"$\text{Domain} = (\text{id}, \text{schema}, \text{agents}, \text{context})$ (bounded context)"
+P119,Cross-Domain Integration View,pattern,CrossDomainLink,"$\text{CrossDomainLink} = (\text{source\_domain}, \text{target\_domain}, \text{mapping}, \text{translator})$"
+P119,Cross-Domain Integration View,pattern,DataSet,$\text{DataSet} = \text{Set}\langle \text{Entity} \rangle$ where Entity is domain-specific

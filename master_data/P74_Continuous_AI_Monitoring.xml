@@ -110,7 +110,7 @@ where $\mu_m$ = mean, $\sigma_m$ = std dev, $k$ = sensitivity</formal-definition
       <description>real-time AI system monitoring</description>
     </manifestation>
     <manifestation>
-      <name>Weights & Biases monitoring</name>
+      <name>Weights &amp; Biases monitoring</name>
       <description>ML model performance tracking</description>
     </manifestation>
     <manifestation>
