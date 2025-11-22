@@ -1,115 +1,115 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$L = (stream, buffer, processor, emitter)$</tuple-notation>
-    <components>
-      <component>
-        <name>stream</name>
-        <type>Stream⟨Event⟩</type>
-        <notation>stream</notation>
-        <description>continuous event stream</description>
-      </component>
-      <component>
-        <name>buffer</name>
-        <type>Queue⟨Event⟩</type>
-        <notation>buffer</notation>
-        <description>temporarily holds events</description>
-      </component>
-      <component>
-        <name>processor</name>
-        <type>Event → ProcessedEvent</type>
-        <notation>processor</notation>
-        <description>processes each event</description>
-      </component>
-      <component>
-        <name>emitter</name>
-        <type>ProcessedEvent → Effect</type>
-        <notation>emitter</notation>
-        <description>emits to subscribers</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Event</name>
-      <definition format="latex">(timestamp: Time, data: Data, metadata: Metadata)</definition>
-    </type-def>
-    <type-def>
-      <name>ProcessedEvent</name>
-      <definition format="latex">Validated and enriched event</definition>
-    </type-def>
-    <type-def>
-      <name>Subscriber</name>
-      <definition format="latex">(id: String, callback: ProcessedEvent → Effect)</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F1.3.1">
-      <name>Ordering Preservation</name>
-      <formal-spec format="latex">∀e₁, e₂ ∈ Stream: timestamp(e₁) &lt; timestamp(e₂) ⇒
-process_order(e₁) &lt; process_order(e₂)</formal-spec>
-    </property>
-    <property id="P.F1.3.2">
-      <name>Backpressure Handling</name>
-      <formal-spec format="latex">|buffer| &gt; threshold ⇒ apply_backpressure(stream)</formal-spec>
-    </property>
-    <property id="P.F1.3.3">
-      <name>At-Least-Once Delivery</name>
-      <formal-spec format="latex">∀e ∈ Stream: processed(e) ⇒ ∃s ∈ Subscribers: delivered(e, s)</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Stream</name>
-      <signature>stream(source: Source) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F1.3" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$L = (stream, buffer, processor, emitter)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>stream</ns0:name>
+        <ns0:type>Stream⟨Event⟩</ns0:type>
+        <ns0:notation>stream</ns0:notation>
+        <ns0:description>continuous event stream</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>buffer</ns0:name>
+        <ns0:type>Queue⟨Event⟩</ns0:type>
+        <ns0:notation>buffer</ns0:notation>
+        <ns0:description>temporarily holds events</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>processor</ns0:name>
+        <ns0:type>Event → ProcessedEvent</ns0:type>
+        <ns0:notation>processor</ns0:notation>
+        <ns0:description>processes each event</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>emitter</ns0:name>
+        <ns0:type>ProcessedEvent → Effect</ns0:type>
+        <ns0:notation>emitter</ns0:notation>
+        <ns0:description>emits to subscribers</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Event</ns0:name>
+      <ns0:definition format="latex">(timestamp: Time, data: Data, metadata: Metadata)</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>ProcessedEvent</ns0:name>
+      <ns0:definition format="latex">Validated and enriched event</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Subscriber</ns0:name>
+      <ns0:definition format="latex">(id: String, callback: ProcessedEvent → Effect)</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F1.3.1">
+      <ns0:name>Ordering Preservation</ns0:name>
+      <ns0:formal-spec format="latex">∀e₁, e₂ ∈ Stream: timestamp(e₁) &lt; timestamp(e₂) ⇒
+process_order(e₁) &lt; process_order(e₂)</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F1.3.2">
+      <ns0:name>Backpressure Handling</ns0:name>
+      <ns0:formal-spec format="latex">|buffer| &gt; threshold ⇒ apply_backpressure(stream)</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F1.3.3">
+      <ns0:name>At-Least-Once Delivery</ns0:name>
+      <ns0:formal-spec format="latex">∀e ∈ Stream: processed(e) ⇒ ∃s ∈ Subscribers: delivered(e, s)</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Stream</ns0:name>
+      <ns0:signature>stream(source: Source) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    stream(source: Source) → Effect
    = for event in source.events():
        buffer.enqueue(event)
        if buffer.full():
          apply_backpressure()
-       process_next()</formal-definition>
-    </operation>
-    <operation>
-      <name>Process</name>
-      <signature>process(event: Event) → ProcessedEvent</signature>
-      <formal-definition format="latex">```
+       process_next()</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Process</ns0:name>
+      <ns0:signature>process(event: Event) → ProcessedEvent</ns0:signature>
+      <ns0:formal-definition format="latex">```
    process(event: Event) → ProcessedEvent
    = validated := validate(event)
      enriched := enrich(validated)
-     return enriched</formal-definition>
-    </operation>
-    <operation>
-      <name>Emit</name>
-      <signature>emit(event: ProcessedEvent) → Effect</signature>
-      <formal-definition format="latex">```
+     return enriched</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Emit</ns0:name>
+      <ns0:signature>emit(event: ProcessedEvent) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    emit(event: ProcessedEvent) → Effect
    = for subscriber in subscribers:
-       subscriber.callback(event)</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>Real-time data feeds</name>
-    </manifestation>
-    <manifestation>
-      <name>WebSocket connections</name>
-    </manifestation>
-    <manifestation>
-      <name>Event streaming</name>
-      <description>Kafka, RabbitMQ</description>
-    </manifestation>
-    <manifestation>
-      <name>Live metrics collection</name>
-    </manifestation>
-    <manifestation>
-      <name>Chat/messaging systems</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+       subscriber.callback(event)</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>Real-time data feeds</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>WebSocket connections</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Event streaming</ns0:name>
+      <ns0:description>Kafka, RabbitMQ</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Live metrics collection</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Chat/messaging systems</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

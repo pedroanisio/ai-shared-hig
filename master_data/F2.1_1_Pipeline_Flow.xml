@@ -1,74 +1,74 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$P = (stages, ir, error\_handler, compose)$</tuple-notation>
-    <components>
-      <component>
-        <name>stages</name>
-        <type>Sequence⟨Stage⟩</type>
-        <notation>stages</notation>
-        <description>transformation stages</description>
-      </component>
-      <component>
-        <name>ir</name>
-        <type>Sequence⟨IR⟩</type>
-        <notation>ir</notation>
-        <description>intermediate representations</description>
-      </component>
-      <component>
-        <name>error\_handler</name>
-        <type>Error → Recovery</type>
-        <notation>error\_handler</notation>
-        <description>handles stage failures</description>
-      </component>
-      <component>
-        <name>compose</name>
-        <type>Sequence⟨Stage⟩ → (Input → Output)</type>
-        <notation>compose</notation>
-        <description>composes stages</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Stage</name>
-      <definition format="latex">(name: String, transform: Input → Output | Error)</definition>
-    </type-def>
-    <type-def>
-      <name>IR</name>
-      <definition format="latex">Intermediate representation between stages</definition>
-    </type-def>
-    <type-def>
-      <name>Recovery</name>
-      <definition format="latex">Retry | Skip | Abort | Fallback</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F2.1.1">
-      <name>Sequential Composition</name>
-      <formal-spec format="latex">output(stage_n) = input(stage_{n+1})
-Stages connect sequentially</formal-spec>
-    </property>
-    <property id="P.F2.1.2">
-      <name>Error Propagation</name>
-      <formal-spec format="latex">error(stage_i) ⇒ handle_error ∨ abort_pipeline</formal-spec>
-    </property>
-    <property id="P.F2.1.3">
-      <name>Determinism</name>
-      <formal-spec format="latex">∀input: compose(stages)(input) produces same output</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Execute Pipeline</name>
-      <signature>execute(input: Input) → Output | Error</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F2.1" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$P = (stages, ir, error\_handler, compose)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>stages</ns0:name>
+        <ns0:type>Sequence⟨Stage⟩</ns0:type>
+        <ns0:notation>stages</ns0:notation>
+        <ns0:description>transformation stages</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>ir</ns0:name>
+        <ns0:type>Sequence⟨IR⟩</ns0:type>
+        <ns0:notation>ir</ns0:notation>
+        <ns0:description>intermediate representations</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>error\_handler</ns0:name>
+        <ns0:type>Error → Recovery</ns0:type>
+        <ns0:notation>error\_handler</ns0:notation>
+        <ns0:description>handles stage failures</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>compose</ns0:name>
+        <ns0:type>Sequence⟨Stage⟩ → (Input → Output)</ns0:type>
+        <ns0:notation>compose</ns0:notation>
+        <ns0:description>composes stages</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Stage</ns0:name>
+      <ns0:definition format="latex">(name: String, transform: Input → Output | Error)</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>IR</ns0:name>
+      <ns0:definition format="latex">Intermediate representation between stages</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Recovery</ns0:name>
+      <ns0:definition format="latex">Retry | Skip | Abort | Fallback</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F2.1.1">
+      <ns0:name>Sequential Composition</ns0:name>
+      <ns0:formal-spec format="latex">output(stage_n) = input(stage_{n+1})
+Stages connect sequentially</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.1.2">
+      <ns0:name>Error Propagation</ns0:name>
+      <ns0:formal-spec format="latex">error(stage_i) ⇒ handle_error ∨ abort_pipeline</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.1.3">
+      <ns0:name>Determinism</ns0:name>
+      <ns0:formal-spec format="latex">∀input: compose(stages)(input) produces same output</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Execute Pipeline</ns0:name>
+      <ns0:signature>execute(input: Input) → Output | Error</ns0:signature>
+      <ns0:formal-definition format="latex">```
    execute(input: Input) → Output | Error
    = result := input
      for stage in stages:
@@ -76,46 +76,46 @@ Stages connect sequentially</formal-spec>
        if is_error(result):
          result := error_handler(result)
          if abort(result): return result
-     return result</formal-definition>
-    </operation>
-    <operation>
-      <name>Compose Stages</name>
-      <signature>compose(stages: Sequence⟨Stage⟩) → (Input → Output)</signature>
-      <formal-definition format="latex">```
+     return result</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Compose Stages</ns0:name>
+      <ns0:signature>compose(stages: Sequence⟨Stage⟩) → (Input → Output)</ns0:signature>
+      <ns0:formal-definition format="latex">```
    compose(stages: Sequence⟨Stage⟩) → (Input → Output)
-   = λ input: fold(stages, input, λ(acc, stage): stage(acc))</formal-definition>
-    </operation>
-    <operation>
-      <name>Handle Error</name>
-      <signature>handle_error(error: Error, stage: Stage) → Recovery</signature>
-      <formal-definition format="latex">```
+   = λ input: fold(stages, input, λ(acc, stage): stage(acc))</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Handle Error</ns0:name>
+      <ns0:signature>handle_error(error: Error, stage: Stage) → Recovery</ns0:signature>
+      <ns0:formal-definition format="latex">```
    handle_error(error: Error, stage: Stage) → Recovery
    = case error_type(error) of
        Transient → Retry(stage, max_attempts=3)
        Permanent → Abort(error)
-       Recoverable → Fallback(alternative_stage)</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>Compiler pipelines</name>
-      <description>source → AST → IR → binary</description>
-    </manifestation>
-    <manifestation>
-      <name>Data transformation</name>
-      <description>ETL pipelines</description>
-    </manifestation>
-    <manifestation>
-      <name>Build systems</name>
-      <description>source → compile → link → package</description>
-    </manifestation>
-    <manifestation>
-      <name>Markdown renderers</name>
-      <description>MD → AST → HTML</description>
-    </manifestation>
-    <manifestation>
-      <name>Image processing</name>
-      <description>raw → decode → transform → encode</description>
-    </manifestation>
-  </manifestations>
-</pattern>
+       Recoverable → Fallback(alternative_stage)</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>Compiler pipelines</ns0:name>
+      <ns0:description>source → AST → IR → binary</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Data transformation</ns0:name>
+      <ns0:description>ETL pipelines</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Build systems</ns0:name>
+      <ns0:description>source → compile → link → package</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Markdown renderers</ns0:name>
+      <ns0:description>MD → AST → HTML</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Image processing</ns0:name>
+      <ns0:description>raw → decode → transform → encode</ns0:description>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

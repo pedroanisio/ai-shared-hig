@@ -1,78 +1,78 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$L = (observe, learn, update, apply)$</tuple-notation>
-    <components>
-      <component>
-        <name>observe</name>
-        <type>Environment → Observations</type>
-        <notation>observe</notation>
-        <description>collects data</description>
-      </component>
-      <component>
-        <name>learn</name>
-        <type>Observations → Model</type>
-        <notation>learn</notation>
-        <description>trains or updates model</description>
-      </component>
-      <component>
-        <name>update</name>
-        <type>Model → Policy</type>
-        <notation>update</notation>
-        <description>updates decision policy</description>
-      </component>
-      <component>
-        <name>apply</name>
-        <type>Policy → Actions</type>
-        <notation>apply</notation>
-        <description>applies learned policy</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Observations</name>
-      <definition format="latex">Sequence⟨(State, Action, Reward)⟩</definition>
-    </type-def>
-    <type-def>
-      <name>Model</name>
-      <definition format="latex">Learned representation of environment</definition>
-    </type-def>
-    <type-def>
-      <name>Policy</name>
-      <definition format="latex">Decision-making strategy</definition>
-    </type-def>
-    <type-def>
-      <name>Actions</name>
-      <definition format="latex">Commands applied to environment</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F3.1.1">
-      <name>Continuous Improvement</name>
-      <formal-spec format="latex">∀t: accuracy(model_t+1) ≥ accuracy(model_t) ∨ explore(new_strategy)</formal-spec>
-    </property>
-    <property id="P.F3.1.2">
-      <name>Feedback Integration</name>
-      <formal-spec format="latex">∀observation ∈ Observations: observation influences future policy</formal-spec>
-    </property>
-    <property id="P.F3.1.3">
-      <name>Convergence</name>
-      <formal-spec format="latex">lim_{t→∞} improvement(model_t) → 0
-Eventually reaches optimal or near-optimal</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Execute Loop</name>
-      <signature>loop(environment: Environment) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F3.1" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$L = (observe, learn, update, apply)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>observe</ns0:name>
+        <ns0:type>Environment → Observations</ns0:type>
+        <ns0:notation>observe</ns0:notation>
+        <ns0:description>collects data</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>learn</ns0:name>
+        <ns0:type>Observations → Model</ns0:type>
+        <ns0:notation>learn</ns0:notation>
+        <ns0:description>trains or updates model</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>update</ns0:name>
+        <ns0:type>Model → Policy</ns0:type>
+        <ns0:notation>update</ns0:notation>
+        <ns0:description>updates decision policy</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>apply</ns0:name>
+        <ns0:type>Policy → Actions</ns0:type>
+        <ns0:notation>apply</ns0:notation>
+        <ns0:description>applies learned policy</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Observations</ns0:name>
+      <ns0:definition format="latex">Sequence⟨(State, Action, Reward)⟩</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Model</ns0:name>
+      <ns0:definition format="latex">Learned representation of environment</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Policy</ns0:name>
+      <ns0:definition format="latex">Decision-making strategy</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Actions</ns0:name>
+      <ns0:definition format="latex">Commands applied to environment</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F3.1.1">
+      <ns0:name>Continuous Improvement</ns0:name>
+      <ns0:formal-spec format="latex">∀t: accuracy(model_t+1) ≥ accuracy(model_t) ∨ explore(new_strategy)</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F3.1.2">
+      <ns0:name>Feedback Integration</ns0:name>
+      <ns0:formal-spec format="latex">∀observation ∈ Observations: observation influences future policy</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F3.1.3">
+      <ns0:name>Convergence</ns0:name>
+      <ns0:formal-spec format="latex">lim_{t→∞} improvement(model_t) → 0
+Eventually reaches optimal or near-optimal</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Execute Loop</ns0:name>
+      <ns0:signature>loop(environment: Environment) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    loop(environment: Environment) → Effect
    = observations := []
      model := initialize_model()
@@ -82,44 +82,44 @@ Eventually reaches optimal or near-optimal</formal-spec>
        if should_update(observations):
          model := learn(observations)
          policy := update(model)
-         actions := apply(policy, environment)</formal-definition>
-    </operation>
-    <operation>
-      <name>Learn</name>
-      <signature>learn(observations: Observations) → Model</signature>
-      <formal-definition format="latex">```
+         actions := apply(policy, environment)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Learn</ns0:name>
+      <ns0:signature>learn(observations: Observations) → Model</ns0:signature>
+      <ns0:formal-definition format="latex">```
    learn(observations: Observations) → Model
    = features := extract_features(observations)
      model := train(features, current_model)
      validate(model, validation_set)
-     return model</formal-definition>
-    </operation>
-    <operation>
-      <name>Apply</name>
-      <signature>apply(policy: Policy, env: Environment) → Actions</signature>
-      <formal-definition format="latex">```
+     return model</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Apply</ns0:name>
+      <ns0:signature>apply(policy: Policy, env: Environment) → Actions</ns0:signature>
+      <ns0:formal-definition format="latex">```
    apply(policy: Policy, env: Environment) → Actions
    = state := env.current_state()
      action := policy.select_action(state)
      env.execute(action)
-     return action</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>Reinforcement learning systems</name>
-    </manifestation>
-    <manifestation>
-      <name>Recommender systems</name>
-    </manifestation>
-    <manifestation>
-      <name>Adaptive user interfaces</name>
-    </manifestation>
-    <manifestation>
-      <name>Auto-tuning systems</name>
-    </manifestation>
-    <manifestation>
-      <name>Online learning algorithms</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+     return action</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>Reinforcement learning systems</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Recommender systems</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Adaptive user interfaces</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Auto-tuning systems</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Online learning algorithms</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

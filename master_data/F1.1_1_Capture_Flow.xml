@@ -1,115 +1,115 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$F = (source, validator, normalizer, store)$</tuple-notation>
-    <components>
-      <component>
-        <name>source</name>
-        <type>Input</type>
-        <notation>source</notation>
-        <description>external input source</description>
-      </component>
-      <component>
-        <name>validator</name>
-        <type>Input → Valid | Invalid</type>
-        <notation>validator</notation>
-        <description>checks input validity</description>
-      </component>
-      <component>
-        <name>normalizer</name>
-        <type>Valid → Internal</type>
-        <notation>normalizer</notation>
-        <description>converts to internal format</description>
-      </component>
-      <component>
-        <name>store</name>
-        <type>Internal → Effect</type>
-        <notation>store</notation>
-        <description>persists in system</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Input</name>
-      <definition format="latex">External data or event</definition>
-    </type-def>
-    <type-def>
-      <name>Valid</name>
-      <definition format="latex">Validated input that passed checks</definition>
-    </type-def>
-    <type-def>
-      <name>Internal</name>
-      <definition format="latex">Normalized internal representation</definition>
-    </type-def>
-    <type-def>
-      <name>Effect</name>
-      <definition format="latex">Side effect of storage operation</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F1.1.1">
-      <name>Validation Required</name>
-      <formal-spec format="latex">∀i ∈ Input: store(i) ⇒ validator(i) = Valid
-No invalid input reaches storage</formal-spec>
-    </property>
-    <property id="P.F1.1.2">
-      <name>Normalization</name>
-      <formal-spec format="latex">∀v ∈ Valid: normalizer(v) produces consistent Internal format</formal-spec>
-    </property>
-    <property id="P.F1.1.3">
-      <name>Persistence</name>
-      <formal-spec format="latex">∀i ∈ Internal: store(i) ⇒ retrievable(i)</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Capture</name>
-      <signature>capture(input: Input) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F1.1" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$F = (source, validator, normalizer, store)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>source</ns0:name>
+        <ns0:type>Input</ns0:type>
+        <ns0:notation>source</ns0:notation>
+        <ns0:description>external input source</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>validator</ns0:name>
+        <ns0:type>Input → Valid | Invalid</ns0:type>
+        <ns0:notation>validator</ns0:notation>
+        <ns0:description>checks input validity</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>normalizer</ns0:name>
+        <ns0:type>Valid → Internal</ns0:type>
+        <ns0:notation>normalizer</ns0:notation>
+        <ns0:description>converts to internal format</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>store</ns0:name>
+        <ns0:type>Internal → Effect</ns0:type>
+        <ns0:notation>store</ns0:notation>
+        <ns0:description>persists in system</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Input</ns0:name>
+      <ns0:definition format="latex">External data or event</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Valid</ns0:name>
+      <ns0:definition format="latex">Validated input that passed checks</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Internal</ns0:name>
+      <ns0:definition format="latex">Normalized internal representation</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Effect</ns0:name>
+      <ns0:definition format="latex">Side effect of storage operation</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F1.1.1">
+      <ns0:name>Validation Required</ns0:name>
+      <ns0:formal-spec format="latex">∀i ∈ Input: store(i) ⇒ validator(i) = Valid
+No invalid input reaches storage</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F1.1.2">
+      <ns0:name>Normalization</ns0:name>
+      <ns0:formal-spec format="latex">∀v ∈ Valid: normalizer(v) produces consistent Internal format</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F1.1.3">
+      <ns0:name>Persistence</ns0:name>
+      <ns0:formal-spec format="latex">∀i ∈ Internal: store(i) ⇒ retrievable(i)</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Capture</ns0:name>
+      <ns0:signature>capture(input: Input) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    capture(input: Input) → Effect
    = case validator(input) of
        Valid(v) → store(normalizer(v))
-       Invalid(e) → log_error(e) ; reject(input)</formal-definition>
-    </operation>
-    <operation>
-      <name>Validate</name>
-      <signature>validate(input: Input) → Valid | Invalid</signature>
-      <formal-definition format="latex">```
+       Invalid(e) → log_error(e) ; reject(input)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Validate</ns0:name>
+      <ns0:signature>validate(input: Input) → Valid | Invalid</ns0:signature>
+      <ns0:formal-definition format="latex">```
    validate(input: Input) → Valid | Invalid
    = check_schema(input) ∧ 
      check_constraints(input) ∧
-     check_permissions(input)</formal-definition>
-    </operation>
-    <operation>
-      <name>Normalize</name>
-      <signature>normalize(valid: Valid) → Internal</signature>
-      <formal-definition format="latex">```
+     check_permissions(input)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Normalize</ns0:name>
+      <ns0:signature>normalize(valid: Valid) → Internal</ns0:signature>
+      <ns0:formal-definition format="latex">```
    normalize(valid: Valid) → Internal
-   = transform_to_canonical_format(valid)</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>User input forms</name>
-    </manifestation>
-    <manifestation>
-      <name>File upload handlers</name>
-    </manifestation>
-    <manifestation>
-      <name>API request handlers</name>
-    </manifestation>
-    <manifestation>
-      <name>Sensor data ingestion</name>
-    </manifestation>
-    <manifestation>
-      <name>Clipboard paste operations</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+   = transform_to_canonical_format(valid)</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>User input forms</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>File upload handlers</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>API request handlers</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Sensor data ingestion</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Clipboard paste operations</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

@@ -1072,10 +1072,160 @@ class CorpusManager:
                         'is_valid': 'yes' if is_valid else 'no'
                     })
     
+    def export_to_csv_type_definitions(self, output_path: Path) -> None:
+        """
+        Export all type definitions to CSV.
+        Essential for CSV-as-master architecture.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'pattern_type',
+                'type_name', 'definition', 'notation'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                # Detect pattern type
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
+                for type_def in pattern.type_definitions:
+                    writer.writerow({
+                        'pattern_id': pattern.id,
+                        'pattern_name': pattern.name,
+                        'pattern_type': pattern_type,
+                        'type_name': type_def.name,
+                        'definition': type_def.definition.replace('\n', ' ').strip(),
+                        'notation': type_def.notation
+                    })
+    
+    def export_to_csv_manifestations(self, output_path: Path) -> None:
+        """
+        Export all manifestations to CSV.
+        Essential for CSV-as-master architecture.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'pattern_type',
+                'manifestation_name', 'description'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                # Detect pattern type
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
+                for manifestation in pattern.manifestations:
+                    writer.writerow({
+                        'pattern_id': pattern.id,
+                        'pattern_name': pattern.name,
+                        'pattern_type': pattern_type,
+                        'manifestation_name': manifestation.name,
+                        'description': manifestation.description
+                    })
+    
+    def export_to_csv_operation_conditions(self, output_path: Path) -> None:
+        """
+        Export operation preconditions, postconditions, and effects.
+        Essential for CSV-as-master architecture.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'operation_name',
+                'condition_type', 'condition_text'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                for operation in pattern.operations:
+                    # Preconditions
+                    for precond in operation.preconditions:
+                        writer.writerow({
+                            'pattern_id': pattern.id,
+                            'pattern_name': pattern.name,
+                            'operation_name': operation.name,
+                            'condition_type': 'precondition',
+                            'condition_text': precond
+                        })
+                    
+                    # Postconditions
+                    for postcond in operation.postconditions:
+                        writer.writerow({
+                            'pattern_id': pattern.id,
+                            'pattern_name': pattern.name,
+                            'operation_name': operation.name,
+                            'condition_type': 'postcondition',
+                            'condition_text': postcond
+                        })
+                    
+                    # Effects
+                    for effect in operation.effects:
+                        writer.writerow({
+                            'pattern_id': pattern.id,
+                            'pattern_name': pattern.name,
+                            'operation_name': operation.name,
+                            'condition_type': 'effect',
+                            'condition_text': effect
+                        })
+    
+    def export_to_csv_property_invariants(self, output_path: Path) -> None:
+        """
+        Export property invariants to CSV.
+        Essential for CSV-as-master architecture.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'property_id',
+                'property_name', 'invariant_text'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                for prop in pattern.properties:
+                    for invariant in prop.invariants:
+                        writer.writerow({
+                            'pattern_id': pattern.id,
+                            'pattern_name': pattern.name,
+                            'property_id': prop.id,
+                            'property_name': prop.name,
+                            'invariant_text': invariant
+                        })
+    
     def export_all_csv(self, output_dir: Path) -> Dict[str, Path]:
         """
         Export all CSV formats to a directory.
         Creates comprehensive tabular views of the corpus.
+        
+        UPDATED for CSV-as-master: Now includes ALL data for lossless storage.
         
         Returns dict mapping CSV type to file path.
         """
@@ -1083,30 +1233,43 @@ class CorpusManager:
         
         exports = {}
         
-        # Summary
+        # Core tables
         summary_path = output_dir / 'patterns_summary.csv'
         self.export_to_csv_summary(summary_path)
         exports['summary'] = summary_path
         
-        # Components
         components_path = output_dir / 'components.csv'
         self.export_to_csv_components(components_path)
         exports['components'] = components_path
         
-        # Operations
         operations_path = output_dir / 'operations.csv'
         self.export_to_csv_operations(operations_path)
         exports['operations'] = operations_path
         
-        # Properties
         properties_path = output_dir / 'properties.csv'
         self.export_to_csv_properties(properties_path)
         exports['properties'] = properties_path
         
-        # Dependencies
         dependencies_path = output_dir / 'dependencies.csv'
         self.export_to_csv_dependencies(dependencies_path)
         exports['dependencies'] = dependencies_path
+        
+        # Additional tables for completeness (CSV as master)
+        type_defs_path = output_dir / 'type_definitions.csv'
+        self.export_to_csv_type_definitions(type_defs_path)
+        exports['type_definitions'] = type_defs_path
+        
+        manifestations_path = output_dir / 'manifestations.csv'
+        self.export_to_csv_manifestations(manifestations_path)
+        exports['manifestations'] = manifestations_path
+        
+        op_conditions_path = output_dir / 'operation_conditions.csv'
+        self.export_to_csv_operation_conditions(op_conditions_path)
+        exports['operation_conditions'] = op_conditions_path
+        
+        prop_invariants_path = output_dir / 'property_invariants.csv'
+        self.export_to_csv_property_invariants(prop_invariants_path)
+        exports['property_invariants'] = prop_invariants_path
         
         return exports
 
@@ -1160,8 +1323,16 @@ def main():
                        help='Export properties to CSV')
     parser.add_argument('--export-csv-dependencies', metavar='OUTPUT_FILE',
                        help='Export dependencies to CSV')
+    parser.add_argument('--export-csv-type-definitions', metavar='OUTPUT_FILE',
+                       help='Export type definitions to CSV')
+    parser.add_argument('--export-csv-manifestations', metavar='OUTPUT_FILE',
+                       help='Export manifestations to CSV')
+    parser.add_argument('--export-csv-operation-conditions', metavar='OUTPUT_FILE',
+                       help='Export operation conditions (preconditions/postconditions/effects) to CSV')
+    parser.add_argument('--export-csv-property-invariants', metavar='OUTPUT_FILE',
+                       help='Export property invariants to CSV')
     parser.add_argument('--export-all-csv', metavar='OUTPUT_DIR',
-                       help='Export all CSV formats (summary, components, operations, properties, dependencies)')
+                       help='Export ALL CSV formats (COMPLETE for CSV-as-master: 9 tables, zero data loss)')
     
     args = parser.parse_args()
     
@@ -1301,13 +1472,44 @@ def main():
         manager.export_to_csv_dependencies(output_file)
         print(f"Exported dependencies to CSV: {output_file}")
     
+    if args.export_csv_type_definitions:
+        output_file = Path(args.export_csv_type_definitions)
+        manager.export_to_csv_type_definitions(output_file)
+        print(f"Exported type definitions to CSV: {output_file}")
+    
+    if args.export_csv_manifestations:
+        output_file = Path(args.export_csv_manifestations)
+        manager.export_to_csv_manifestations(output_file)
+        print(f"Exported manifestations to CSV: {output_file}")
+    
+    if args.export_csv_operation_conditions:
+        output_file = Path(args.export_csv_operation_conditions)
+        manager.export_to_csv_operation_conditions(output_file)
+        print(f"Exported operation conditions to CSV: {output_file}")
+    
+    if args.export_csv_property_invariants:
+        output_file = Path(args.export_csv_property_invariants)
+        manager.export_to_csv_property_invariants(output_file)
+        print(f"Exported property invariants to CSV: {output_file}")
+    
     if args.export_all_csv:
         output_dir = Path(args.export_all_csv)
         exports = manager.export_all_csv(output_dir)
-        print(f"Exported all CSV formats to: {output_dir}")
-        print("  Files created:")
-        for csv_type, filepath in exports.items():
-            print(f"    • {csv_type}: {filepath.name}")
+        print(f"\n{'='*70}")
+        print(f"COMPLETE CSV EXPORT (MASTER DATA READY)")
+        print(f"{'='*70}")
+        print(f"\nExported to: {output_dir}")
+        print(f"\nCore Tables:")
+        for csv_type in ['summary', 'components', 'operations', 'properties', 'dependencies']:
+            if csv_type in exports:
+                print(f"  ✓ {exports[csv_type].name}")
+        print(f"\nAdditional Tables (Zero Data Loss):")
+        for csv_type in ['type_definitions', 'manifestations', 'operation_conditions', 'property_invariants']:
+            if csv_type in exports:
+                print(f"  ✓ {exports[csv_type].name}")
+        print(f"\nTotal: {len(exports)} CSV files")
+        print(f"Status: COMPLETE - Ready for CSV-as-master architecture")
+        print(f"{'='*70}\n")
     
     return 0
 

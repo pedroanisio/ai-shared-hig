@@ -1,114 +1,114 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$I = (graph, cache, invalidate, recompute)$</tuple-notation>
-    <components>
-      <component>
-        <name>graph</name>
-        <type>DAG⟨Node, Dependency⟩</type>
-        <notation>graph</notation>
-        <description>computation dependency graph</description>
-      </component>
-      <component>
-        <name>cache</name>
-        <type>Map⟨Node, Value⟩</type>
-        <notation>cache</notation>
-        <description>stores computed values</description>
-      </component>
-      <component>
-        <name>invalidate</name>
-        <type>Node → Set⟨Node⟩</type>
-        <notation>invalidate</notation>
-        <description>marks affected nodes</description>
-      </component>
-      <component>
-        <name>recompute</name>
-        <type>Node → Value</type>
-        <notation>recompute</notation>
-        <description>recomputes a single node</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Node</name>
-      <definition format="latex">(id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)</definition>
-    </type-def>
-    <type-def>
-      <name>Dependency</name>
-      <definition format="latex">(source: Node, target: Node)</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F2.3.1">
-      <name>Minimal Recomputation</name>
-      <formal-spec format="latex">∀n ∈ graph: recompute(n) ⇔ (invalidated(n) ∨ ∃d ∈ dependencies(n): invalidated(d))
-Only recompute what changed</formal-spec>
-    </property>
-    <property id="P.F2.3.2">
-      <name>Topological Order</name>
-      <formal-spec format="latex">∀n₁, n₂: dependency(n₁, n₂) ⇒ compute_order(n₁) &lt; compute_order(n₂)</formal-spec>
-    </property>
-    <property id="P.F2.3.3">
-      <name>Cache Consistency</name>
-      <formal-spec format="latex">∀n ∈ graph: cache[n] = last_computed_value(n) ∨ cache[n] = ⊥</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Update</name>
-      <signature>update(changed: Set⟨Node⟩) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F2.3" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$I = (graph, cache, invalidate, recompute)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>graph</ns0:name>
+        <ns0:type>DAG⟨Node, Dependency⟩</ns0:type>
+        <ns0:notation>graph</ns0:notation>
+        <ns0:description>computation dependency graph</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>cache</ns0:name>
+        <ns0:type>Map⟨Node, Value⟩</ns0:type>
+        <ns0:notation>cache</ns0:notation>
+        <ns0:description>stores computed values</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>invalidate</ns0:name>
+        <ns0:type>Node → Set⟨Node⟩</ns0:type>
+        <ns0:notation>invalidate</ns0:notation>
+        <ns0:description>marks affected nodes</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>recompute</ns0:name>
+        <ns0:type>Node → Value</ns0:type>
+        <ns0:notation>recompute</ns0:notation>
+        <ns0:description>recomputes a single node</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Node</ns0:name>
+      <ns0:definition format="latex">(id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Dependency</ns0:name>
+      <ns0:definition format="latex">(source: Node, target: Node)</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F2.3.1">
+      <ns0:name>Minimal Recomputation</ns0:name>
+      <ns0:formal-spec format="latex">∀n ∈ graph: recompute(n) ⇔ (invalidated(n) ∨ ∃d ∈ dependencies(n): invalidated(d))
+Only recompute what changed</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.3.2">
+      <ns0:name>Topological Order</ns0:name>
+      <ns0:formal-spec format="latex">∀n₁, n₂: dependency(n₁, n₂) ⇒ compute_order(n₁) &lt; compute_order(n₂)</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.3.3">
+      <ns0:name>Cache Consistency</ns0:name>
+      <ns0:formal-spec format="latex">∀n ∈ graph: cache[n] = last_computed_value(n) ∨ cache[n] = ⊥</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Update</ns0:name>
+      <ns0:signature>update(changed: Set⟨Node⟩) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    update(changed: Set⟨Node⟩) → Effect
    = affected := transitive_dependencies(changed)
      invalidate(affected)
      sorted := topological_sort(affected)
      for node in sorted:
-       cache[node] := recompute(node)</formal-definition>
-    </operation>
-    <operation>
-      <name>Invalidate</name>
-      <signature>invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩</signature>
-      <formal-definition format="latex">```
+       cache[node] := recompute(node)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Invalidate</ns0:name>
+      <ns0:signature>invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩</ns0:signature>
+      <ns0:formal-definition format="latex">```
    invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩
    = invalidated := nodes
      for node in nodes:
        for dependent in dependents(node):
          invalidated := invalidated ∪ invalidate({dependent})
-     return invalidated</formal-definition>
-    </operation>
-    <operation>
-      <name>Recompute</name>
-      <signature>recompute(node: Node) → Value</signature>
-      <formal-definition format="latex">```
+     return invalidated</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Recompute</ns0:name>
+      <ns0:signature>recompute(node: Node) → Value</ns0:signature>
+      <ns0:formal-definition format="latex">```
    recompute(node: Node) → Value
    = inputs := {cache[d] : d ∈ dependencies(node)}
-     return node.compute(inputs)</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>Spreadsheet recalculation</name>
-    </manifestation>
-    <manifestation>
-      <name>Build systems</name>
-      <description>Make, Bazel</description>
-    </manifestation>
-    <manifestation>
-      <name>Reactive frameworks</name>
-      <description>React, Vue</description>
-    </manifestation>
-    <manifestation>
-      <name>Query optimization</name>
-    </manifestation>
-    <manifestation>
-      <name>Dataflow programming</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+     return node.compute(inputs)</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>Spreadsheet recalculation</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Build systems</ns0:name>
+      <ns0:description>Make, Bazel</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Reactive frameworks</ns0:name>
+      <ns0:description>React, Vue</ns0:description>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Query optimization</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Dataflow programming</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

@@ -1,73 +1,73 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$A = (agents, coordinator, tasks, results)$</tuple-notation>
-    <components>
-      <component>
-        <name>agents</name>
-        <type>Set⟨Agent⟩</type>
-        <notation>agents</notation>
-        <description>available agents</description>
-      </component>
-      <component>
-        <name>coordinator</name>
-        <type>Task → Agent</type>
-        <notation>coordinator</notation>
-        <description>assigns tasks to agents</description>
-      </component>
-      <component>
-        <name>tasks</name>
-        <type>Queue⟨Task⟩</type>
-        <notation>tasks</notation>
-        <description>pending tasks</description>
-      </component>
-      <component>
-        <name>results</name>
-        <type>Map⟨Task, Result⟩</type>
-        <notation>results</notation>
-        <description>store task results</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>Agent</name>
-      <definition format="latex">(id: String, capabilities: Set⟨Capability⟩,</definition>
-    </type-def>
-    <type-def>
-      <name>Task</name>
-      <definition format="latex">(id: String, requirements: Set⟨Capability⟩,</definition>
-    </type-def>
-    <type-def>
-      <name>Result</name>
-      <definition format="latex">Success(value: Value) | Failure(error: Error)</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F2.2.1">
-      <name>Capability Matching</name>
-      <formal-spec format="latex">∀t ∈ tasks: coordinator(t) = a ⇒ t.requirements ⊆ a.capabilities</formal-spec>
-    </property>
-    <property id="P.F2.2.2">
-      <name>Load Balancing</name>
-      <formal-spec format="latex">distribution(agents) should be approximately uniform</formal-spec>
-    </property>
-    <property id="P.F2.2.3">
-      <name>Deadline Awareness</name>
-      <formal-spec format="latex">∀t ∈ tasks: priority(t) considers deadline(t)</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Orchestrate</name>
-      <signature>orchestrate(tasks: Queue⟨Task⟩) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F2.2" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$A = (agents, coordinator, tasks, results)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>agents</ns0:name>
+        <ns0:type>Set⟨Agent⟩</ns0:type>
+        <ns0:notation>agents</ns0:notation>
+        <ns0:description>available agents</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>coordinator</ns0:name>
+        <ns0:type>Task → Agent</ns0:type>
+        <ns0:notation>coordinator</ns0:notation>
+        <ns0:description>assigns tasks to agents</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>tasks</ns0:name>
+        <ns0:type>Queue⟨Task⟩</ns0:type>
+        <ns0:notation>tasks</ns0:notation>
+        <ns0:description>pending tasks</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>results</ns0:name>
+        <ns0:type>Map⟨Task, Result⟩</ns0:type>
+        <ns0:notation>results</ns0:notation>
+        <ns0:description>store task results</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>Agent</ns0:name>
+      <ns0:definition format="latex">(id: String, capabilities: Set⟨Capability⟩,</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Task</ns0:name>
+      <ns0:definition format="latex">(id: String, requirements: Set⟨Capability⟩,</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Result</ns0:name>
+      <ns0:definition format="latex">Success(value: Value) | Failure(error: Error)</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F2.2.1">
+      <ns0:name>Capability Matching</ns0:name>
+      <ns0:formal-spec format="latex">∀t ∈ tasks: coordinator(t) = a ⇒ t.requirements ⊆ a.capabilities</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.2.2">
+      <ns0:name>Load Balancing</ns0:name>
+      <ns0:formal-spec format="latex">distribution(agents) should be approximately uniform</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F2.2.3">
+      <ns0:name>Deadline Awareness</ns0:name>
+      <ns0:formal-spec format="latex">∀t ∈ tasks: priority(t) considers deadline(t)</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Orchestrate</ns0:name>
+      <ns0:signature>orchestrate(tasks: Queue⟨Task⟩) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    orchestrate(tasks: Queue⟨Task⟩) → Effect
    = while ¬empty(tasks):
        task := dequeue_by_priority(tasks)
@@ -75,44 +75,44 @@
        if agent.busy:
          re_enqueue(task)
        else:
-         assign(task, agent)</formal-definition>
-    </operation>
-    <operation>
-      <name>Assign Task</name>
-      <signature>assign(task: Task, agent: Agent) → Effect</signature>
-      <formal-definition format="latex">```
+         assign(task, agent)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Assign Task</ns0:name>
+      <ns0:signature>assign(task: Task, agent: Agent) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    assign(task: Task, agent: Agent) → Effect
    = agent.busy := true
      result := agent.execute(task)
      results[task] := result
      agent.busy := false
-     notify_completion(task, result)</formal-definition>
-    </operation>
-    <operation>
-      <name>Select Agent</name>
-      <signature>select_agent(task: Task) → Agent</signature>
-      <formal-definition format="latex">```
+     notify_completion(task, result)</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Select Agent</ns0:name>
+      <ns0:signature>select_agent(task: Task) → Agent</ns0:signature>
+      <ns0:formal-definition format="latex">```
    select_agent(task: Task) → Agent
    = available := {a ∈ agents : ¬a.busy ∧ task.requirements ⊆ a.capabilities}
      if empty(available): return null
-     return argmin(a ∈ available, load(a))</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>Multi-agent AI systems</name>
-    </manifestation>
-    <manifestation>
-      <name>Task distribution in distributed systems</name>
-    </manifestation>
-    <manifestation>
-      <name>Worker pool management</name>
-    </manifestation>
-    <manifestation>
-      <name>Microservice orchestration</name>
-    </manifestation>
-    <manifestation>
-      <name>Parallel computation frameworks</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+     return argmin(a ∈ available, load(a))</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>Multi-agent AI systems</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Task distribution in distributed systems</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Worker pool management</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Microservice orchestration</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Parallel computation frameworks</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>

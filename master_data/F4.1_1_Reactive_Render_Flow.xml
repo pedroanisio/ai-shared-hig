@@ -1,90 +1,90 @@
-<?xml version="1.0" ?>
-<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
-  <metadata>
-    <name/>
-    <category>pattern</category>
-    <status>stable</status>
-    <complexity>medium</complexity>
-  </metadata>
-  <definition>
-    <tuple-notation format="latex">$R = (state, render, diff, patch)$</tuple-notation>
-    <components>
-      <component>
-        <name>state</name>
-        <type>State</type>
-        <notation>state</notation>
-        <description>current application state</description>
-      </component>
-      <component>
-        <name>render</name>
-        <type>State → VirtualDOM</type>
-        <notation>render</notation>
-        <description>creates virtual representation</description>
-      </component>
-      <component>
-        <name>diff</name>
-        <type>VirtualDOM × VirtualDOM → Patch</type>
-        <notation>diff</notation>
-        <description>computes changes</description>
-      </component>
-      <component>
-        <name>patch</name>
-        <type>Patch → Effect</type>
-        <notation>patch</notation>
-        <description>applies changes to actual DOM</description>
-      </component>
-    </components>
-  </definition>
-  <type-definitions>
-    <type-def>
-      <name>State</name>
-      <definition format="latex">Application data that drives rendering</definition>
-    </type-def>
-    <type-def>
-      <name>VirtualDOM</name>
-      <definition format="latex">Tree representation of UI</definition>
-    </type-def>
-    <type-def>
-      <name>Patch</name>
-      <definition format="latex">Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move</definition>
-    </type-def>
-    <type-def>
-      <name>RealDOM</name>
-      <definition format="latex">Actual browser DOM</definition>
-    </type-def>
-  </type-definitions>
-  <properties>
-    <property id="P.F4.1.1">
-      <name>Reactivity</name>
-      <formal-spec format="latex">state changes → render(state) → diff → patch → updated DOM
-Automatic propagation</formal-spec>
-    </property>
-    <property id="P.F4.1.2">
-      <name>Minimal Updates</name>
-      <formal-spec format="latex">∀s₁, s₂ ∈ State: patch(diff(render(s₁), render(s₂))) applies minimal changes</formal-spec>
-    </property>
-    <property id="P.F4.1.3">
-      <name>Consistency</name>
-      <formal-spec format="latex">∀s ∈ State: visual_output(s) = render(s)
-What you see reflects state</formal-spec>
-    </property>
-  </properties>
-  <operations>
-    <operation>
-      <name>Update</name>
-      <signature>update(new_state: State) → Effect</signature>
-      <formal-definition format="latex">```
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:pattern xmlns:ns0="http://universal-corpus.org/schema/v1" id="F4.1" version="1.1">
+  <ns0:metadata>
+    <ns0:name />
+    <ns0:category>pattern</ns0:category>
+    <ns0:status>stable</ns0:status>
+    <ns0:complexity>medium</ns0:complexity>
+  </ns0:metadata>
+  <ns0:definition>
+    <ns0:tuple-notation format="latex">$R = (state, render, diff, patch)$</ns0:tuple-notation>
+    <ns0:components>
+      <ns0:component>
+        <ns0:name>state</ns0:name>
+        <ns0:type>State</ns0:type>
+        <ns0:notation>state</ns0:notation>
+        <ns0:description>current application state</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>render</ns0:name>
+        <ns0:type>State → VirtualDOM</ns0:type>
+        <ns0:notation>render</ns0:notation>
+        <ns0:description>creates virtual representation</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>diff</ns0:name>
+        <ns0:type>VirtualDOM × VirtualDOM → Patch</ns0:type>
+        <ns0:notation>diff</ns0:notation>
+        <ns0:description>computes changes</ns0:description>
+      </ns0:component>
+      <ns0:component>
+        <ns0:name>patch</ns0:name>
+        <ns0:type>Patch → Effect</ns0:type>
+        <ns0:notation>patch</ns0:notation>
+        <ns0:description>applies changes to actual DOM</ns0:description>
+      </ns0:component>
+    </ns0:components>
+  </ns0:definition>
+  <ns0:type-definitions>
+    <ns0:type-def>
+      <ns0:name>State</ns0:name>
+      <ns0:definition format="latex">Application data that drives rendering</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>VirtualDOM</ns0:name>
+      <ns0:definition format="latex">Tree representation of UI</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>Patch</ns0:name>
+      <ns0:definition format="latex">Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move</ns0:definition>
+    </ns0:type-def>
+    <ns0:type-def>
+      <ns0:name>RealDOM</ns0:name>
+      <ns0:definition format="latex">Actual browser DOM</ns0:definition>
+    </ns0:type-def>
+  </ns0:type-definitions>
+  <ns0:properties>
+    <ns0:property id="P.F4.1.1">
+      <ns0:name>Reactivity</ns0:name>
+      <ns0:formal-spec format="latex">state changes → render(state) → diff → patch → updated DOM
+Automatic propagation</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F4.1.2">
+      <ns0:name>Minimal Updates</ns0:name>
+      <ns0:formal-spec format="latex">∀s₁, s₂ ∈ State: patch(diff(render(s₁), render(s₂))) applies minimal changes</ns0:formal-spec>
+    </ns0:property>
+    <ns0:property id="P.F4.1.3">
+      <ns0:name>Consistency</ns0:name>
+      <ns0:formal-spec format="latex">∀s ∈ State: visual_output(s) = render(s)
+What you see reflects state</ns0:formal-spec>
+    </ns0:property>
+  </ns0:properties>
+  <ns0:operations>
+    <ns0:operation>
+      <ns0:name>Update</ns0:name>
+      <ns0:signature>update(new_state: State) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    update(new_state: State) → Effect
    = old_vdom := render(current_state)
      new_vdom := render(new_state)
      patch := diff(old_vdom, new_vdom)
      apply_patch(patch, real_dom)
-     current_state := new_state</formal-definition>
-    </operation>
-    <operation>
-      <name>Diff</name>
-      <signature>diff(old: VirtualDOM, new: VirtualDOM) → Patch</signature>
-      <formal-definition format="latex">```
+     current_state := new_state</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Diff</ns0:name>
+      <ns0:signature>diff(old: VirtualDOM, new: VirtualDOM) → Patch</ns0:signature>
+      <ns0:formal-definition format="latex">```
    diff(old: VirtualDOM, new: VirtualDOM) → Patch
    = if old = new: return []
      if different_type(old, new): return [Replace(old, new)]
@@ -93,36 +93,36 @@ What you see reflects state</formal-spec>
      else:
        ops := []
      ops := ops + diff_children(old.children, new.children)
-     return ops</formal-definition>
-    </operation>
-    <operation>
-      <name>Apply Patch</name>
-      <signature>apply_patch(patch: Patch, dom: RealDOM) → Effect</signature>
-      <formal-definition format="latex">```
+     return ops</ns0:formal-definition>
+    </ns0:operation>
+    <ns0:operation>
+      <ns0:name>Apply Patch</ns0:name>
+      <ns0:signature>apply_patch(patch: Patch, dom: RealDOM) → Effect</ns0:signature>
+      <ns0:formal-definition format="latex">```
    apply_patch(patch: Patch, dom: RealDOM) → Effect
    = for op in patch:
        case op of
          Insert(node, parent, index) → parent.insert_child(node, index)
          Update(node, props) → node.update_properties(props)
          Delete(node) → node.remove()
-         Move(node, new_parent, new_index) → move(node, new_parent, new_index)</formal-definition>
-    </operation>
-  </operations>
-  <manifestations>
-    <manifestation>
-      <name>React/Vue/Svelte rendering</name>
-    </manifestation>
-    <manifestation>
-      <name>Virtual DOM frameworks</name>
-    </manifestation>
-    <manifestation>
-      <name>Incremental rendering</name>
-    </manifestation>
-    <manifestation>
-      <name>Reactive UI libraries</name>
-    </manifestation>
-    <manifestation>
-      <name>Real-time dashboards</name>
-    </manifestation>
-  </manifestations>
-</pattern>
+         Move(node, new_parent, new_index) → move(node, new_parent, new_index)</ns0:formal-definition>
+    </ns0:operation>
+  </ns0:operations>
+  <ns0:manifestations>
+    <ns0:manifestation>
+      <ns0:name>React/Vue/Svelte rendering</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Virtual DOM frameworks</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Incremental rendering</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Reactive UI libraries</ns0:name>
+    </ns0:manifestation>
+    <ns0:manifestation>
+      <ns0:name>Real-time dashboards</ns0:name>
+    </ns0:manifestation>
+  </ns0:manifestations>
+</ns0:pattern>
