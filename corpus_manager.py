@@ -776,15 +776,16 @@ class CorpusManager:
         """
         Export corpus summary to CSV with one row per pattern.
         Includes metadata, counts, and key relationships.
+        
+        IMPROVED: Removes redundant/NULL columns, adds pattern_type detection.
         """
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'id', 'name', 'category', 'status', 'complexity',
-                'version', 'domains', 'tuple_notation',
+                'id', 'name', 'pattern_type', 'category', 'status', 'complexity',
+                'version', 'tuple_notation',
                 'component_count', 'type_def_count', 'property_count',
                 'operation_count', 'manifestation_count',
-                'requires', 'uses', 'specializes', 'specialized_by',
-                'has_circular_deps'
+                'dependency_count', 'has_circular_deps'
             ]
             
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -800,24 +801,37 @@ class CorpusManager:
             for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
                 pattern = self.patterns[pattern_id]
                 
+                # Detect pattern type from ID prefix
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
+                # Count total dependencies
+                dep_count = (len(pattern.dependencies.requires) + 
+                           len(pattern.dependencies.uses) +
+                           len(pattern.dependencies.specializes) +
+                           len(pattern.dependencies.specialized_by))
+                
                 writer.writerow({
                     'id': pattern.id,
                     'name': pattern.name,
+                    'pattern_type': pattern_type,
                     'category': pattern.category,
                     'status': pattern.status,
                     'complexity': pattern.complexity,
                     'version': pattern.version,
-                    'domains': '; '.join(pattern.domains) if pattern.domains else '',
                     'tuple_notation': pattern.tuple_notation,
                     'component_count': len(pattern.components),
                     'type_def_count': len(pattern.type_definitions),
                     'property_count': len(pattern.properties),
                     'operation_count': len(pattern.operations),
                     'manifestation_count': len(pattern.manifestations),
-                    'requires': '; '.join(pattern.dependencies.requires),
-                    'uses': '; '.join(pattern.dependencies.uses),
-                    'specializes': '; '.join(pattern.dependencies.specializes),
-                    'specialized_by': '; '.join(pattern.dependencies.specialized_by),
+                    'dependency_count': dep_count,
                     'has_circular_deps': 'yes' if pattern.id in patterns_in_cycles else 'no'
                 })
     
@@ -825,10 +839,12 @@ class CorpusManager:
         """
         Export all components to CSV with one row per component.
         Useful for analyzing component patterns across the corpus.
+        
+        IMPROVED: Added pattern_type column for better filtering.
         """
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'pattern_id', 'pattern_name', 'component_name',
+                'pattern_id', 'pattern_name', 'pattern_type', 'component_name',
                 'component_type', 'notation', 'description'
             ]
             
@@ -838,10 +854,21 @@ class CorpusManager:
             for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
                 pattern = self.patterns[pattern_id]
                 
+                # Detect pattern type
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
                 for component in pattern.components:
                     writer.writerow({
                         'pattern_id': pattern.id,
                         'pattern_name': pattern.name,
+                        'pattern_type': pattern_type,
                         'component_name': component.name,
                         'component_type': component.type,
                         'notation': component.notation,
@@ -852,10 +879,12 @@ class CorpusManager:
         """
         Export all operations to CSV with one row per operation.
         Useful for analyzing operation patterns and signatures.
+        
+        IMPROVED: Added pattern_type column, better text normalization.
         """
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'pattern_id', 'pattern_name', 'operation_name',
+                'pattern_id', 'pattern_name', 'pattern_type', 'operation_name',
                 'signature', 'formal_definition',
                 'precondition_count', 'postcondition_count', 'effect_count'
             ]
@@ -866,13 +895,27 @@ class CorpusManager:
             for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
                 pattern = self.patterns[pattern_id]
                 
+                # Detect pattern type
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
                 for operation in pattern.operations:
+                    # Clean formal definition for CSV
+                    formal_def = operation.formal_definition.replace('\n', ' ').strip()
+                    
                     writer.writerow({
                         'pattern_id': pattern.id,
                         'pattern_name': pattern.name,
+                        'pattern_type': pattern_type,
                         'operation_name': operation.name,
                         'signature': operation.signature,
-                        'formal_definition': operation.formal_definition.replace('\n', ' '),
+                        'formal_definition': formal_def,
                         'precondition_count': len(operation.preconditions),
                         'postcondition_count': len(operation.postconditions),
                         'effect_count': len(operation.effects)
@@ -882,12 +925,13 @@ class CorpusManager:
         """
         Export all properties to CSV with one row per property.
         Useful for analyzing formal specifications and invariants.
+        
+        IMPROVED: Removed empty description column (was 100% NULL).
         """
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'pattern_id', 'pattern_name', 'property_id',
-                'property_name', 'formal_spec', 'description',
-                'invariant_count'
+                'pattern_id', 'pattern_name', 'pattern_type', 'property_id',
+                'property_name', 'formal_spec', 'invariant_count'
             ]
             
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -896,14 +940,24 @@ class CorpusManager:
             for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
                 pattern = self.patterns[pattern_id]
                 
+                # Detect pattern type
+                if pattern.id and pattern.id[0] == 'C':
+                    pattern_type = 'concept'
+                elif pattern.id and pattern.id[0] == 'F':
+                    pattern_type = 'flow'
+                elif pattern.id and pattern.id[0] == 'P':
+                    pattern_type = 'pattern'
+                else:
+                    pattern_type = 'unknown'
+                
                 for prop in pattern.properties:
                     writer.writerow({
                         'pattern_id': pattern.id,
                         'pattern_name': pattern.name,
+                        'pattern_type': pattern_type,
                         'property_id': prop.id,
                         'property_name': prop.name,
                         'formal_spec': prop.formal_spec.replace('\n', ' '),
-                        'description': prop.description,
                         'invariant_count': len(prop.invariants)
                     })
     
