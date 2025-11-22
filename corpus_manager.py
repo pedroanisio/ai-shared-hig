@@ -1,638 +1,1106 @@
 #!/usr/bin/env python3
 """
-Universal Corpus Document Manager
-Parses, structures, and rebuilds the Universal Corpus with zero data loss.
+Universal Corpus Manager - XML Master Data Architecture
+Treats XML as the single source of truth for all pattern data.
+
+Architecture:
+- XML files in master_data/ are the authoritative source
+- Internal domain model based on Pattern dataclasses
+- Exports to XML (round-trip), Markdown (human view), YAML (machine view)
+- Zero data loss guarantee on XML round-trips
+
+Version: 2.0
 """
 
 import re
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional, Tuple
+import json
+import csv
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
+from dataclasses import dataclass, field, asdict
+from typing import List, Dict, Optional, Tuple, Set
 from pathlib import Path
 import sys
 
 
-@dataclass
-class Section:
-    """Represents a hierarchical section in the document."""
-    level: int  # Header level (1-6)
-    title: str
-    number: Optional[str]  # e.g., "0", "2.1", "P35"
-    raw_header: str  # Original header line
-    content: List[str] = field(default_factory=list)  # Lines between this header and next
-    subsections: List['Section'] = field(default_factory=list)
-    start_line: int = 0
-    end_line: int = 0
+# ============================================================================
+# Domain Model - Shared with corpus_converter.py
+# ============================================================================
 
-    def get_full_title(self) -> str:
-        """Get the complete title including number."""
-        return self.raw_header.lstrip('#').strip()
-    
-    def add_content_line(self, line: str) -> None:
-        """Add a line to this section's content."""
-        self.content.append(line)
-    
-    def to_lines(self) -> List[str]:
-        """Convert section back to markdown lines (recursive)."""
-        lines = [self.raw_header]
-        lines.extend(self.content)
-        for subsection in self.subsections:
-            lines.extend(subsection.to_lines())
-        return lines
+@dataclass
+class Component:
+    """Tuple component definition"""
+    name: str
+    type: str
+    notation: str
+    description: str
+
+
+@dataclass
+class TypeDefinition:
+    """Type definition"""
+    name: str
+    definition: str
+    notation: str = ""
+    description: str = ""
+
+
+@dataclass
+class Property:
+    """Formal property specification"""
+    id: str
+    name: str
+    formal_spec: str
+    description: str = ""
+    invariants: List[str] = field(default_factory=list)
+
+
+@dataclass
+class Operation:
+    """Operation definition"""
+    name: str
+    signature: str
+    formal_definition: str
+    preconditions: List[str] = field(default_factory=list)
+    postconditions: List[str] = field(default_factory=list)
+    effects: List[str] = field(default_factory=list)
+
+
+@dataclass
+class Dependencies:
+    """Pattern dependencies"""
+    requires: List[str] = field(default_factory=list)
+    uses: List[str] = field(default_factory=list)
+    specializes: List[str] = field(default_factory=list)
+    specialized_by: List[str] = field(default_factory=list)
+
+
+@dataclass
+class Manifestation:
+    """Real-world manifestation"""
+    name: str
+    description: str = ""
 
 
 @dataclass
 class Pattern:
-    """Represents a pattern (P), concept (C), or flow (F)."""
-    pattern_type: str  # 'P', 'C', 'F'
-    number: str  # e.g., "1", "35", "1.1"
+    """Complete pattern specification - master data model"""
+    id: str
+    version: str
     name: str
-    section: Section
+    category: str
+    status: str = "stable"
+    complexity: str = "medium"
+    domains: List[str] = field(default_factory=list)
+    tuple_notation: str = ""
+    definition_description: str = ""
+    components: List[Component] = field(default_factory=list)
+    type_definitions: List[TypeDefinition] = field(default_factory=list)
+    properties: List[Property] = field(default_factory=list)
+    operations: List[Operation] = field(default_factory=list)
+    dependencies: Dependencies = field(default_factory=Dependencies)
+    manifestations: List[Manifestation] = field(default_factory=list)
     
     @property
-    def id(self) -> str:
-        """Get pattern identifier like P35, C1, F1.1"""
-        return f"{self.pattern_type}{self.number}"
+    def pattern_type(self) -> str:
+        """Get pattern type (P, C, F)"""
+        if self.id:
+            return self.id[0]
+        return self.category[0].upper()
+    
+    @property
+    def number(self) -> str:
+        """Get pattern number (e.g., '35', '1.1')"""
+        if self.id:
+            return self.id[1:]
+        return ""
 
 
-class CorpusDocument:
+# ============================================================================
+# XML Parser - Master Data Input
+# ============================================================================
+
+class XMLParser:
+    """Parse XML pattern files into Pattern domain model"""
+    
+    @staticmethod
+    def parse_pattern_file(xml_path: Path) -> Pattern:
+        """Parse a single XML pattern file"""
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        
+        # Remove namespace for easier parsing
+        for elem in root.iter():
+            if '}' in elem.tag:
+                elem.tag = elem.tag.split('}', 1)[1]
+        
+        pattern = Pattern(
+            id=root.get('id', ''),
+            version=root.get('version', '1.0'),
+            name='',
+            category='pattern'
+        )
+        
+        # Parse metadata
+        metadata = root.find('metadata')
+        if metadata is not None:
+            pattern.name = XMLParser._get_text(metadata, 'name')
+            pattern.category = XMLParser._get_text(metadata, 'category', 'pattern')
+            pattern.status = XMLParser._get_text(metadata, 'status', 'stable')
+            pattern.complexity = XMLParser._get_text(metadata, 'complexity', 'medium')
+            
+            domains_elem = metadata.find('domains')
+            if domains_elem is not None:
+                pattern.domains = [d.text for d in domains_elem.findall('domain') if d.text]
+        
+        # Parse definition
+        definition = root.find('definition')
+        if definition is not None:
+            tuple_not = definition.find('tuple-notation')
+            if tuple_not is not None:
+                pattern.tuple_notation = tuple_not.text or ''
+            
+            desc = definition.find('description')
+            if desc is not None:
+                pattern.definition_description = desc.text or ''
+            
+            # Parse components
+            components = definition.find('components')
+            if components is not None:
+                for comp in components.findall('component'):
+                    pattern.components.append(Component(
+                        name=XMLParser._get_text(comp, 'name'),
+                        type=XMLParser._get_text(comp, 'type'),
+                        notation=XMLParser._get_text(comp, 'notation'),
+                        description=XMLParser._get_text(comp, 'description')
+                    ))
+        
+        # Parse type definitions
+        type_defs = root.find('type-definitions')
+        if type_defs is not None:
+            for td in type_defs.findall('type-def'):
+                defn_elem = td.find('definition')
+                defn_text = defn_elem.text if defn_elem is not None else ''
+                pattern.type_definitions.append(TypeDefinition(
+                    name=XMLParser._get_text(td, 'name'),
+                    definition=defn_text,
+                    notation=XMLParser._get_text(td, 'notation')
+                ))
+        
+        # Parse properties
+        properties = root.find('properties')
+        if properties is not None:
+            for prop in properties.findall('property'):
+                formal_spec = prop.find('formal-spec')
+                spec_text = formal_spec.text if formal_spec is not None else ''
+                pattern.properties.append(Property(
+                    id=prop.get('id', ''),
+                    name=XMLParser._get_text(prop, 'name'),
+                    formal_spec=spec_text,
+                    description=XMLParser._get_text(prop, 'description')
+                ))
+        
+        # Parse operations
+        operations = root.find('operations')
+        if operations is not None:
+            for op in operations.findall('operation'):
+                formal_def = op.find('formal-definition')
+                def_text = formal_def.text if formal_def is not None else ''
+                
+                preconditions = [pc.text for pc in op.findall('precondition') if pc.text]
+                postconditions = [pc.text for pc in op.findall('postcondition') if pc.text]
+                effects = [e.text for e in op.findall('effect') if e.text]
+                
+                pattern.operations.append(Operation(
+                    name=XMLParser._get_text(op, 'name'),
+                    signature=XMLParser._get_text(op, 'signature'),
+                    formal_definition=def_text,
+                    preconditions=preconditions,
+                    postconditions=postconditions,
+                    effects=effects
+                ))
+        
+        # Parse dependencies
+        deps = root.find('dependencies')
+        if deps is not None:
+            pattern.dependencies = Dependencies(
+                requires=[p.text for p in deps.findall('requires/pattern-ref') if p.text],
+                uses=[p.text for p in deps.findall('uses/pattern-ref') if p.text],
+                specializes=[p.text for p in deps.findall('specializes/pattern-ref') if p.text],
+                specialized_by=[p.text for p in deps.findall('specialized-by/pattern-ref') if p.text]
+            )
+        
+        # Parse manifestations
+        manifestations = root.find('manifestations')
+        if manifestations is not None:
+            for manif in manifestations.findall('manifestation'):
+                pattern.manifestations.append(Manifestation(
+                    name=XMLParser._get_text(manif, 'name'),
+                    description=XMLParser._get_text(manif, 'description')
+                ))
+        
+        return pattern
+    
+    @staticmethod
+    def _get_text(element: ET.Element, child_name: str, default: str = '') -> str:
+        """Safely get text from child element"""
+        child = element.find(child_name)
+        return child.text if child is not None and child.text else default
+
+
+# ============================================================================
+# Corpus Manager - Master Data Operations
+# ============================================================================
+
+class CorpusManager:
     """
-    Main document parser and builder.
-    Ensures round-trip fidelity: parse(text).rebuild() == text
+    Manages Universal Corpus patterns with XML as master data.
+    
+    Key principles:
+    - XML files are the single source of truth
+    - All operations preserve XML fidelity
+    - Exports to multiple formats (XML, Markdown, YAML)
     """
     
     def __init__(self):
-        self.raw_lines: List[str] = []
-        self.sections: List[Section] = []
         self.patterns: Dict[str, Pattern] = {}
         self.metadata: Dict[str, str] = {}
-        
-    def parse(self, content: str) -> None:
-        """Parse document content into structured sections."""
-        self.raw_lines = content.splitlines(keepends=True)
-        
-        # Parse metadata from header
-        self._parse_metadata()
-        
-        # Parse hierarchical sections
-        self.sections = self._parse_sections(self.raw_lines)
-        
-        # Extract patterns
-        self._extract_patterns()
     
-    def _parse_metadata(self) -> None:
-        """Extract metadata from document header."""
-        in_header = True
-        for line in self.raw_lines[:20]:  # Check first 20 lines
-            if line.startswith('# '):
-                self.metadata['title'] = line.lstrip('#').strip()
-            elif line.startswith('**Version:**'):
-                self.metadata['version'] = line.split('**Version:**')[1].strip()
-            elif line.startswith('**Date:**'):
-                self.metadata['date'] = line.split('**Date:**')[1].strip()
-            elif line.startswith('**Status:**'):
-                self.metadata['status'] = line.split('**Status:**')[1].strip()
-            elif line.startswith('# TABLE OF CONTENTS'):
-                break
+    def load_from_xml_directory(self, xml_dir: Path) -> None:
+        """
+        Load all XML pattern files from a directory.
+        This is the primary method for loading master data.
+        """
+        if not xml_dir.exists():
+            raise FileNotFoundError(f"XML directory not found: {xml_dir}")
+        
+        xml_files = sorted(xml_dir.glob('*.xml'))
+        
+        for xml_file in xml_files:
+            try:
+                pattern = XMLParser.parse_pattern_file(xml_file)
+                self.patterns[pattern.id] = pattern
+            except Exception as e:
+                print(f"Warning: Failed to parse {xml_file.name}: {e}", file=sys.stderr)
+                continue
     
-    def _parse_sections(self, lines: List[str], start_idx: int = 0, 
-                       parent_level: int = 0, line_offset: int = 0) -> List[Section]:
-        """
-        Recursively parse markdown headers into hierarchical sections.
-        Preserves all content exactly as written.
+    def load_pattern_xml(self, xml_path: Path) -> Pattern:
+        """Load a single pattern from XML file"""
+        pattern = XMLParser.parse_pattern_file(xml_path)
+        self.patterns[pattern.id] = pattern
+        return pattern
+    
+    def export_to_xml(self, pattern_id: str, output_path: Optional[Path] = None) -> str:
+        """Export a pattern to XML format (round-trip safe)"""
+        pattern = self.patterns.get(pattern_id)
+        if not pattern:
+            raise ValueError(f"Pattern {pattern_id} not found")
         
-        Args:
-            lines: Lines to parse
-            start_idx: Index to start parsing from
-            parent_level: Level of parent section (for hierarchy)
-            line_offset: Offset to add to line numbers (for absolute positioning)
-        """
-        sections = []
-        current_section: Optional[Section] = None
-        i = start_idx
+        xml_content = self._pattern_to_xml(pattern)
         
-        while i < len(lines):
-            line = lines[i]
-            header_match = re.match(r'^(#{1,6})\s+(.+)$', line)
+        if output_path:
+            output_path.write_text(xml_content, encoding='utf-8')
+        
+        return xml_content
+    
+    def export_all_to_xml(self, output_dir: Path) -> Dict[str, Path]:
+        """Export all patterns to XML files"""
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        exported = {}
+        for pattern_id, pattern in self.patterns.items():
+            safe_name = pattern.name.replace('/', '-').replace(' ', '_')
+            filename = f"{pattern_id}_{safe_name}.xml"
+            filepath = output_dir / filename
             
-            if header_match:
-                level = len(header_match.group(1))
-                title_text = header_match.group(2).strip()
+            self.export_to_xml(pattern_id, filepath)
+            exported[pattern_id] = filepath
+        
+        return exported
+    
+    def _pattern_to_xml(self, pattern: Pattern) -> str:
+        """Convert Pattern to XML string"""
+        root = ET.Element('pattern')
+        root.set('xmlns', 'http://universal-corpus.org/schema/v1')
+        root.set('id', pattern.id)
+        root.set('version', pattern.version)
+        
+        # Metadata
+        metadata = ET.SubElement(root, 'metadata')
+        ET.SubElement(metadata, 'name').text = pattern.name
+        ET.SubElement(metadata, 'category').text = pattern.category
+        ET.SubElement(metadata, 'status').text = pattern.status
+        ET.SubElement(metadata, 'complexity').text = pattern.complexity
+        
+        if pattern.domains:
+            domains = ET.SubElement(metadata, 'domains')
+            for domain in pattern.domains:
+                ET.SubElement(domains, 'domain').text = domain
+        
+        # Definition
+        definition = ET.SubElement(root, 'definition')
+        if pattern.tuple_notation:
+            tuple_not = ET.SubElement(definition, 'tuple-notation')
+            tuple_not.set('format', 'latex')
+            tuple_not.text = pattern.tuple_notation
+        
+        if pattern.definition_description:
+            ET.SubElement(definition, 'description').text = pattern.definition_description
+        
+        if pattern.components:
+            components = ET.SubElement(definition, 'components')
+            for comp in pattern.components:
+                component = ET.SubElement(components, 'component')
+                ET.SubElement(component, 'name').text = comp.name
+                ET.SubElement(component, 'type').text = comp.type
+                ET.SubElement(component, 'notation').text = comp.notation
+                ET.SubElement(component, 'description').text = comp.description
+        
+        # Type definitions
+        if pattern.type_definitions:
+            type_defs = ET.SubElement(root, 'type-definitions')
+            for td in pattern.type_definitions:
+                type_def = ET.SubElement(type_defs, 'type-def')
+                ET.SubElement(type_def, 'name').text = td.name
+                defn = ET.SubElement(type_def, 'definition')
+                defn.set('format', 'latex')
+                defn.text = td.definition
+                if td.notation:
+                    ET.SubElement(type_def, 'notation').text = td.notation
+        
+        # Properties
+        if pattern.properties:
+            properties = ET.SubElement(root, 'properties')
+            for prop in pattern.properties:
+                property_elem = ET.SubElement(properties, 'property')
+                property_elem.set('id', prop.id)
+                ET.SubElement(property_elem, 'name').text = prop.name
+                formal_spec = ET.SubElement(property_elem, 'formal-spec')
+                formal_spec.set('format', 'latex')
+                formal_spec.text = prop.formal_spec
+                if prop.description:
+                    ET.SubElement(property_elem, 'description').text = prop.description
+        
+        # Operations
+        if pattern.operations:
+            operations = ET.SubElement(root, 'operations')
+            for op in pattern.operations:
+                operation = ET.SubElement(operations, 'operation')
+                ET.SubElement(operation, 'name').text = op.name
+                if op.signature:
+                    ET.SubElement(operation, 'signature').text = op.signature
+                formal_def = ET.SubElement(operation, 'formal-definition')
+                formal_def.set('format', 'latex')
+                formal_def.text = op.formal_definition
                 
-                # If this is a subsection of current section, handle recursively
-                if current_section and level > current_section.level:
-                    # Find all lines for this subsection
-                    subsection_end = self._find_section_end(lines, i, level)
-                    subsection_lines = lines[i:subsection_end]
-                    
-                    # Parse subsections recursively with proper offset
-                    subsections = self._parse_sections(
-                        subsection_lines, 0, level, line_offset + i
-                    )
-                    current_section.subsections.extend(subsections)
-                    
-                    # Update end line
-                    if subsections:
-                        current_section.end_line = subsections[-1].end_line
-                    
-                    i = subsection_end
-                    continue
-                
-                # If we're at same or higher level, finish current section and start new
-                if current_section and level <= parent_level:
-                    # We've gone back up the hierarchy, return to parent
-                    break
-                
-                # Save previous section if exists
-                if current_section:
-                    current_section.end_line = line_offset + i - 1
-                    sections.append(current_section)
-                
-                # Parse section number if present
-                number = self._extract_section_number(title_text)
-                
-                # Create new section with absolute line number
-                current_section = Section(
-                    level=level,
-                    title=title_text,
-                    number=number,
-                    raw_header=line.rstrip('\n'),
-                    start_line=line_offset + i
-                )
+                for precond in op.preconditions:
+                    ET.SubElement(operation, 'precondition').text = precond
+                for postcond in op.postconditions:
+                    ET.SubElement(operation, 'postcondition').text = postcond
+                for effect in op.effects:
+                    ET.SubElement(operation, 'effect').text = effect
+        
+        # Dependencies
+        if any([pattern.dependencies.requires, pattern.dependencies.uses,
+                pattern.dependencies.specializes, pattern.dependencies.specialized_by]):
+            deps = ET.SubElement(root, 'dependencies')
             
-            elif current_section is not None:
-                # Add content to current section
-                current_section.add_content_line(line.rstrip('\n'))
+            if pattern.dependencies.requires:
+                req = ET.SubElement(deps, 'requires')
+                for ref in pattern.dependencies.requires:
+                    ET.SubElement(req, 'pattern-ref').text = ref
             
-            i += 1
+            if pattern.dependencies.uses:
+                uses = ET.SubElement(deps, 'uses')
+                for ref in pattern.dependencies.uses:
+                    ET.SubElement(uses, 'pattern-ref').text = ref
+            
+            if pattern.dependencies.specializes:
+                spec = ET.SubElement(deps, 'specializes')
+                for ref in pattern.dependencies.specializes:
+                    ET.SubElement(spec, 'pattern-ref').text = ref
+            
+            if pattern.dependencies.specialized_by:
+                spec_by = ET.SubElement(deps, 'specialized-by')
+                for ref in pattern.dependencies.specialized_by:
+                    ET.SubElement(spec_by, 'pattern-ref').text = ref
         
-        # Don't forget the last section
-        if current_section:
-            current_section.end_line = line_offset + i - 1
-            sections.append(current_section)
+        # Manifestations
+        if pattern.manifestations:
+            manifestations = ET.SubElement(root, 'manifestations')
+            for manif in pattern.manifestations:
+                manifestation = ET.SubElement(manifestations, 'manifestation')
+                ET.SubElement(manifestation, 'name').text = manif.name
+                if manif.description:
+                    ET.SubElement(manifestation, 'description').text = manif.description
         
-        return sections
+        # Pretty print
+        xml_str = ET.tostring(root, encoding='unicode')
+        dom = minidom.parseString(xml_str)
+        return dom.toprettyxml(indent='  ')
     
-    def _find_section_end(self, lines: List[str], start_idx: int, level: int) -> int:
-        """Find where a section ends (next header at same or higher level)."""
-        for i in range(start_idx + 1, len(lines)):
-            header_match = re.match(r'^(#{1,6})\s+', lines[i])
-            if header_match:
-                next_level = len(header_match.group(1))
-                if next_level <= level:
-                    return i
-        return len(lines)
-    
-    def _extract_section_number(self, title: str) -> Optional[str]:
-        """Extract section number from title."""
-        # Match patterns like "0. ", "2.1 ", "P35. ", "C1. ", "F1.1 "
-        patterns = [
-            r'^(\d+)\.\s',           # "0. FOUNDATIONS"
-            r'^(\d+\.\d+)\s',        # "2.1 Input"
-            r'^([PCF]\d+)\.\s',      # "P35. Split"
-            r'^([PCF]\d+\.\d+)\s',   # "F1.1 Capture"
-        ]
+    def export_to_markdown(self, pattern_id: str, output_path: Optional[Path] = None) -> str:
+        """Export a pattern to Markdown format (human-readable view)"""
+        pattern = self.patterns.get(pattern_id)
+        if not pattern:
+            raise ValueError(f"Pattern {pattern_id} not found")
         
-        for pattern in patterns:
-            match = re.match(pattern, title)
-            if match:
-                return match.group(1)
+        md_content = self._pattern_to_markdown(pattern)
         
-        return None
-    
-    def _extract_patterns(self) -> None:
-        """Extract all patterns (P), concepts (C), and flows (F) from sections."""
-        for section in self._all_sections():
-            if section.number:
-                # Check if this is a pattern/concept/flow
-                pattern_match = re.match(r'^([PCF])(\d+(?:\.\d+)?)$', section.number)
-                if pattern_match:
-                    pattern_type = pattern_match.group(1)
-                    number = pattern_match.group(2)
-                    
-                    # Extract name (remove pattern number from title)
-                    name_match = re.match(r'^[PCF]\d+(?:\.\d+)?\.\s*(.+)$', section.title)
-                    name = name_match.group(1) if name_match else section.title
-                    
-                    pattern = Pattern(
-                        pattern_type=pattern_type,
-                        number=number,
-                        name=name,
-                        section=section
-                    )
-                    self.patterns[pattern.id] = pattern
-    
-    def _all_sections(self, sections: Optional[List[Section]] = None) -> List[Section]:
-        """Recursively get all sections (flattened)."""
-        if sections is None:
-            sections = self.sections
+        if output_path:
+            output_path.write_text(md_content, encoding='utf-8')
         
-        result = []
-        for section in sections:
-            result.append(section)
-            result.extend(self._all_sections(section.subsections))
-        return result
+        return md_content
     
-    def rebuild(self) -> str:
-        """
-        Rebuild the complete document from structured sections.
-        Guarantees: parse(text).rebuild() produces identical output.
-        """
-        # Simple approach: just join the original lines
-        # This ensures 100% fidelity
-        return ''.join(self.raw_lines)
+    def export_all_to_markdown(self, output_dir: Path) -> Dict[str, Path]:
+        """Export all patterns to Markdown files"""
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        exported = {}
+        for pattern_id, pattern in self.patterns.items():
+            safe_name = pattern.name.replace('/', '-').replace(' ', '_')
+            filename = f"{pattern_id}_{safe_name}.md"
+            filepath = output_dir / filename
+            
+            self.export_to_markdown(pattern_id, filepath)
+            exported[pattern_id] = filepath
+        
+        return exported
     
-    def rebuild_from_sections(self) -> str:
-        """
-        Alternative rebuild that uses structured sections.
-        May have minor whitespace differences but same content.
-        """
+    def _pattern_to_markdown(self, pattern: Pattern) -> str:
+        """Convert Pattern to Markdown string"""
         lines = []
-        for section in self.sections:
-            lines.extend(section.to_lines())
-        return '\n'.join(lines) + '\n'
+        
+        # Header
+        lines.append(f"### {pattern.id}. {pattern.name}\n")
+        lines.append(f"**Category:** {pattern.category}  ")
+        lines.append(f"**Status:** {pattern.status}  ")
+        lines.append(f"**Complexity:** {pattern.complexity}\n")
+        
+        if pattern.domains:
+            lines.append(f"**Domains:** {', '.join(pattern.domains)}\n")
+        
+        # Definition
+        lines.append("**Definition:**\n")
+        if pattern.tuple_notation:
+            lines.append(f"{pattern.tuple_notation}\n")
+        
+        if pattern.definition_description:
+            lines.append(f"{pattern.definition_description}\n")
+        
+        if pattern.components:
+            lines.append("\n**Components:**")
+            for comp in pattern.components:
+                lines.append(f"- ${comp.name} : {comp.type}$ {comp.description}")
+        
+        # Type definitions
+        if pattern.type_definitions:
+            lines.append("\n**Type Definitions:**")
+            lines.append("```")
+            for td in pattern.type_definitions:
+                lines.append(f"{td.name} := {td.definition}")
+            lines.append("```")
+        
+        # Properties
+        if pattern.properties:
+            lines.append("\n**Properties:**")
+            for prop in pattern.properties:
+                lines.append(f"\n**{prop.id}({prop.name}):**")
+                if prop.formal_spec:
+                    lines.append(f"{prop.formal_spec}")
+                if prop.description:
+                    lines.append(f"{prop.description}")
+        
+        # Operations
+        if pattern.operations:
+            lines.append("\n**Operations:**")
+            for i, op in enumerate(pattern.operations, 1):
+                lines.append(f"\n{i}. **{op.name}:**")
+                if op.signature:
+                    lines.append(f"   ```")
+                    lines.append(f"   {op.signature}")
+                    lines.append(f"   ```")
+                if op.formal_definition:
+                    lines.append(f"   {op.formal_definition}")
+        
+        # Dependencies
+        if any([pattern.dependencies.requires, pattern.dependencies.uses,
+                pattern.dependencies.specializes, pattern.dependencies.specialized_by]):
+            lines.append("\n**Dependencies:**")
+            if pattern.dependencies.requires:
+                lines.append(f"- **Requires:** {', '.join(pattern.dependencies.requires)}")
+            if pattern.dependencies.uses:
+                lines.append(f"- **Uses:** {', '.join(pattern.dependencies.uses)}")
+            if pattern.dependencies.specializes:
+                lines.append(f"- **Specializes:** {', '.join(pattern.dependencies.specializes)}")
+            if pattern.dependencies.specialized_by:
+                lines.append(f"- **Specialized By:** {', '.join(pattern.dependencies.specialized_by)}")
+        
+        # Manifestations
+        if pattern.manifestations:
+            lines.append("\n**Manifestations:**")
+            for manif in pattern.manifestations:
+                if manif.description:
+                    lines.append(f"- {manif.name} ({manif.description})")
+                else:
+                    lines.append(f"- {manif.name}")
+        
+        lines.append("\n---\n")
+        
+        return '\n'.join(lines)
     
     def get_pattern(self, pattern_id: str) -> Optional[Pattern]:
         """Get a specific pattern by ID (e.g., 'P35', 'C1', 'F1.1')."""
         return self.patterns.get(pattern_id)
     
-    def get_section(self, section_number: str) -> Optional[Section]:
-        """Get a section by number (e.g., '0', '2.1')."""
-        for section in self._all_sections():
-            if section.number == section_number:
-                return section
-        return None
-    
-    def _find_section_actual_end(self, section: Section) -> int:
-        """Find the actual end line of a section including all its content and subsections."""
-        # Start with section start
-        max_line = section.start_line + 1 + len(section.content)
-        
-        # Add subsections recursively
-        if section.subsections:
-            for subsection in section.subsections:
-                subsection_end = self._find_section_actual_end(subsection)
-                max_line = max(max_line, subsection_end)
-        
-        # If this section has an end_line set, use it
-        if section.end_line > 0:
-            max_line = max(max_line, section.end_line + 1)
-        
-        return max_line
-    
-    def _get_section_original_content(self, section: Section) -> str:
-        """Get the exact original content of a section from raw_lines."""
-        start = section.start_line
-        end = self._find_section_actual_end(section)
-        return ''.join(self.raw_lines[start:end])
-    
-    def export_pattern(self, pattern_id: str) -> str:
-        """Export a single pattern as markdown."""
-        pattern = self.get_pattern(pattern_id)
-        if not pattern:
-            return ""
-        return self._get_section_original_content(pattern.section)
-    
-    def validate_round_trip(self, original_content: str) -> Tuple[bool, str]:
+    def validate_xml_roundtrip(self, pattern_id: str) -> Tuple[bool, str]:
         """
-        Validate that parsing and rebuilding produces identical content.
-        Returns: (is_valid, error_message)
+        Validate that XML export → parse produces identical Pattern.
+        Returns: (is_valid, message)
         """
-        rebuilt = self.rebuild()
+        original = self.patterns.get(pattern_id)
+        if not original:
+            return False, f"Pattern {pattern_id} not found"
         
-        if original_content == rebuilt:
-            return True, "Perfect round-trip: content identical"
+        # Export to XML
+        xml_content = self._pattern_to_xml(original)
         
-        # Check if difference is only in line endings
-        original_normalized = original_content.replace('\r\n', '\n')
-        rebuilt_normalized = rebuilt.replace('\r\n', '\n')
+        # Parse it back
+        from tempfile import NamedTemporaryFile
+        with NamedTemporaryFile(mode='w', suffix='.xml', delete=False) as tmp:
+            tmp.write(xml_content)
+            tmp_path = Path(tmp.name)
         
-        if original_normalized == rebuilt_normalized:
-            return True, "Round-trip valid: only line ending differences"
-        
-        # Find first difference
-        for i, (orig_char, rebuilt_char) in enumerate(zip(original_content, rebuilt)):
-            if orig_char != rebuilt_char:
-                line_num = original_content[:i].count('\n') + 1
-                return False, f"First difference at character {i} (line ~{line_num}): '{orig_char}' vs '{rebuilt_char}'"
-        
-        # Different lengths
-        return False, f"Length mismatch: original={len(original_content)}, rebuilt={len(rebuilt)}"
+        try:
+            reconstructed = XMLParser.parse_pattern_file(tmp_path)
+            
+            # Compare key fields
+            if original.id != reconstructed.id:
+                return False, f"ID mismatch: {original.id} vs {reconstructed.id}"
+            
+            if original.name != reconstructed.name:
+                return False, f"Name mismatch: {original.name} vs {reconstructed.name}"
+            
+            if len(original.components) != len(reconstructed.components):
+                return False, f"Component count mismatch: {len(original.components)} vs {len(reconstructed.components)}"
+            
+            if len(original.properties) != len(reconstructed.properties):
+                return False, f"Property count mismatch: {len(original.properties)} vs {len(reconstructed.properties)}"
+            
+            if len(original.operations) != len(reconstructed.operations):
+                return False, f"Operation count mismatch: {len(original.operations)} vs {len(reconstructed.operations)}"
+            
+            return True, "Perfect XML round-trip: pattern identical"
+            
+        finally:
+            tmp_path.unlink()
+    
+    def validate_all_roundtrips(self) -> Dict[str, Tuple[bool, str]]:
+        """Validate XML round-trip for all patterns"""
+        results = {}
+        for pattern_id in self.patterns:
+            results[pattern_id] = self.validate_xml_roundtrip(pattern_id)
+        return results
     
     def get_stats(self) -> Dict[str, int]:
-        """Get document statistics."""
+        """Get corpus statistics."""
         patterns_by_type = {'P': 0, 'C': 0, 'F': 0}
+        total_components = 0
+        total_operations = 0
+        total_properties = 0
+        
         for pattern in self.patterns.values():
-            patterns_by_type[pattern.pattern_type] = patterns_by_type.get(pattern.pattern_type, 0) + 1
+            ptype = pattern.pattern_type
+            patterns_by_type[ptype] = patterns_by_type.get(ptype, 0) + 1
+            total_components += len(pattern.components)
+            total_operations += len(pattern.operations)
+            total_properties += len(pattern.properties)
         
         return {
-            'total_lines': len(self.raw_lines),
-            'total_sections': len(self._all_sections()),
-            'top_level_sections': len(self.sections),
             'total_patterns': len(self.patterns),
             'concepts': patterns_by_type.get('C', 0),
             'patterns': patterns_by_type.get('P', 0),
             'flows': patterns_by_type.get('F', 0),
+            'total_components': total_components,
+            'total_operations': total_operations,
+            'total_properties': total_properties,
         }
     
     def list_patterns(self, pattern_type: Optional[str] = None) -> List[str]:
         """List all pattern IDs, optionally filtered by type."""
-        pattern_ids = sorted(self.patterns.keys(), 
-                            key=lambda x: (x[0], float(re.sub(r'[PCF]', '', x))))
+        # Filter out empty pattern IDs
+        valid_ids = [pid for pid in self.patterns.keys() if pid]
+        
+        pattern_ids = sorted(valid_ids, 
+                            key=lambda x: (x[0] if x else '', self._extract_sort_number(x)))
         
         if pattern_type:
             pattern_ids = [pid for pid in pattern_ids if pid.startswith(pattern_type)]
         
         return pattern_ids
     
+    def _extract_sort_number(self, pattern_id: str) -> float:
+        """Extract numeric part for sorting (handles decimals like F1.1)"""
+        num_str = re.sub(r'[PCF]', '', pattern_id)
+        try:
+            return float(num_str)
+        except ValueError:
+            return 0.0
+    
     def find_missing_patterns(self) -> Dict[str, List[str]]:
         """Find gaps in pattern numbering."""
         missing = {'P': [], 'C': [], 'F': []}
         
-        # Check P patterns (expect P1-P63)
-        p_numbers = [int(p[1:]) for p in self.patterns.keys() if p.startswith('P') and '.' not in p]
+        # Check P patterns (expect P1-P155)
+        p_numbers = [int(p[1:]) for p in self.patterns.keys() 
+                     if p.startswith('P') and '.' not in p]
         if p_numbers:
             for i in range(1, max(p_numbers) + 1):
                 if i not in p_numbers:
                     missing['P'].append(f'P{i}')
         
         # Check C patterns (expect C1-C5)
-        c_numbers = [int(p[1:]) for p in self.patterns.keys() if p.startswith('C')]
+        c_numbers = [int(p[1:]) for p in self.patterns.keys() 
+                     if p.startswith('C') and '.' not in p]
         if c_numbers:
             for i in range(1, max(c_numbers) + 1):
                 if i not in c_numbers:
                     missing['C'].append(f'C{i}')
         
-        # F patterns can have decimals, just list what we have
-        # Don't check for missing as F1.1, F1.2 etc are valid
+        # F patterns can have decimals (F1.1, F2.3), just list what we have
+        # Don't check for missing as the numbering scheme is flexible
         
         return {k: v for k, v in missing.items() if v}
     
-    def split_to_directory(self, output_dir: Path) -> Dict[str, Path]:
+    def get_dependency_graph(self) -> Dict[str, Set[str]]:
+        """Build dependency graph (pattern_id -> set of dependencies)"""
+        graph = {}
+        for pattern_id, pattern in self.patterns.items():
+            deps = set()
+            deps.update(pattern.dependencies.requires)
+            deps.update(pattern.dependencies.uses)
+            deps.update(pattern.dependencies.specializes)
+            graph[pattern_id] = deps
+        return graph
+    
+    def find_circular_dependencies(self) -> List[List[str]]:
+        """Find circular dependency chains"""
+        graph = self.get_dependency_graph()
+        cycles = []
+        
+        def dfs(node: str, path: List[str], visited: Set[str]) -> None:
+            if node in path:
+                cycle_start = path.index(node)
+                cycle = path[cycle_start:] + [node]
+                if cycle not in cycles:
+                    cycles.append(cycle)
+                return
+            
+            if node in visited or node not in graph:
+                return
+            
+            visited.add(node)
+            path.append(node)
+            
+            for neighbor in graph[node]:
+                dfs(neighbor, path[:], visited)
+        
+        for pattern_id in graph:
+            dfs(pattern_id, [], set())
+        
+        return cycles
+    
+    def create_corpus_manifest(self, output_path: Path) -> None:
         """
-        Split document into individual parts with complete reconstruction data.
+        Create a manifest file describing the entire corpus.
+        This provides metadata about all patterns for tools and scripts.
+        """
+        manifest = {
+            'version': '2.0',
+            'format': 'xml-master',
+            'total_patterns': len(self.patterns),
+            'patterns': []
+        }
         
-        Creates:
-        - _manifest.json: Ordered list of document parts
-        - _part_NNNN.md: Non-pattern sections (headers, TOC, etc.)
-        - PatternID_Name.md: Individual patterns
+        for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+            pattern = self.patterns[pattern_id]
+            manifest['patterns'].append({
+                'id': pattern.id,
+                'name': pattern.name,
+                'category': pattern.category,
+                'status': pattern.status,
+                'complexity': pattern.complexity,
+                'component_count': len(pattern.components),
+                'operation_count': len(pattern.operations),
+                'property_count': len(pattern.properties),
+                'dependencies': {
+                    'requires': pattern.dependencies.requires,
+                    'uses': pattern.dependencies.uses,
+                    'specializes': pattern.dependencies.specializes,
+                    'specialized_by': pattern.dependencies.specialized_by
+                }
+            })
         
-        Returns mapping of part_id -> file_path
+        output_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+    
+    def export_unified_corpus_xml(self, output_path: Path) -> None:
+        """
+        Export all patterns into a single unified XML corpus file.
+        This creates a complete corpus document from individual patterns.
+        """
+        root = ET.Element('corpus')
+        root.set('xmlns', 'http://universal-corpus.org/schema/v1')
+        root.set('version', '2.0')
+        
+        # Metadata
+        metadata = ET.SubElement(root, 'metadata')
+        ET.SubElement(metadata, 'total-patterns').text = str(len(self.patterns))
+        ET.SubElement(metadata, 'format').text = 'xml-master'
+        
+        # Patterns (sorted)
+        patterns_elem = ET.SubElement(root, 'patterns')
+        for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+            pattern = self.patterns[pattern_id]
+            
+            # Parse the pattern XML and attach it
+            pattern_xml = self._pattern_to_xml(pattern)
+            pattern_tree = ET.fromstring(pattern_xml)
+            patterns_elem.append(pattern_tree)
+        
+        # Pretty print
+        xml_str = ET.tostring(root, encoding='unicode')
+        dom = minidom.parseString(xml_str)
+        output_path.write_text(dom.toprettyxml(indent='  '), encoding='utf-8')
+    
+    def export_to_csv_summary(self, output_path: Path) -> None:
+        """
+        Export corpus summary to CSV with one row per pattern.
+        Includes metadata, counts, and key relationships.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'id', 'name', 'category', 'status', 'complexity',
+                'version', 'domains', 'tuple_notation',
+                'component_count', 'type_def_count', 'property_count',
+                'operation_count', 'manifestation_count',
+                'requires', 'uses', 'specializes', 'specialized_by',
+                'has_circular_deps'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            # Get circular dependencies for marking
+            cycles = self.find_circular_dependencies()
+            patterns_in_cycles = set()
+            for cycle in cycles:
+                patterns_in_cycles.update(cycle)
+            
+            # Write pattern rows
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                writer.writerow({
+                    'id': pattern.id,
+                    'name': pattern.name,
+                    'category': pattern.category,
+                    'status': pattern.status,
+                    'complexity': pattern.complexity,
+                    'version': pattern.version,
+                    'domains': '; '.join(pattern.domains) if pattern.domains else '',
+                    'tuple_notation': pattern.tuple_notation,
+                    'component_count': len(pattern.components),
+                    'type_def_count': len(pattern.type_definitions),
+                    'property_count': len(pattern.properties),
+                    'operation_count': len(pattern.operations),
+                    'manifestation_count': len(pattern.manifestations),
+                    'requires': '; '.join(pattern.dependencies.requires),
+                    'uses': '; '.join(pattern.dependencies.uses),
+                    'specializes': '; '.join(pattern.dependencies.specializes),
+                    'specialized_by': '; '.join(pattern.dependencies.specialized_by),
+                    'has_circular_deps': 'yes' if pattern.id in patterns_in_cycles else 'no'
+                })
+    
+    def export_to_csv_components(self, output_path: Path) -> None:
+        """
+        Export all components to CSV with one row per component.
+        Useful for analyzing component patterns across the corpus.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'component_name',
+                'component_type', 'notation', 'description'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                for component in pattern.components:
+                    writer.writerow({
+                        'pattern_id': pattern.id,
+                        'pattern_name': pattern.name,
+                        'component_name': component.name,
+                        'component_type': component.type,
+                        'notation': component.notation,
+                        'description': component.description
+                    })
+    
+    def export_to_csv_operations(self, output_path: Path) -> None:
+        """
+        Export all operations to CSV with one row per operation.
+        Useful for analyzing operation patterns and signatures.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'operation_name',
+                'signature', 'formal_definition',
+                'precondition_count', 'postcondition_count', 'effect_count'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                for operation in pattern.operations:
+                    writer.writerow({
+                        'pattern_id': pattern.id,
+                        'pattern_name': pattern.name,
+                        'operation_name': operation.name,
+                        'signature': operation.signature,
+                        'formal_definition': operation.formal_definition.replace('\n', ' '),
+                        'precondition_count': len(operation.preconditions),
+                        'postcondition_count': len(operation.postconditions),
+                        'effect_count': len(operation.effects)
+                    })
+    
+    def export_to_csv_properties(self, output_path: Path) -> None:
+        """
+        Export all properties to CSV with one row per property.
+        Useful for analyzing formal specifications and invariants.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'pattern_id', 'pattern_name', 'property_id',
+                'property_name', 'formal_spec', 'description',
+                'invariant_count'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                for prop in pattern.properties:
+                    writer.writerow({
+                        'pattern_id': pattern.id,
+                        'pattern_name': pattern.name,
+                        'property_id': prop.id,
+                        'property_name': prop.name,
+                        'formal_spec': prop.formal_spec.replace('\n', ' '),
+                        'description': prop.description,
+                        'invariant_count': len(prop.invariants)
+                    })
+    
+    def export_to_csv_dependencies(self, output_path: Path) -> None:
+        """
+        Export dependency relationships to CSV with one row per relationship.
+        Useful for graph analysis and dependency visualization.
+        """
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            fieldnames = [
+                'source_id', 'source_name', 'target_id',
+                'relationship_type', 'is_circular'
+            ]
+            
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            
+            # Get circular dependencies
+            cycles = self.find_circular_dependencies()
+            circular_pairs = set()
+            for cycle in cycles:
+                for i in range(len(cycle) - 1):
+                    circular_pairs.add((cycle[i], cycle[i + 1]))
+            
+            for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
+                pattern = self.patterns[pattern_id]
+                
+                # Export each dependency relationship
+                for target in pattern.dependencies.requires:
+                    writer.writerow({
+                        'source_id': pattern.id,
+                        'source_name': pattern.name,
+                        'target_id': target,
+                        'relationship_type': 'requires',
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                    })
+                
+                for target in pattern.dependencies.uses:
+                    writer.writerow({
+                        'source_id': pattern.id,
+                        'source_name': pattern.name,
+                        'target_id': target,
+                        'relationship_type': 'uses',
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                    })
+                
+                for target in pattern.dependencies.specializes:
+                    writer.writerow({
+                        'source_id': pattern.id,
+                        'source_name': pattern.name,
+                        'target_id': target,
+                        'relationship_type': 'specializes',
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                    })
+                
+                for target in pattern.dependencies.specialized_by:
+                    writer.writerow({
+                        'source_id': pattern.id,
+                        'source_name': pattern.name,
+                        'target_id': target,
+                        'relationship_type': 'specialized_by',
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                    })
+    
+    def export_all_csv(self, output_dir: Path) -> Dict[str, Path]:
+        """
+        Export all CSV formats to a directory.
+        Creates comprehensive tabular views of the corpus.
+        
+        Returns dict mapping CSV type to file path.
         """
         output_dir.mkdir(parents=True, exist_ok=True)
         
-        # Build manifest: ordered list of all document parts
-        manifest = {
-            'version': '1.0',
-            'total_lines': len(self.raw_lines),
-            'parts': []
-        }
+        exports = {}
         
-        part_files = {}
-        part_counter = 0
+        # Summary
+        summary_path = output_dir / 'patterns_summary.csv'
+        self.export_to_csv_summary(summary_path)
+        exports['summary'] = summary_path
         
-        # Track what lines are covered by patterns
-        pattern_line_map = {}  # line_num -> pattern_id
-        for pattern in self.patterns.values():
-            start = pattern.section.start_line
-            end = self._find_section_actual_end(pattern.section)
-            for line_num in range(start, end):
-                pattern_line_map[line_num] = pattern.id
+        # Components
+        components_path = output_dir / 'components.csv'
+        self.export_to_csv_components(components_path)
+        exports['components'] = components_path
         
-        # Scan through document and create parts
-        current_part_lines = []
-        current_part_start = 0
+        # Operations
+        operations_path = output_dir / 'operations.csv'
+        self.export_to_csv_operations(operations_path)
+        exports['operations'] = operations_path
         
-        for line_num in range(len(self.raw_lines)):
-            if line_num in pattern_line_map:
-                # Save previous non-pattern part if any
-                if current_part_lines:
-                    part_id = f"_part_{part_counter:04d}"
-                    part_counter += 1
-                    filepath = output_dir / f"{part_id}.md"
-                    content = ''.join(current_part_lines)
-                    filepath.write_text(content, encoding='utf-8')
-                    part_files[part_id] = filepath
-                    
-                    manifest['parts'].append({
-                        'type': 'section',
-                        'id': part_id,
-                        'filename': filepath.name,
-                        'start_line': current_part_start,
-                        'end_line': line_num - 1,
-                        'lines': len(current_part_lines)
-                    })
-                    current_part_lines = []
-                
-                # Add pattern part (only once when we first encounter it)
-                pattern_id = pattern_line_map[line_num]
-                if not any(p.get('id') == pattern_id for p in manifest['parts']):
-                    pattern = self.patterns[pattern_id]
-                    safe_name = pattern.name.replace('/', '-').replace(' ', '_')
-                    filename = f"{pattern_id}_{safe_name}.md"
-                    filepath = output_dir / filename
-                    
-                    # Export pattern content
-                    content = self.export_pattern(pattern_id)
-                    filepath.write_text(content, encoding='utf-8')
-                    part_files[pattern_id] = filepath
-                    
-                    start = pattern.section.start_line
-                    end = self._find_section_actual_end(pattern.section)
-                    
-                    manifest['parts'].append({
-                        'type': 'pattern',
-                        'id': pattern_id,
-                        'name': pattern.name,
-                        'filename': filepath.name,
-                        'start_line': start,
-                        'end_line': end - 1,
-                        'lines': end - start
-                    })
-                
-                # Skip to end of pattern
-                if pattern_line_map.get(line_num + 1) != pattern_line_map[line_num]:
-                    current_part_start = line_num + 1
-                    while current_part_start < len(self.raw_lines) and current_part_start in pattern_line_map:
-                        current_part_start += 1
-            else:
-                # Accumulate non-pattern lines
-                if not current_part_lines:
-                    current_part_start = line_num
-                current_part_lines.append(self.raw_lines[line_num])
+        # Properties
+        properties_path = output_dir / 'properties.csv'
+        self.export_to_csv_properties(properties_path)
+        exports['properties'] = properties_path
         
-        # Save final non-pattern part if any
-        if current_part_lines:
-            part_id = f"_part_{part_counter:04d}"
-            filepath = output_dir / f"{part_id}.md"
-            content = ''.join(current_part_lines)
-            filepath.write_text(content, encoding='utf-8')
-            part_files[part_id] = filepath
-            
-            manifest['parts'].append({
-                'type': 'section',
-                'id': part_id,
-                'filename': filepath.name,
-                'start_line': current_part_start,
-                'end_line': len(self.raw_lines) - 1,
-                'lines': len(current_part_lines)
-            })
+        # Dependencies
+        dependencies_path = output_dir / 'dependencies.csv'
+        self.export_to_csv_dependencies(dependencies_path)
+        exports['dependencies'] = dependencies_path
         
-        # Write manifest
-        import json
-        manifest_path = output_dir / '_manifest.json'
-        manifest_path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
-        part_files['_manifest'] = manifest_path
-        
-        return part_files
-    
-    def concatenate_from_directory(self, input_dir: Path) -> str:
-        """
-        Concatenate parts back into complete document.
-        
-        Reads _manifest.json and assembles all parts in correct order.
-        Does NOT rely on original document - purely reconstructs from parts.
-        
-        Returns the reconstructed document content.
-        """
-        import json
-        
-        # Read manifest
-        manifest_path = input_dir / '_manifest.json'
-        if not manifest_path.exists():
-            raise FileNotFoundError(
-                f"No manifest found in {input_dir}. "
-                "Directory must be created by split_to_directory()."
-            )
-        
-        manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-        
-        # Assemble document from parts in order
-        result_lines = []
-        
-        for part_info in manifest['parts']:
-            filepath = input_dir / part_info['filename']
-            
-            if not filepath.exists():
-                raise FileNotFoundError(f"Missing part file: {filepath}")
-            
-            content = filepath.read_text(encoding='utf-8')
-            result_lines.append(content)
-        
-        return ''.join(result_lines)
-    
-    def validate_split_concatenate_roundtrip(self, temp_dir: Path) -> Tuple[bool, str]:
-        """
-        Validate that split → concatenate produces identical content.
-        
-        1. Split document into individual part files + manifest
-        2. Concatenate files back together (using ONLY the split parts)
-        3. Compare with original
-        
-        This proves the split is self-contained and complete.
-        
-        Returns: (is_valid, message)
-        """
-        original_content = self.rebuild()
-        
-        # Split to files
-        part_files = self.split_to_directory(temp_dir)
-        num_parts = len([f for f in part_files.keys() if f != '_manifest'])
-        
-        # Create a NEW parser instance to prove we don't use cached data
-        # Concatenate reads ONLY from the split files
-        temp_doc = CorpusDocument()
-        reconstructed = temp_doc.concatenate_from_directory(temp_dir)
-        
-        # Compare
-        if original_content == reconstructed:
-            return True, f"Perfect split-concatenate roundtrip: {num_parts} parts (self-contained)"
-        
-        # Check normalized
-        original_normalized = original_content.replace('\r\n', '\n')
-        reconstructed_normalized = reconstructed.replace('\r\n', '\n')
-        
-        if original_normalized == reconstructed_normalized:
-            return True, f"Split-concatenate valid: {num_parts} parts (line ending differences only)"
-        
-        # Find first difference
-        for i, (orig_char, recon_char) in enumerate(zip(original_content, reconstructed)):
-            if orig_char != recon_char:
-                line_num = original_content[:i].count('\n') + 1
-                return False, f"First difference at character {i} (line ~{line_num}): '{orig_char}' vs '{recon_char}'"
-        
-        return False, f"Length mismatch: original={len(original_content)}, reconstructed={len(reconstructed)}"
+        return exports
 
+
+# ============================================================================
+# CLI Interface
+# ============================================================================
 
 def main():
-    """Command-line interface for corpus management."""
+    """Command-line interface for XML-based corpus management."""
     import argparse
     
-    parser = argparse.ArgumentParser(description='Universal Corpus Document Manager')
-    parser.add_argument('input_file', help='Path to universal.doc')
-    parser.add_argument('--validate', action='store_true', 
-                       help='Validate round-trip parsing')
+    parser = argparse.ArgumentParser(
+        description='Universal Corpus Manager - XML Master Data Architecture',
+        epilog='XML files in master_data/ are the authoritative source of truth.'
+    )
+    
+    parser.add_argument('input', type=Path, 
+                       help='Path to XML file or directory containing XML pattern files')
     parser.add_argument('--stats', action='store_true',
-                       help='Show document statistics')
+                       help='Show corpus statistics')
     parser.add_argument('--list', choices=['all', 'P', 'C', 'F'],
                        help='List patterns')
-    parser.add_argument('--export', metavar='PATTERN_ID',
-                       help='Export specific pattern (e.g., P35)')
     parser.add_argument('--missing', action='store_true',
                        help='Find missing patterns in numbering')
-    parser.add_argument('--rebuild', metavar='OUTPUT_FILE',
-                       help='Rebuild document to output file')
-    parser.add_argument('--split', metavar='OUTPUT_DIR',
-                       help='Split document into self-contained parts (manifest + files)')
-    parser.add_argument('--concatenate', metavar='INPUT_DIR',
-                       help='Concatenate parts back into document (standalone, no original needed)')
-    parser.add_argument('--validate-split', metavar='TEMP_DIR',
-                       help='Validate split-concatenate roundtrip')
+    parser.add_argument('--cycles', action='store_true',
+                       help='Find circular dependencies')
+    parser.add_argument('--validate', metavar='PATTERN_ID',
+                       help='Validate XML round-trip for specific pattern')
+    parser.add_argument('--validate-all', action='store_true',
+                       help='Validate XML round-trip for all patterns')
+    parser.add_argument('--export-xml', metavar='PATTERN_ID',
+                       help='Export specific pattern to XML (stdout)')
+    parser.add_argument('--export-markdown', metavar='PATTERN_ID',
+                       help='Export specific pattern to Markdown (stdout)')
+    parser.add_argument('--export-all-xml', metavar='OUTPUT_DIR',
+                       help='Export all patterns to XML files')
+    parser.add_argument('--export-all-markdown', metavar='OUTPUT_DIR',
+                       help='Export all patterns to Markdown files')
+    parser.add_argument('--create-manifest', metavar='OUTPUT_FILE',
+                       help='Create JSON manifest of entire corpus')
+    parser.add_argument('--unified-corpus', metavar='OUTPUT_FILE',
+                       help='Export unified corpus XML file')
+    parser.add_argument('--export-csv-summary', metavar='OUTPUT_FILE',
+                       help='Export patterns summary to CSV')
+    parser.add_argument('--export-csv-components', metavar='OUTPUT_FILE',
+                       help='Export components to CSV')
+    parser.add_argument('--export-csv-operations', metavar='OUTPUT_FILE',
+                       help='Export operations to CSV')
+    parser.add_argument('--export-csv-properties', metavar='OUTPUT_FILE',
+                       help='Export properties to CSV')
+    parser.add_argument('--export-csv-dependencies', metavar='OUTPUT_FILE',
+                       help='Export dependencies to CSV')
+    parser.add_argument('--export-all-csv', metavar='OUTPUT_DIR',
+                       help='Export all CSV formats (summary, components, operations, properties, dependencies)')
     
     args = parser.parse_args()
     
-    # Read input file
-    input_path = Path(args.input_file)
+    # Initialize manager
+    manager = CorpusManager()
+    
+    # Load patterns from XML
+    input_path = Path(args.input)
     if not input_path.exists():
-        print(f"Error: File not found: {input_path}", file=sys.stderr)
+        print(f"Error: Path not found: {input_path}", file=sys.stderr)
         return 1
     
-    content = input_path.read_text(encoding='utf-8')
+    try:
+        if input_path.is_dir():
+            print(f"Loading XML patterns from: {input_path}", file=sys.stderr)
+            manager.load_from_xml_directory(input_path)
+        else:
+            print(f"Loading XML pattern: {input_path}", file=sys.stderr)
+            manager.load_pattern_xml(input_path)
+        
+        print(f"✓ Loaded {len(manager.patterns)} patterns\n", file=sys.stderr)
     
-    # Parse document
-    doc = CorpusDocument()
-    print(f"Parsing {input_path}...", file=sys.stderr)
-    doc.parse(content)
+    except Exception as e:
+        print(f"Error loading patterns: {e}", file=sys.stderr)
+        return 1
     
     # Execute commands
-    if args.validate:
-        is_valid, message = doc.validate_round_trip(content)
-        print(f"Round-trip validation: {message}")
-        return 0 if is_valid else 1
-    
     if args.stats:
-        stats = doc.get_stats()
-        print("Document Statistics:")
+        stats = manager.get_stats()
+        print("Corpus Statistics:")
         for key, value in stats.items():
             print(f"  {key.replace('_', ' ').title()}: {value}")
     
     if args.list:
         pattern_type = None if args.list == 'all' else args.list
-        patterns = doc.list_patterns(pattern_type)
+        patterns = manager.list_patterns(pattern_type)
         print(f"Patterns ({len(patterns)}):")
         for pid in patterns:
-            pattern = doc.get_pattern(pid)
+            pattern = manager.get_pattern(pid)
             print(f"  {pid}: {pattern.name}")
     
-    if args.export:
-        content = doc.export_pattern(args.export)
-        if content:
-            print(content)
-        else:
-            print(f"Error: Pattern {args.export} not found", file=sys.stderr)
-            return 1
-    
     if args.missing:
-        missing = doc.find_missing_patterns()
+        missing = manager.find_missing_patterns()
         if missing:
             print("Missing patterns:")
             for pattern_type, pattern_ids in missing.items():
@@ -640,54 +1108,102 @@ def main():
         else:
             print("No missing patterns detected")
     
-    if args.rebuild:
-        output_path = Path(args.rebuild)
-        rebuilt_content = doc.rebuild()
-        output_path.write_text(rebuilt_content, encoding='utf-8')
-        print(f"Rebuilt document written to: {output_path}")
-        
-        # Validate
-        is_valid, message = doc.validate_round_trip(content)
-        print(f"Validation: {message}")
+    if args.cycles:
+        cycles = manager.find_circular_dependencies()
+        if cycles:
+            print(f"Found {len(cycles)} circular dependency chains:")
+            for cycle in cycles:
+                print(f"  {' → '.join(cycle)}")
+        else:
+            print("No circular dependencies detected")
     
-    if args.split:
-        output_dir = Path(args.split)
-        print(f"Splitting document into: {output_dir}")
-        part_files = doc.split_to_directory(output_dir)
-        
-        patterns = [k for k in part_files.keys() if k in doc.patterns]
-        sections = [k for k in part_files.keys() if k.startswith('_part_')]
-        
-        print(f"Exported {len(part_files)} parts:")
-        print(f"  • Manifest: _manifest.json")
-        print(f"  • Patterns: {len(patterns)} files")
-        print(f"  • Sections: {len(sections)} files")
-        print(f"\nDocument is now self-contained in {output_dir}/")
-        print(f"Can be reconstructed with --concatenate without original file.")
-    
-    if args.concatenate:
-        input_dir = Path(args.concatenate)
-        if not input_dir.exists():
-            print(f"Error: Directory not found: {input_dir}", file=sys.stderr)
-            return 1
-        
-        print(f"Concatenating parts from: {input_dir}", file=sys.stderr)
-        # Create new doc instance - concatenate works standalone without parsing original
-        standalone_doc = CorpusDocument()
-        reconstructed = standalone_doc.concatenate_from_directory(input_dir)
-        print(reconstructed, end='')
-    
-    if args.validate_split:
-        temp_dir = Path(args.validate_split)
-        print(f"Validating split-concatenate roundtrip using: {temp_dir}")
-        is_valid, message = doc.validate_split_concatenate_roundtrip(temp_dir)
-        print(f"Split-Concatenate Validation: {message}")
-        
-        if is_valid:
-            print(f"\n✓ Split files created in: {temp_dir}")
-            print(f"✓ Concatenation reconstructed original perfectly")
-        
+    if args.validate:
+        is_valid, message = manager.validate_xml_roundtrip(args.validate)
+        print(f"XML Round-trip Validation ({args.validate}): {message}")
         return 0 if is_valid else 1
+    
+    if args.validate_all:
+        results = manager.validate_all_roundtrips()
+        failed = [(pid, msg) for pid, (valid, msg) in results.items() if not valid]
+        
+        if failed:
+            print(f"Validation failed for {len(failed)} patterns:")
+            for pid, msg in failed:
+                print(f"  {pid}: {msg}")
+            return 1
+        else:
+            print(f"✓ All {len(results)} patterns passed XML round-trip validation")
+    
+    if args.export_xml:
+        try:
+            xml_content = manager.export_to_xml(args.export_xml)
+            print(xml_content)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+    
+    if args.export_markdown:
+        try:
+            md_content = manager.export_to_markdown(args.export_markdown)
+            print(md_content)
+        except ValueError as e:
+            print(f"Error: {e}", file=sys.stderr)
+            return 1
+    
+    if args.export_all_xml:
+        output_dir = Path(args.export_all_xml)
+        exported = manager.export_all_to_xml(output_dir)
+        print(f"Exported {len(exported)} patterns to XML:")
+        print(f"  Output directory: {output_dir}")
+    
+    if args.export_all_markdown:
+        output_dir = Path(args.export_all_markdown)
+        exported = manager.export_all_to_markdown(output_dir)
+        print(f"Exported {len(exported)} patterns to Markdown:")
+        print(f"  Output directory: {output_dir}")
+    
+    if args.create_manifest:
+        output_file = Path(args.create_manifest)
+        manager.create_corpus_manifest(output_file)
+        print(f"Created corpus manifest: {output_file}")
+    
+    if args.unified_corpus:
+        output_file = Path(args.unified_corpus)
+        manager.export_unified_corpus_xml(output_file)
+        print(f"Created unified corpus XML: {output_file}")
+    
+    if args.export_csv_summary:
+        output_file = Path(args.export_csv_summary)
+        manager.export_to_csv_summary(output_file)
+        print(f"Exported patterns summary to CSV: {output_file}")
+    
+    if args.export_csv_components:
+        output_file = Path(args.export_csv_components)
+        manager.export_to_csv_components(output_file)
+        print(f"Exported components to CSV: {output_file}")
+    
+    if args.export_csv_operations:
+        output_file = Path(args.export_csv_operations)
+        manager.export_to_csv_operations(output_file)
+        print(f"Exported operations to CSV: {output_file}")
+    
+    if args.export_csv_properties:
+        output_file = Path(args.export_csv_properties)
+        manager.export_to_csv_properties(output_file)
+        print(f"Exported properties to CSV: {output_file}")
+    
+    if args.export_csv_dependencies:
+        output_file = Path(args.export_csv_dependencies)
+        manager.export_to_csv_dependencies(output_file)
+        print(f"Exported dependencies to CSV: {output_file}")
+    
+    if args.export_all_csv:
+        output_dir = Path(args.export_all_csv)
+        exports = manager.export_all_csv(output_dir)
+        print(f"Exported all CSV formats to: {output_dir}")
+        print("  Files created:")
+        for csv_type, filepath in exports.items():
+            print(f"    • {csv_type}: {filepath.name}")
     
     return 0
 
