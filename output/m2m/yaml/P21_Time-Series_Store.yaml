@@ -1,0 +1,73 @@
+id: P21
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Time-Series Store
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $T = (series, timestamps, values, aggregations)$
+  description: ''
+  components:
+  - name: series
+    type: Map⟨String, TimeSeries⟩
+    notation: series
+    description: named series
+  - name: timestamps
+    type: Sequence⟨Time⟩
+    notation: timestamps
+    description: ordered timestamps
+  - name: values
+    type: Map⟨Time, Value⟩
+    notation: values
+    description: data points
+  - name: aggregations
+    type: (Time, Time, Func) → Value
+    notation: aggregations
+    description: compute aggregates
+type_definitions:
+- name: TimeSeries
+  definition: 'Sequence⟨(timestamp: Time, value: Value)⟩'
+  notation: 'TimeSeries := Sequence⟨(timestamp: Time, value: Value)⟩'
+- name: Aggregation
+  definition: Sum | Avg | Min | Max | Count | ...
+  notation: Aggregation := Sum | Avg | Min | Max | Count | ...
+properties:
+- id: P.P21.1
+  name: Temporal Ordering
+  formal_spec: 'timestamps are sorted: tᵢ < tᵢ₊₁'
+  description: ''
+  invariants: []
+- id: P.P21.2
+  name: Efficient Range Queries
+  formal_spec: 'range(t1, t2) uses binary search: O(log n + k) where k = result size'
+  description: ''
+  invariants: []
+operations:
+- name: Range Query
+  signature: 'range(t1: Time, t2: Time) → TimeSeries'
+  formal_definition: "```\n   range(t1: Time, t2: Time) → TimeSeries\n   = {(t, v) ∈ series : t1 ≤ t ≤\
+    \ t2}"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Aggregate
+  signature: 'aggregate(t1: Time, t2: Time, window: Duration, func: Aggregation) → TimeSeries'
+  formal_definition: "```\n   aggregate(t1: Time, t2: Time, window: Duration, func: Aggregation) → TimeSeries\n\
+    \   = group points in windows, apply func to each window"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Edit history
+  description: ''
+- name: Telemetry
+  description: ''
+- name: Sensor data
+  description: ''
+- name: User activity log
+  description: ''
+- name: Stock prices
+  description: ''

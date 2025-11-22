@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P113" version="1.1">
+  <metadata>
+    <name>Event Replay Control</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$R_{replay} = (History, Selector, Playback, State_{restore}) : \text{Events}_{past} \to \text{Replay}$</tuple-notation>
+    <components>
+      <component>
+        <name>History</name>
+        <type>Seq⟨Event⟩</type>
+        <notation>History</notation>
+        <description>recorded sequence of past events</description>
+      </component>
+      <component>
+        <name>Selector</name>
+        <type>(Event → Boolean) × TimeRange</type>
+        <notation>Selector</notation>
+        <description>predicate and time range for replay selection</description>
+      </component>
+      <component>
+        <name>Playback</name>
+        <type>PlaybackControl</type>
+        <notation>Playback</notation>
+        <description>controls for playback speed, pause, step</description>
+      </component>
+      <component>
+        <name>State_{restore}</name>
+        <type>Seq⟨Event⟩ → State</type>
+        <notation>State_{restore}</notation>
+        <description>reconstructs system state from event sequence</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>PlaybackControl</name>
+        <definition>$\text{PlaybackControl} = (\text{speed}, \text{position}, \text{mode})$ where $\text{speed} \in \mathbb{R}_{> 0}$</definition>
+      </type-def>
+      <type-def>
+        <name>PlaybackMode</name>
+        <definition>$\text{Mode} = \{\text{play}, \text{pause}, \text{step-forward}, \text{step-backward}, \text{reverse}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>TimeRange</name>
+        <definition>$\text{TimeRange} = (t_{start}, t_{end})$ where $t_{start}, t_{end} \in \text{Time}$</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P113.1">
+      <name>Deterministic Replay</name>
+      <formal-spec format="latex">$\forall H \in \text{History} : State_{restore}(H) = State_{original}$ (reproducible)</formal-spec>
+    </property>
+    <property id="P.P113.2">
+      <name>Speed Control</name>
+      <formal-spec format="latex">$Playback.speed \in [0.1, 10] \implies \Delta t_{replay} = \frac{\Delta t_{original}}{Playback.speed}$</formal-spec>
+    </property>
+    <property id="P.P113.3">
+      <name>Event Causality Preservation</name>
+      <formal-spec format="latex">$\forall e_1, e_2 \in History : e_1 \xrightarrow{\text{causes}} e_2 \implies \text{order}(e_1) &lt; \text{order}(e_2)$ in replay</formal-spec>
+    </property>
+    <property id="P.P113.4">
+      <name>Selective Replay</name>
+      <formal-spec format="latex">$\text{replay}(Selector) = \{e \in History \mid Selector.predicate(e) \land e.timestamp \in Selector.range\}$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Replay Events</name>
+      <signature>replay: Seq⟨Event⟩ × PlaybackControl → State</signature>
+      <formal-definition format="latex">$\text{replay}(H, ctrl) = \text{foldl}(\text{apply}, State_0, H_{selected})$
+where $H_{selected}$ respects $ctrl.mode$ and $ctrl.speed$</formal-definition>
+    </operation>
+    <operation>
+      <name>Step Forward</name>
+      <signature>stepForward: State × Event → State</signature>
+      <formal-definition format="latex">$\text{stepForward}(s, e) = s'$ where
+  $s' = \text{applyEvent}(s, e)$
+  $Playback.position \leftarrow Playback.position + 1$</formal-definition>
+    </operation>
+    <operation>
+      <name>Time Travel to Point</name>
+      <signature>travelTo: Time → State</signature>
+      <formal-definition format="latex">$\text{travelTo}(t) = State_{restore}(\{e \in History \mid e.timestamp \leq t\})$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P22</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P30</pattern-ref>
+      <pattern-ref>P111</pattern-ref>
+      <pattern-ref>P115</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Redux DevTools time travel</name>
+      <description>replay Redux actions with state restoration</description>
+    </manifestation>
+    <manifestation>
+      <name>Event sourcing replay</name>
+      <description>rebuild system state from event log</description>
+    </manifestation>
+    <manifestation>
+      <name>Video game replay systems</name>
+      <description>playback recorded game inputs</description>
+    </manifestation>
+    <manifestation>
+      <name>Debugging time-travel (rr, Mozilla)</name>
+      <description>deterministic replay of program execution</description>
+    </manifestation>
+  </manifestations>
+</pattern>

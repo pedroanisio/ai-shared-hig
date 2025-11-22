@@ -1,0 +1,89 @@
+id: P32
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Plugin Architecture
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $P = (interface, registry, loader, lifecycle)$
+  description: ''
+  components:
+  - name: interface
+    type: Interface
+    notation: interface
+    description: defines plugin contract
+  - name: registry
+    type: Map⟨ID, Plugin⟩
+    notation: registry
+    description: stores loaded plugins
+  - name: loader
+    type: Path → Plugin
+    notation: loader
+    description: loads plugins
+  - name: lifecycle
+    type: Plugin → Sequence⟨Phase⟩
+    notation: lifecycle
+    description: manages plugin lifecycle
+type_definitions:
+- name: Plugin
+  definition: '(id: ID, metadata: Metadata, hooks: Map⟨HookPoint, Handler⟩)'
+  notation: 'Plugin := (id: ID, metadata: Metadata, hooks: Map⟨HookPoint, Handler⟩)'
+- name: Metadata
+  definition: '(name: String, version: Version, dependencies: Set⟨ID⟩)'
+  notation: 'Metadata := (name: String, version: Version, dependencies: Set⟨ID⟩)'
+- name: Phase
+  definition: Initialize | Activate | Deactivate | Destroy
+  notation: Phase := Initialize | Activate | Deactivate | Destroy
+properties:
+- id: P.P32.1
+  name: Isolation
+  formal_spec: 'Plugins isolated from each other
+
+    Plugin failure doesn''t crash system'
+  description: ''
+  invariants: []
+- id: P.P32.2
+  name: Well-Defined Interface
+  formal_spec: All plugins implement same interface
+  description: ''
+  invariants: []
+- id: P.P32.3
+  name: Dynamic Loading
+  formal_spec: Plugins loaded/unloaded at runtime
+  description: ''
+  invariants: []
+operations:
+- name: Load Plugin
+  signature: 'load(path: Path) → Plugin'
+  formal_definition: "```\n   load(path: Path) → Plugin\n   = plugin := loader(path)\n     validate(plugin)\n\
+    \     resolve_dependencies(plugin)\n     registry[plugin.id] := plugin\n     lifecycle.initialize(plugin)\n\
+    \     return plugin"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Activate Plugin
+  signature: 'activate(plugin: Plugin) → Effect'
+  formal_definition: "```\n   activate(plugin: Plugin) → Effect\n   = lifecycle.activate(plugin)\n   \
+    \  register_hooks(plugin.hooks)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Deactivate Plugin
+  signature: 'deactivate(plugin: Plugin) → Effect'
+  formal_definition: "```\n   deactivate(plugin: Plugin) → Effect\n   = unregister_hooks(plugin.hooks)\n\
+    \     lifecycle.deactivate(plugin)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: VS Code extensions
+  description: ''
+- name: WordPress plugins
+  description: ''
+- name: Browser extensions
+  description: ''
+- name: Plugin systems
+  description: ''

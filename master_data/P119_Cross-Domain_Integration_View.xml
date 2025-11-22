@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P119" version="1.1">
+  <metadata>
+    <name>Cross-Domain Integration View</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V_{cross} = (Domains, Data_{integrated}, Relationships, Unified_{display}) : \text{Set}\langle \text{Domain} \rangle \to \text{View}$</tuple-notation>
+    <components>
+      <component>
+        <name>Domains</name>
+        <type>Set⟨Domain⟩</type>
+        <notation>Domains</notation>
+        <description>collection of distinct business/data domains</description>
+      </component>
+      <component>
+        <name>Data_{integrated}</name>
+        <type>Domain → DataSet</type>
+        <notation>Data_{integrated}</notation>
+        <description>integrated data from each domain</description>
+      </component>
+      <component>
+        <name>Relationships</name>
+        <type>Set⟨CrossDomainLink⟩</type>
+        <notation>Relationships</notation>
+        <description>relationships spanning domain boundaries</description>
+      </component>
+      <component>
+        <name>Unified_{display}</name>
+        <type>Visualization</type>
+        <notation>Unified_{display}</notation>
+        <description>unified view integrating all domains</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>Domain</name>
+        <definition>$\text{Domain} = (\text{id}, \text{schema}, \text{agents}, \text{context})$ (bounded context)</definition>
+      </type-def>
+      <type-def>
+        <name>CrossDomainLink</name>
+        <definition>$\text{CrossDomainLink} = (\text{source\_domain}, \text{target\_domain}, \text{mapping}, \text{translator})$</definition>
+      </type-def>
+      <type-def>
+        <name>DataSet</name>
+        <definition>$\text{DataSet} = \text{Set}\langle \text{Entity} \rangle$ where Entity is domain-specific</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P119.1">
+      <name>Domain Isolation</name>
+      <formal-spec format="latex">$\forall d_1, d_2 \in Domains : d_1 \neq d_2 \implies d_1.\text{schema} \cap d_2.\text{schema} = \emptyset$ (separate contexts)</formal-spec>
+    </property>
+    <property id="P.P119.2">
+      <name>Integration Consistency</name>
+      <formal-spec format="latex">$\forall l \in Relationships : \exists t : l.\text{translator}(Data_{integrated}(l.\text{source})) \sim Data_{integrated}(l.\text{target})$</formal-spec>
+    </property>
+    <property id="P.P119.3">
+      <name>Context Preservation</name>
+      <formal-spec format="latex">$\forall d \in Domains : \text{semantics}(Data_{integrated}(d)) = \text{semantics}_d(\text{original\_data}(d))$</formal-spec>
+    </property>
+    <property id="P.P119.4">
+      <name>Agent Domain Assignment</name>
+      <formal-spec format="latex">$\forall a \in \text{Agents} : \exists! d \in Domains : a \in d.\text{agents}$ (unique assignment)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Integrate Domains</name>
+      <signature>integrate: Set⟨Domain⟩ → Unified_display</signature>
+      <formal-definition format="latex">$\text{integrate}(D) = v$ where
+  $v.\text{data} = \bigcup_{d \in D} Data_{integrated}(d)$
+  $v.\text{links} = \{l \in Relationships \mid l.\text{source}, l.\text{target} \in D\}$
+  $v.\text{render} = \text{visualize}(v.\text{data}, v.\text{links})$</formal-definition>
+    </operation>
+    <operation>
+      <name>Translate Across Domains</name>
+      <signature>translate: Entity × Domain × Domain → Entity</signature>
+      <formal-definition format="latex">$\text{translate}(e, d_1, d_2) = e'$ where
+  $l = \text{findLink}(d_1, d_2, Relationships)$
+  $e' = l.\text{translator}(e)$ (schema mapping)</formal-definition>
+    </operation>
+    <operation>
+      <name>Query Cross-Domain</name>
+      <signature>queryCrossDomain: Query × Set⟨Domain⟩ → ResultSet</signature>
+      <formal-definition format="latex">$\text{queryCrossDomain}(q, D) = \bigcup_{d \in D} \text{execute}(q, Data_{integrated}(d))$
+with result unification and deduplication</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P118</pattern-ref>
+      <pattern-ref>P120</pattern-ref>
+      <pattern-ref>P122</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Enterprise data integration dashboards</name>
+      <description>unified view across CRM, ERP, Finance domains</description>
+    </manifestation>
+    <manifestation>
+      <name>Multi-domain AI agent coordination</name>
+      <description>agents from different domains collaborating</description>
+    </manifestation>
+    <manifestation>
+      <name>Federated search interfaces</name>
+      <description>searching across multiple domain-specific databases</description>
+    </manifestation>
+    <manifestation>
+      <name>Healthcare information exchange</name>
+      <description>integrating patient data across health systems</description>
+    </manifestation>
+  </manifestations>
+</pattern>

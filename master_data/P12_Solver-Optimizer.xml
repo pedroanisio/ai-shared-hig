@@ -1,0 +1,114 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P12" version="1.1">
+  <metadata>
+    <name>Solver/Optimizer</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (constraints, variables, objective, algorithm)$</tuple-notation>
+    <components>
+      <component>
+        <name>constraints</name>
+        <type>Set⟨Constraint⟩</type>
+        <notation>constraints</notation>
+        <description>problem constraints</description>
+      </component>
+      <component>
+        <name>variables</name>
+        <type>Set⟨Variable⟩</type>
+        <notation>variables</notation>
+        <description>decision variables</description>
+      </component>
+      <component>
+        <name>objective</name>
+        <type>Variables → ℝ</type>
+        <notation>objective</notation>
+        <description>optimization objective (optional)</description>
+      </component>
+      <component>
+        <name>algorithm</name>
+        <type>Problem → Solution | Infeasible</type>
+        <notation>algorithm</notation>
+        <description>solving algorithm</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Constraint</name>
+      <definition format="latex">(type: ConstraintType, expr: Expression)</definition>
+    </type-def>
+    <type-def>
+      <name>ConstraintType</name>
+      <definition format="latex">Equality | Inequality | Boundary</definition>
+    </type-def>
+    <type-def>
+      <name>Variable</name>
+      <definition format="latex">(name: String, domain: Domain, value: Value | Unknown)</definition>
+    </type-def>
+    <type-def>
+      <name>Domain</name>
+      <definition format="latex">Continuous(min, max) | Discrete(values: Set⟨Value⟩)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P12.1">
+      <name>Soundness</name>
+      <formal-spec format="latex">solution satisfies all constraints ∨ return infeasible</formal-spec>
+    </property>
+    <property id="P.P12.2">
+      <name>Optimality</name>
+      <formal-spec format="latex">If optimization: solution maximizes/minimizes objective (or is local optimum)</formal-spec>
+    </property>
+    <property id="P.P12.3">
+      <name>Completeness</name>
+      <formal-spec format="latex">If solution exists, algorithm finds it (eventually)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Solve</name>
+      <signature>solve(problem: Problem) → Solution | Infeasible</signature>
+      <formal-definition format="latex">```
+   solve(problem: Problem) → Solution | Infeasible
+   = assignment := algorithm(constraints, variables, objective)
+     if verify(assignment, constraints):
+       return Solution(assignment)
+     else:
+       return Infeasible</formal-definition>
+    </operation>
+    <operation>
+      <name>Add Constraint</name>
+      <signature>add_constraint(c: Constraint) → Effect</signature>
+      <formal-definition format="latex">```
+   add_constraint(c: Constraint) → Effect
+   = constraints := constraints ∪ {c}
+     invalidate_cache()
+- SAT solvers (Boolean constraints)
+- SMT solvers (theories)
+- Linear programming (LP)
+- Constraint propagation
+- Backtracking search</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Constraint solvers</name>
+      <description>CAD</description>
+    </manifestation>
+    <manifestation>
+      <name>Parametric solvers</name>
+      <description>engineering</description>
+    </manifestation>
+    <manifestation>
+      <name>Theorem provers</name>
+      <description>mathematics</description>
+    </manifestation>
+    <manifestation>
+      <name>Layout engines</name>
+      <description>CSS Grid</description>
+    </manifestation>
+  </manifestations>
+</pattern>

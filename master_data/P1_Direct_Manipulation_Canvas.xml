@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P1" version="1.1">
+  <metadata>
+    <name>Direct Manipulation Canvas</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$C = (viewport, objects, cursor, tools, state)$</tuple-notation>
+    <components>
+      <component>
+        <name>viewport</name>
+        <type>Rectangle</type>
+        <notation>viewport</notation>
+        <description>visible area</description>
+      </component>
+      <component>
+        <name>objects</name>
+        <type>Set⟨Element⟩</type>
+        <notation>objects</notation>
+        <description>manipulable objects</description>
+      </component>
+      <component>
+        <name>cursor</name>
+        <type>Point</type>
+        <notation>cursor</notation>
+        <description>current cursor position</description>
+      </component>
+      <component>
+        <name>tools</name>
+        <type>Set⟨Tool⟩</type>
+        <notation>tools</notation>
+        <description>available interaction tools</description>
+      </component>
+      <component>
+        <name>state</name>
+        <type>σ_1 ∈ \{\text{idle}, \text{dragging},</type>
+        <notation>state</notation>
+        <description>\text{selecting}\}$</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P1.1">
+      <name>WYSIWYG</name>
+      <formal-spec format="latex">∀o ∈ objects: visual(o) = semantic(o)
+Changes to visual representation directly modify semantic content.</formal-spec>
+    </property>
+    <property id="P.P1.2">
+      <name>Direct Feedback</name>
+      <formal-spec format="latex">gesture(t) → update_visual(t + ε) where ε &lt; 16ms (60fps)</formal-spec>
+    </property>
+    <property id="P.P1.3">
+      <name>Object Selection</name>
+      <formal-spec format="latex">click(p) → select({o ∈ objects : p ∈ bounds(o)})</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Interpret Gesture</name>
+      <signature>interpret(gesture: Gesture) → Action</signature>
+      <formal-definition format="latex">```
+   interpret(gesture: Gesture) → Action
+   = case gesture of
+       Click(p) → Select(objectAt(p))
+       Drag(p₁, p₂) → Move(selected, p₂ - p₁)
+       Scroll(Δ) → Pan(viewport, Δ)
+2. **Update Visual:
+```
+   update(objects: Set⟨Element⟩) → Effect
+   = render(objects) ; invalidate(viewport)
+3. Persist Changes:**
+```
+   persist(objects: Set⟨Element⟩) → Effect
+   = save_to_storage(objects) ; notify_observers(objects)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Graph editor</name>
+      <description>knowledge graphs</description>
+    </manifestation>
+    <manifestation>
+      <name>3D viewport</name>
+      <description>CAD</description>
+    </manifestation>
+    <manifestation>
+      <name>Drawing canvas</name>
+      <description>vector graphics</description>
+    </manifestation>
+    <manifestation>
+      <name>Visual editor</name>
+      <description>page builders</description>
+    </manifestation>
+    <manifestation>
+      <name>Diagram editors</name>
+    </manifestation>
+  </manifestations>
+</pattern>

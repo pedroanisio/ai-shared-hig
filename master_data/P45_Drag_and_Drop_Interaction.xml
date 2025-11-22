@@ -1,0 +1,69 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P45" version="1.1">
+  <metadata>
+    <name>Drag and Drop Interaction</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$D = (S, T, G, F, \phi_{45}, \psi_{45})$</tuple-notation>
+    <components>
+      <component>
+        <name>G</name>
+        <type>S → Ghost</type>
+        <notation>G</notation>
+        <description>**ghost element function**</description>
+      </component>
+      <component>
+        <name>F</name>
+        <type>S \times T → \{\text{accept}, \text{reject}\}</type>
+        <notation>F</notation>
+        <description>**acceptance predicate**</description>
+      </component>
+      <component>
+        <name>\phi_{45}</name>
+        <type>S \times T → Effect</type>
+        <notation>\phi_{45}</notation>
+        <description>**drop handler**</description>
+      </component>
+    </components>
+  </definition>
+  <properties/>
+  <operations>
+    <operation>
+      <name>Start Drag</name>
+      <signature>drag_start(s: Source, event: Event) → Effect</signature>
+      <formal-definition format="latex">```
+   drag_start(s: Source, event: Event) → Effect
+   = ψ₄₅ := dragging
+     ghost := G(s)
+     create(ghost)
+     data := serialize(s)</formal-definition>
+    </operation>
+    <operation>
+      <name>Drop</name>
+      <signature>drop(s: Source, t: Target) → Effect</signature>
+      <formal-definition format="latex">```
+   drop(s: Source, t: Target) → Effect
+   = if F(s, t) = accept:
+       φ₄₅(s, t)
+       commit()
+       ψ₄₅ := idle</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Reorder tabs</name>
+    </manifestation>
+    <manifestation>
+      <name>Move files</name>
+    </manifestation>
+    <manifestation>
+      <name>Drag blocks to reorder</name>
+    </manifestation>
+    <manifestation>
+      <name>Kanban cards</name>
+    </manifestation>
+  </manifestations>
+</pattern>

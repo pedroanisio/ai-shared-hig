@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P7" version="1.1">
+  <metadata>
+    <name>Breadcrumb Trail</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$B = (path, separators, actions)$</tuple-notation>
+    <components>
+      <component>
+        <name>path</name>
+        <type>Sequence⟨Node⟩</type>
+        <notation>path</notation>
+        <description>current location path</description>
+      </component>
+      <component>
+        <name>separators</name>
+        <type>String</type>
+        <notation>separators</notation>
+        <description>visual separators (e.g., " / ")</description>
+      </component>
+      <component>
+        <name>actions</name>
+        <type>Node → Effect</type>
+        <notation>actions</notation>
+        <description>defines click behavior</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P7.1">
+      <name>Hierarchical Path</name>
+      <formal-spec format="latex">path = [root, child₁, child₂, ..., current]
+where childᵢ ∈ children(childᵢ₋₁)</formal-spec>
+    </property>
+    <property id="P.P7.2">
+      <name>Clickable Ancestors</name>
+      <formal-spec format="latex">∀n ∈ path: click(n) → navigate_to(n)</formal-spec>
+    </property>
+    <property id="P.P7.3">
+      <name>Auto-Update</name>
+      <formal-spec format="latex">navigate(new_location) → path := compute_path(root, new_location)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Compute Path</name>
+      <signature>compute_path(root: Node, target: Node) → Sequence⟨Node⟩</signature>
+      <formal-definition format="latex">```
+   compute_path(root: Node, target: Node) → Sequence⟨Node⟩
+   = if target = root:
+       [root]
+     else:
+       compute_path(root, parent(target)) ++ [target]</formal-definition>
+    </operation>
+    <operation>
+      <name>Navigate</name>
+      <signature>navigate(node: Node) → Effect</signature>
+      <formal-definition format="latex">```
+   navigate(node: Node) → Effect
+   = set_location(node)
+     path := compute_path(root, node)
+     render(breadcrumb)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>File path</name>
+      <description>OS, web</description>
+    </manifestation>
+    <manifestation>
+      <name>Navigation chain</name>
+      <description>multi-step processes</description>
+    </manifestation>
+    <manifestation>
+      <name>Context path</name>
+      <description>hierarchical views</description>
+    </manifestation>
+  </manifestations>
+</pattern>

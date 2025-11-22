@@ -1,0 +1,228 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P62" version="1.1">
+  <metadata>
+    <name>Integration Test Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$I = (components, interactions, environment, verify)$</tuple-notation>
+    <components>
+      <component>
+        <name>components</name>
+        <type>Set⟨Component⟩</type>
+        <notation>components</notation>
+        <description>integrated components</description>
+      </component>
+      <component>
+        <name>interactions</name>
+        <type>Sequence⟨Interaction⟩</type>
+        <notation>interactions</notation>
+        <description>component communications</description>
+      </component>
+      <component>
+        <name>environment</name>
+        <type>Environment</type>
+        <notation>environment</notation>
+        <description>test environment (DB, API, etc.)</description>
+      </component>
+      <component>
+        <name>verify</name>
+        <type>() → \mathbb{B}</type>
+        <notation>verify</notation>
+        <description>checks end-to-end behavior</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Component</name>
+      <definition format="latex">Service | Module | System</definition>
+    </type-def>
+    <type-def>
+      <name>Interaction</name>
+      <definition format="latex">(from: Component, to: Component, message: Message)</definition>
+    </type-def>
+    <type-def>
+      <name>Environment</name>
+      <definition format="latex">(database: DB, services: Set⟨Service⟩, config: Config)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P62.1">
+      <name>Multiple Components</name>
+      <formal-spec format="latex">Tests interaction between ≥2 real components</formal-spec>
+    </property>
+    <property id="P.P62.2">
+      <name>External Dependencies</name>
+      <formal-spec format="latex">May use real databases, APIs, file systems
+Or test doubles (test DB, mock APIs)</formal-spec>
+    </property>
+    <property id="P.P62.3">
+      <name>Slower Than Unit Tests</name>
+      <formal-spec format="latex">Execution time: seconds (vs milliseconds for unit tests)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Setup Environment</name>
+      <signature>setup_environment() → Environment</signature>
+      <formal-definition format="latex">```
+   setup_environment() → Environment
+   = db := create_test_database()
+     services := start_test_services()
+     config := load_test_config()
+     return Environment(db, services, config)</formal-definition>
+    </operation>
+    <operation>
+      <name>Execute Integration Test</name>
+      <signature>execute_integration(test: IntegrationTest, env: Environment) → TestResult</signature>
+      <formal-definition format="latex">```
+   execute_integration(test: IntegrationTest, env: Environment) → TestResult
+   = setup_data(env.database)
+     result := test.run(env)
+     verify_state(env)
+     return result</formal-definition>
+    </operation>
+    <operation>
+      <name>Teardown Environment</name>
+      <signature>teardown(env: Environment) → Effect</signature>
+      <formal-definition format="latex">```
+   teardown(env: Environment) → Effect
+   = env.database.drop()
+     env.services.stop()
+     cleanup_test_data()
+```
+integration_test_user_registration()
+  // Setup environment
+  = test_db := create_test_database()
+    api_client := create_api_client()
+    email_service := create_mock_email_service()
+    
+    // Execute integration flow
+    response := api_client.post("/register", {
+      username: "newuser",
+      email: "new@example.com",
+      password: "secure123"
+    })
+    
+    // Verify database state
+    user := test_db.query("SELECT * FROM users WHERE username = ?", ["newuser"])
+    assert(user ≠ null)
+    assert(user.email = "new@example.com")
+    
+    // Verify email sent
+    assert(email_service.sent_count = 1)
+    assert(email_service.last_email.to = "new@example.com")
+    
+    // Cleanup
+    test_db.drop()</formal-definition>
+    </operation>
+    <operation>
+      <name>Top-Down</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Test from UI/API downward
+   Mock lower-level dependencies
+   Gradually replace mocks with real implementations</formal-definition>
+    </operation>
+    <operation>
+      <name>Bottom-Up</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Test lower-level components first
+   Combine into higher-level tests
+   Build up to full system</formal-definition>
+    </operation>
+    <operation>
+      <name>Big Bang</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Integrate all components at once
+   Test entire system
+   Risky but fast</formal-definition>
+    </operation>
+    <operation>
+      <name>Sandwich (Hybrid)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Test top and bottom layers separately
+   Integrate middle layer
+   Combine all</formal-definition>
+    </operation>
+    <operation>
+      <name>Stub</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Provides canned responses
+   No verification
+   
+   email_stub := Stub(EmailService)
+   email_stub.send() → Success  // Always succeeds</formal-definition>
+    </operation>
+    <operation>
+      <name>Mock</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Verifies interactions
+   Records calls
+   
+   email_mock := Mock(EmailService)
+   email_mock.send(to, subject, body)
+   verify(email_mock.send).called_with("test@example.com", *, *)</formal-definition>
+    </operation>
+    <operation>
+      <name>Fake</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Working implementation with shortcuts
+   Example: In-memory database
+   
+   fake_db := InMemoryDatabase()  // Real behavior, no persistence</formal-definition>
+    </operation>
+    <operation>
+      <name>Spy</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Real object with recording
+   Tracks method calls
+   
+   email_spy := Spy(RealEmailService)
+   email_spy.send(...)  // Actually sends, but records call
+   verify(email_spy.send).called()
+```
+1. In-Memory Database:
+   test_db := SQLite(":memory:")
+   Fast but limited features
+
+2. Docker Container:
+   test_db := Docker.run("postgres:13")
+   Real DB, isolated, clean slate
+
+3. Transaction Rollback:
+   begin_transaction()
+   run_test()
+   rollback()  // Undo all changes
+
+4. Fixtures:
+   load_fixtures("test_data.sql")
+   run_test()
+   truncate_tables()</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>API integration tests</name>
+    </manifestation>
+    <manifestation>
+      <name>Database integration tests</name>
+    </manifestation>
+    <manifestation>
+      <name>Service-to-service tests</name>
+    </manifestation>
+    <manifestation>
+      <name>End-to-end user flows</name>
+    </manifestation>
+  </manifestations>
+</pattern>

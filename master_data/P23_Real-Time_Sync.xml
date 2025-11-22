@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P23" version="1.1">
+  <metadata>
+    <name>Real-Time Sync</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (local, remote, diff, merge, conflicts)$</tuple-notation>
+    <components>
+      <component>
+        <name>local</name>
+        <type>State</type>
+        <notation>local</notation>
+        <description>local state</description>
+      </component>
+      <component>
+        <name>remote</name>
+        <type>State</type>
+        <notation>remote</notation>
+        <description>remote state</description>
+      </component>
+      <component>
+        <name>diff</name>
+        <type>State × State → Delta</type>
+        <notation>diff</notation>
+        <description>computes differences</description>
+      </component>
+      <component>
+        <name>merge</name>
+        <type>State × Delta → State</type>
+        <notation>merge</notation>
+        <description>applies changes</description>
+      </component>
+      <component>
+        <name>conflicts</name>
+        <type>Sequence⟨Conflict⟩</type>
+        <notation>conflicts</notation>
+        <description>tracks unresolved conflicts</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>State</name>
+      <definition format="latex">Map⟨Path, Value⟩  // Complete state snapshot</definition>
+    </type-def>
+    <type-def>
+      <name>Delta</name>
+      <definition format="latex">Sequence⟨Change⟩  // Incremental changes</definition>
+    </type-def>
+    <type-def>
+      <name>Conflict</name>
+      <definition format="latex">(path: Path, local_value: Value, remote_value: Value)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P23.1">
+      <name>Eventual Consistency</name>
+      <formal-spec format="latex">After quiescence: local = remote</formal-spec>
+    </property>
+    <property id="P.P23.2">
+      <name>Conflict Resolution</name>
+      <formal-spec format="latex">Concurrent changes → detect conflicts → resolve</formal-spec>
+    </property>
+    <property id="P.P23.3">
+      <name>Efficient Sync</name>
+      <formal-spec format="latex">Only send deltas, not full state</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Compute Delta</name>
+      <signature>diff(old: State, new: State) → Delta</signature>
+      <formal-definition format="latex">```
+   diff(old: State, new: State) → Delta
+   = changes := []
+     for path in keys(old) ∪ keys(new):
+       if old[path] ≠ new[path]:
+         changes := changes ++ [Change(path, old[path], new[path])]
+     return changes</formal-definition>
+    </operation>
+    <operation>
+      <name>Apply Delta</name>
+      <signature>merge(state: State, delta: Delta) → State</signature>
+      <formal-definition format="latex">```
+   merge(state: State, delta: Delta) → State
+   = for change in delta:
+       if ¬conflict(change, state):
+         state[change.path] := change.new_value
+       else:
+         conflicts := conflicts ++ [Conflict(change.path, state[change.path], change.new_value)]
+     return state</formal-definition>
+    </operation>
+    <operation>
+      <name>Resolve Conflict</name>
+      <signature>resolve(conflict: Conflict, strategy: Strategy) → Value</signature>
+      <formal-definition format="latex">```
+   resolve(conflict: Conflict, strategy: Strategy) → Value
+   = case strategy of
+       LastWriteWins → newer(conflict.local_value, conflict.remote_value)
+       ManualResolve → prompt_user(conflict)
+       MergeValues → merge_function(conflict.local_value, conflict.remote_value)</formal-definition>
+    </operation>
+    <operation>
+      <name>Polling</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Every τ seconds: fetch remote, diff, merge
+   Simple but wasteful</formal-definition>
+    </operation>
+    <operation>
+      <name>WebSocket</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Persistent connection, push updates
+   Real-time, efficient</formal-definition>
+    </operation>
+    <operation>
+      <name>Operational Transformation</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Transform operations to account for concurrent edits
+   Complex but powerful</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Collaborative editing</name>
+    </manifestation>
+    <manifestation>
+      <name>Live preview</name>
+    </manifestation>
+    <manifestation>
+      <name>Cloud sync</name>
+      <description>Dropbox</description>
+    </manifestation>
+    <manifestation>
+      <name>Multi-device sync</name>
+    </manifestation>
+  </manifestations>
+</pattern>

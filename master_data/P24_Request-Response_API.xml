@@ -1,0 +1,130 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P24" version="1.1">
+  <metadata>
+    <name>Request-Response API</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$A = (endpoints, handlers, middleware, responses)$</tuple-notation>
+    <components>
+      <component>
+        <name>endpoints</name>
+        <type>Set⟨Endpoint⟩</type>
+        <notation>endpoints</notation>
+        <description>API routes</description>
+      </component>
+      <component>
+        <name>handlers</name>
+        <type>Map⟨Endpoint, Handler⟩</type>
+        <notation>handlers</notation>
+        <description>process requests</description>
+      </component>
+      <component>
+        <name>middleware</name>
+        <type>Sequence⟨Middleware⟩</type>
+        <notation>middleware</notation>
+        <description>request interceptors</description>
+      </component>
+      <component>
+        <name>responses</name>
+        <type>Request → Response</type>
+        <notation>responses</notation>
+        <description>generates responses</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Endpoint</name>
+      <definition format="latex">(method: Method, path: Path)</definition>
+    </type-def>
+    <type-def>
+      <name>Method</name>
+      <definition format="latex">GET | POST | PUT | DELETE | PATCH</definition>
+    </type-def>
+    <type-def>
+      <name>Handler</name>
+      <definition format="latex">Request → Response</definition>
+    </type-def>
+    <type-def>
+      <name>Middleware</name>
+      <definition format="latex">(Request, Next) → Response</definition>
+    </type-def>
+    <type-def>
+      <name>Request</name>
+      <definition format="latex">(method: Method, path: Path, headers: Map, body: Value)</definition>
+    </type-def>
+    <type-def>
+      <name>Response</name>
+      <definition format="latex">(status: ℕ, headers: Map, body: Value)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P24.1">
+      <name>Stateless</name>
+      <formal-spec format="latex">Each request independent
+No server-side session required (often)</formal-spec>
+    </property>
+    <property id="P.P24.2">
+      <name>Idempotency</name>
+      <formal-spec format="latex">GET, PUT, DELETE are idempotent
+Multiple identical requests = same result as single request</formal-spec>
+    </property>
+    <property id="P.P24.3">
+      <name>Status Codes</name>
+      <formal-spec format="latex">2xx: Success
+3xx: Redirection
+4xx: Client error
+5xx: Server error</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Handle Request</name>
+      <signature>handle(request: Request) → Response</signature>
+      <formal-definition format="latex">```
+   handle(request: Request) → Response
+   = for mw in middleware:
+       request := mw(request, next)
+     handler := handlers[request.endpoint]
+     return handler(request)</formal-definition>
+    </operation>
+    <operation>
+      <name>Register Endpoint</name>
+      <signature>register(endpoint: Endpoint, handler: Handler) → Effect</signature>
+      <formal-definition format="latex">```
+   register(endpoint: Endpoint, handler: Handler) → Effect
+   = handlers[endpoint] := handler</formal-definition>
+    </operation>
+    <operation>
+      <name>Add Middleware</name>
+      <signature>add_middleware(mw: Middleware) → Effect</signature>
+      <formal-definition format="latex">```
+   add_middleware(mw: Middleware) → Effect
+   = middleware := middleware ++ [mw]
+```
+- Authentication: Verify credentials
+- Logging: Log request/response
+- Rate limiting: Throttle requests
+- CORS: Handle cross-origin requests
+- Compression: Gzip responses</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>REST API</name>
+    </manifestation>
+    <manifestation>
+      <name>RPC</name>
+      <description>gRPC</description>
+    </manifestation>
+    <manifestation>
+      <name>GraphQL</name>
+    </manifestation>
+    <manifestation>
+      <name>Internal service APIs</name>
+    </manifestation>
+  </manifestations>
+</pattern>

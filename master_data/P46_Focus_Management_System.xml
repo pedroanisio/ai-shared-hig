@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P46" version="1.1">
+  <metadata>
+    <name>Focus Management System</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$F = (O, \tau_{46}, R, I, S)$</tuple-notation>
+    <components>
+      <component>
+        <name>O</name>
+        <type>UI → Sequence⟨Element⟩</type>
+        <notation>O</notation>
+        <description>**focus order function**</description>
+      </component>
+      <component>
+        <name>\tau_{46}</name>
+        <type>Element → \{\text{tabbable}, \text{not\_tabbable}\}</type>
+        <notation>\tau_{46}</notation>
+        <description>**tabbability**</description>
+      </component>
+      <component>
+        <name>R</name>
+        <type>Modal → Element</type>
+        <notation>R</notation>
+        <description>**focus restoration function**</description>
+      </component>
+      <component>
+        <name>I</name>
+        <type>Element → VisualIndicator</type>
+        <notation>I</notation>
+        <description>**indicator rendering**</description>
+      </component>
+    </components>
+  </definition>
+  <properties/>
+  <operations>
+    <operation>
+      <name>Move Focus Forward</name>
+      <signature>next_focus() → Effect</signature>
+      <formal-definition format="latex">```
+   next_focus() → Effect
+   = order := O(active_scope)
+     index := indexOf(focused, order)
+     focus(order[(index + 1) mod |order|])</formal-definition>
+    </operation>
+    <operation>
+      <name>Trap Focus</name>
+      <signature>trap(modal: Modal) → Effect</signature>
+      <formal-definition format="latex">```
+   trap(modal: Modal) → Effect
+   = S := descendants(modal)
+     R(modal) := currently_focused
+     focus(first_tabbable(S))</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Modal dialog focus trap</name>
+    </manifestation>
+    <manifestation>
+      <name>Keyboard navigation</name>
+    </manifestation>
+    <manifestation>
+      <name>Skip links</name>
+    </manifestation>
+    <manifestation>
+      <name>Accessible widgets</name>
+    </manifestation>
+  </manifestations>
+</pattern>

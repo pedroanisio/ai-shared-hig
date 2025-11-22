@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P101" version="1.1">
+  <metadata>
+    <name>Retrieval Path Visualization</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V_{path} = (Query, Path_{retrieval}, Nodes_{visited}, Score_{relevance}) : \text{Retrieval} \to \text{Path}_{visual}$</tuple-notation>
+    <components>
+      <component>
+        <name>Query</name>
+        <type>String × Embedding</type>
+        <notation>Query</notation>
+        <description>user query with vector embedding</description>
+      </component>
+      <component>
+        <name>Path_{retrieval}</name>
+        <type>Seq⟨Node × Edge⟩</type>
+        <notation>Path_{retrieval}</notation>
+        <description>sequence of nodes and edges traversed in graph</description>
+      </component>
+      <component>
+        <name>Nodes_{visited}</name>
+        <type>Set⟨Node⟩</type>
+        <notation>Nodes_{visited}</notation>
+        <description>all nodes explored during retrieval</description>
+      </component>
+      <component>
+        <name>Score_{relevance}</name>
+        <type>Node → [0,1]</type>
+        <notation>Score_{relevance}</notation>
+        <description>relevance score for each node</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>Node</name>
+        <definition>$\text{Node} = (\text{id}, \text{content}, \text{embedding}, \text{type})$ (knowledge graph vertex)</definition>
+      </type-def>
+      <type-def>
+        <name>Edge</name>
+        <definition>$\text{Edge} = (\text{source}, \text{target}, \text{relation}, \text{weight})$ (knowledge graph edge)</definition>
+      </type-def>
+      <type-def>
+        <name>Embedding</name>
+        <definition>$\text{Embedding} = \mathbb{R}^d$ (dense vector representation)</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P101.1">
+      <name>Path Explainability</name>
+      <formal-spec format="latex">$\forall (n_i, e_i) \in Path_{retrieval} : \text{explain}(e_i) \to \text{why } n_{i} \to n_{i+1}$ (each hop justified)</formal-spec>
+    </property>
+    <property id="P.P101.2">
+      <name>Monotonic Relevance</name>
+      <formal-spec format="latex">$\forall n_i, n_{i+1} \in Path_{retrieval} : Score_{relevance}(n_{i+1}) \leq Score_{relevance}(n_i)$ (decreasing along path)</formal-spec>
+    </property>
+    <property id="P.P101.3">
+      <name>Connected Path</name>
+      <formal-spec format="latex">$\forall i : \exists e \in \text{Edges} : e.source = n_i \land e.target = n_{i+1}$ (valid graph path)</formal-spec>
+    </property>
+    <property id="P.P101.4">
+      <name>Multi-Hop Reasoning</name>
+      <formal-spec format="latex">$|Path_{retrieval}| \geq 1$ enables reasoning beyond direct neighbors</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Trace Retrieval</name>
+      <signature>traceRetrieval: Query × Graph → Path_retrieval</signature>
+      <formal-definition format="latex">$\text{traceRetrieval}(q, G) = \text{path}$ where
+  $n_0 = \arg\max_{n \in G} \text{sim}(q.embedding, n.embedding)$
+  $path = [n_0] \oplus \text{expand}(n_0, q, k)$ (k-hop expansion)</formal-definition>
+    </operation>
+    <operation>
+      <name>Visualize Path</name>
+      <signature>visualizePath: Path_retrieval → Rendering</signature>
+      <formal-definition format="latex">$\text{visualizePath}(path) = \text{render}$ where
+  $\text{render}.nodes = \{n \mid (n, e) \in path\}$
+  $\text{render}.edges = \{e \mid (n, e) \in path\}$
+  $\text{render}.highlights = \text{relevance-based colors}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Score Path</name>
+      <signature>scorePath: Path_retrieval → ℝ</signature>
+      <formal-definition format="latex">$\text{scorePath}(path) = \sum_{i=1}^{|path|} \frac{Score_{relevance}(n_i)}{i^\alpha}$ (decaying sum, $\alpha > 0$)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P19</pattern-ref>
+      <pattern-ref>P99</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P100</pattern-ref>
+      <pattern-ref>P104</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>GraphRAG retrieval visualization</name>
+      <description>Microsoft GraphRAG path display</description>
+    </manifestation>
+    <manifestation>
+      <name>Neo4j Bloom path exploration</name>
+      <description>interactive graph path highlighting</description>
+    </manifestation>
+    <manifestation>
+      <name>Knowledge graph explainability</name>
+      <description>shows reasoning chain from query to answer</description>
+    </manifestation>
+    <manifestation>
+      <name>RAG citation paths</name>
+      <description>visualizes document retrieval reasoning</description>
+    </manifestation>
+  </manifestations>
+</pattern>

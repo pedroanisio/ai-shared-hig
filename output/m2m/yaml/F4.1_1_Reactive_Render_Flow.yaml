@@ -1,0 +1,100 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $R = (state, render, diff, patch)$
+  description: ''
+  components:
+  - name: state
+    type: State
+    notation: state
+    description: current application state
+  - name: render
+    type: State → VirtualDOM
+    notation: render
+    description: creates virtual representation
+  - name: diff
+    type: VirtualDOM × VirtualDOM → Patch
+    notation: diff
+    description: computes changes
+  - name: patch
+    type: Patch → Effect
+    notation: patch
+    description: applies changes to actual DOM
+type_definitions:
+- name: State
+  definition: Application data that drives rendering
+  notation: State := Application data that drives rendering
+- name: VirtualDOM
+  definition: Tree representation of UI
+  notation: VirtualDOM := Tree representation of UI
+- name: Patch
+  definition: Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move
+  notation: Patch := Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move
+- name: RealDOM
+  definition: Actual browser DOM
+  notation: RealDOM := Actual browser DOM
+properties:
+- id: P.F4.1.1
+  name: Reactivity
+  formal_spec: 'state changes → render(state) → diff → patch → updated DOM
+
+    Automatic propagation'
+  description: ''
+  invariants: []
+- id: P.F4.1.2
+  name: Minimal Updates
+  formal_spec: '∀s₁, s₂ ∈ State: patch(diff(render(s₁), render(s₂))) applies minimal changes'
+  description: ''
+  invariants: []
+- id: P.F4.1.3
+  name: Consistency
+  formal_spec: '∀s ∈ State: visual_output(s) = render(s)
+
+    What you see reflects state'
+  description: ''
+  invariants: []
+operations:
+- name: Update
+  signature: 'update(new_state: State) → Effect'
+  formal_definition: "```\n   update(new_state: State) → Effect\n   = old_vdom := render(current_state)\n\
+    \     new_vdom := render(new_state)\n     patch := diff(old_vdom, new_vdom)\n     apply_patch(patch,\
+    \ real_dom)\n     current_state := new_state"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Diff
+  signature: 'diff(old: VirtualDOM, new: VirtualDOM) → Patch'
+  formal_definition: "```\n   diff(old: VirtualDOM, new: VirtualDOM) → Patch\n   = if old = new: return\
+    \ []\n     if different_type(old, new): return [Replace(old, new)]\n     if different_props(old, new):\
+    \ \n       ops := [UpdateProps(old, new)]\n     else:\n       ops := []\n     ops := ops + diff_children(old.children,\
+    \ new.children)\n     return ops"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Apply Patch
+  signature: 'apply_patch(patch: Patch, dom: RealDOM) → Effect'
+  formal_definition: "```\n   apply_patch(patch: Patch, dom: RealDOM) → Effect\n   = for op in patch:\n\
+    \       case op of\n         Insert(node, parent, index) → parent.insert_child(node, index)\n    \
+    \     Update(node, props) → node.update_properties(props)\n         Delete(node) → node.remove()\n\
+    \         Move(node, new_parent, new_index) → move(node, new_parent, new_index)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: React/Vue/Svelte rendering
+  description: ''
+- name: Virtual DOM frameworks
+  description: ''
+- name: Incremental rendering
+  description: ''
+- name: Reactive UI libraries
+  description: ''
+- name: Real-time dashboards
+  description: ''

@@ -1,0 +1,75 @@
+id: C5
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Version History
+  category: concept
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $H = (states, deltas, branches)$
+  description: ''
+  components:
+  - name: states
+    type: Sequence⟨State⟩
+    notation: states
+    description: sequence of states
+  - name: deltas
+    type: Sequence⟨Delta⟩
+    notation: deltas
+    description: sequence of changes
+  - name: branches
+    type: Tree⟨State⟩
+    notation: branches
+    description: represents branch structure
+type_definitions: []
+properties:
+- id: P.C5.1
+  name: Immutability
+  formal_spec: '∀s ∈ states: s is immutable once committed'
+  description: ''
+  invariants: []
+- id: P.C5.2
+  name: Reconstructability
+  formal_spec: '∀i: states[i] = apply_all(states[0], deltas[1..i])'
+  description: ''
+  invariants: []
+- id: P.C5.3
+  name: Branching
+  formal_spec: branch(s, name) creates new branch from state s
+  description: ''
+  invariants: []
+operations:
+- name: Checkout
+  signature: 'checkout(H: History, t: Time) → State'
+  formal_definition: "```\n   checkout(H: History, t: Time) → State\n   = states[max{i : states[i].timestamp\
+    \ ≤ t}]"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Diff
+  signature: 'diff(H: History, t₁: Time, t₂: Time) → Delta'
+  formal_definition: "```\n   diff(H: History, t₁: Time, t₂: Time) → Delta\n   = compute difference between\
+    \ states at t₁ and t₂"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Revert
+  signature: 'revert(H: History, t: Time) → History'
+  formal_definition: "```\n   revert(H: History, t: Time) → History\n   = H' where H'.states = H.states\
+    \ + [checkout(H, t)]"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Edit history
+  description: Google Docs
+- name: Git commits
+  description: ''
+- name: Feature sequence
+  description: CAD timeline
+- name: Proof versions
+  description: Lean
+- name: Database transaction log
+  description: ''

@@ -1,0 +1,110 @@
+id: P49
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Multi-Step Form (Wizard) Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $W = (steps, current, data, nav, progress)$
+  description: ''
+  components:
+  - name: steps
+    type: Sequence⟨Step⟩
+    notation: steps
+    description: form steps
+  - name: current
+    type: ℕ
+    notation: current
+    description: active step index
+  - name: data
+    type: Map⟨String, Value⟩
+    notation: data
+    description: accumulates form data
+  - name: nav
+    type: Navigation
+    notation: nav
+    description: controls step transitions
+  - name: progress
+    type: ℕ/ℕ
+    notation: progress
+    description: shows completion progress
+type_definitions:
+- name: Step
+  definition: '(title: String, fields: Set⟨Field⟩, validate: () → 𝔹)'
+  notation: 'Step := (title: String, fields: Set⟨Field⟩, validate: () → 𝔹)'
+- name: Navigation
+  definition: '{prev: () → Effect, next: () → Effect, goto: ℕ → Effect}'
+  notation: 'Navigation := {prev: () → Effect, next: () → Effect, goto: ℕ → Effect}'
+properties:
+- id: P.P49.1
+  name: Sequential Progress
+  formal_spec: can_advance(step) ⇔ valid(steps[current])
+  description: ''
+  invariants: []
+- id: P.P49.2
+  name: Data Accumulation
+  formal_spec: complete(step_i) ⇒ data := data ∪ extract_values(step_i)
+  description: ''
+  invariants: []
+- id: P.P49.3
+  name: State Persistence
+  formal_spec: 'Navigate away → persist(data, current)
+
+    Return → restore(data, current)'
+  description: ''
+  invariants: []
+- id: P.P49.4
+  name: Non-Linear Navigation
+  formal_spec: '∀i < current: can_goto(i)  // Can revisit completed steps'
+  description: ''
+  invariants: []
+operations:
+- name: Next Step
+  signature: next() → Effect
+  formal_definition: "```\n   next() → Effect\n   = if validate(steps[current]):\n       data := data\
+    \ ∪ extract_values(steps[current])\n       if current < |steps| - 1:\n         current := current\
+    \ + 1\n         render(steps[current])\n       else:\n         submit(data)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Previous Step
+  signature: prev() → Effect
+  formal_definition: "```\n   prev() → Effect\n   = if current > 0:\n       current := current - 1\n \
+    \      render(steps[current])\n3. **Go To Step:\n```\n   goto(index: ℕ) → Effect\n   = if index ≤\
+    \ max_completed_step:\n       current := index\n       render(steps[index])\n4. Calculate Progress:**\n\
+    ```\n   progress() → (ℕ, ℕ)\n   = (current + 1, |steps|)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Linear
+  signature: ''
+  formal_definition: "```\n   [=====>      ] 50% (Step 2 of 4)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Stepped
+  signature: ''
+  formal_definition: "```\n   1. Details ✓\n   2. Payment ← (current)\n   3. Review\n   4. Confirm"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Breadcrumb
+  signature: ''
+  formal_definition: "```\n   Home > Personal Info > Payment > Review"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Checkout flow
+  description: e-commerce
+- name: Onboarding wizard
+  description: ''
+- name: Setup assistant
+  description: ''
+- name: Multi-page survey
+  description: ''
+- name: Installation wizard
+  description: ''

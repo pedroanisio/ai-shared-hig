@@ -1,0 +1,117 @@
+id: P50
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Form Dependency Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $D = (fields, deps, update, cascade)$
+  description: ''
+  components:
+  - name: fields
+    type: Map⟨String, Field⟩
+    notation: fields
+    description: form fields
+  - name: deps
+    type: Map⟨String, Set⟨String⟩⟩
+    notation: deps
+    description: defines dependencies
+  - name: update
+    type: String × Value → Effect
+    notation: update
+    description: propagates changes
+  - name: cascade
+    type: 𝔹
+    notation: cascade
+    description: enables cascading updates
+type_definitions:
+- name: Dependency
+  definition: '(source: String, targets: Set⟨String⟩,'
+  notation: 'Dependency := (source: String, targets: Set⟨String⟩,'
+properties:
+- id: P.P50.1
+  name: Dependency Graph
+  formal_spec: deps forms a DAG (no circular dependencies)
+  description: ''
+  invariants: []
+- id: P.P50.2
+  name: Automatic Updates
+  formal_spec: change(field_A) ∧ field_B ∈ deps[field_A] ⇒ update(field_B)
+  description: ''
+  invariants: []
+- id: P.P50.3
+  name: Conditional Visibility
+  formal_spec: visible(field) = evaluate(visibility_condition, form_data)
+  description: ''
+  invariants: []
+- id: P.P50.4
+  name: Value Computation
+  formal_spec: computed_field.value = compute(dependencies.values)
+  description: ''
+  invariants: []
+operations:
+- name: Register Dependency
+  signature: 'add_dependency(source: String, target: String, rule: Rule) → Effect'
+  formal_definition: "```\n   add_dependency(source: String, target: String, rule: Rule) → Effect\n  \
+    \ = deps[source] := deps[source] ∪ {target}\n     rules[(source, target)] := rule\n     validate_acyclic(deps)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Update Field
+  signature: 'update_field(field: String, value: Value) → Effect'
+  formal_definition: "```\n   update_field(field: String, value: Value) → Effect\n   = fields[field].value\
+    \ := value\n     \n     if cascade:\n       for target in deps[field]:\n         rule := rules[(field,\
+    \ target)]\n         new_value := rule(value)\n         update_field(target, new_value)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Compute Derived Value
+  signature: 'compute_derived(field: String) → Value'
+  formal_definition: "```\n   compute_derived(field: String) → Value\n   = sources := {f : field ∈ deps[f]}\n\
+    \     values := map(sources, λf: fields[f].value)\n     compute_function[field](values)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Conditional Visibility
+  signature: ''
+  formal_definition: "```\n   Field \"Other\" visible only if \"Category\" = \"Other\"\n   \n   deps[\"\
+    category\"] := {\"other_field\"}\n   rules[(\"category\", \"other_field\")] := \n     λval: {visible:\
+    \ val = \"Other\"}"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Value Computation
+  signature: ''
+  formal_definition: "```\n   Total = Subtotal + Tax\n   \n   deps[\"subtotal\"] := {\"total\"}\n   deps[\"\
+    tax\"] := {\"total\"}\n   rules[(\"subtotal\"|\"tax\", \"total\")] := \n     λ_: subtotal + tax"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Cascading Defaults
+  signature: Country → State → City
+  formal_definition: "```\n   Country → State → City\n   \n   Changing country resets state and city\n\
+    \   Changing state resets city"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Dynamic Options
+  signature: Category → Subcategory options
+  formal_definition: "```\n   Category → Subcategory options\n   \n   deps[\"category\"] := {\"subcategory\"\
+    }\n   rules[(\"category\", \"subcategory\")] := \n     λcat: {options: get_subcategories(cat)}"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Address forms
+  description: country→state→city
+- name: Product configurators
+  description: ''
+- name: Tax calculators
+  description: ''
+- name: Dynamic pricing forms
+  description: ''
+- name: Conditional survey questions
+  description: ''

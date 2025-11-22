@@ -1,0 +1,126 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V = (validate, report, correct, verify)$</tuple-notation>
+    <components>
+      <component>
+        <name>validate</name>
+        <type>Data → Set⟨Violation⟩</type>
+        <notation>validate</notation>
+        <description>checks constraints</description>
+      </component>
+      <component>
+        <name>report</name>
+        <type>Violation → Notification</type>
+        <notation>report</notation>
+        <description>reports issues</description>
+      </component>
+      <component>
+        <name>correct</name>
+        <type>Violation → Correction</type>
+        <notation>correct</notation>
+        <description>attempts fixes</description>
+      </component>
+      <component>
+        <name>verify</name>
+        <type>Correction → 𝔹</type>
+        <notation>verify</notation>
+        <description>confirms fix</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Violation</name>
+      <definition format="latex">(rule: Rule, location: Location, severity: Severity)</definition>
+    </type-def>
+    <type-def>
+      <name>Rule</name>
+      <definition format="latex">(id: String, check: Data → 𝔹, message: String)</definition>
+    </type-def>
+    <type-def>
+      <name>Correction</name>
+      <definition format="latex">Automatic(fix: Fix) | Manual(suggestion: String)</definition>
+    </type-def>
+    <type-def>
+      <name>Severity</name>
+      <definition format="latex">Error | Warning | Info</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F3.2.1">
+      <name>Completeness</name>
+      <formal-spec format="latex">∀d ∈ Data: validate(d) finds all violations according to defined rules</formal-spec>
+    </property>
+    <property id="P.F3.2.2">
+      <name>Non-Destructive</name>
+      <formal-spec format="latex">∀v ∈ Violations: correct(v) preserves valid data</formal-spec>
+    </property>
+    <property id="P.F3.2.3">
+      <name>Verification</name>
+      <formal-spec format="latex">∀c ∈ Corrections: verify(c) ⇒ ¬violation_exists(after_correction)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Execute Validation</name>
+      <signature>execute(data: Data) → Report</signature>
+      <formal-definition format="latex">```
+   execute(data: Data) → Report
+   = violations := validate(data)
+     if empty(violations):
+       return Success
+     else:
+       for v in violations:
+         report(v)
+         if auto_correctable(v):
+           correction := correct(v)
+           if verify(correction):
+             apply(correction)</formal-definition>
+    </operation>
+    <operation>
+      <name>Validate</name>
+      <signature>validate(data: Data) → Set⟨Violation⟩</signature>
+      <formal-definition format="latex">```
+   validate(data: Data) → Set⟨Violation⟩
+   = violations := {}
+     for rule in rules:
+       if ¬rule.check(data):
+         violations := violations ∪ {Violation(rule, location(data), severity(rule))}
+     return violations</formal-definition>
+    </operation>
+    <operation>
+      <name>Correct</name>
+      <signature>correct(violation: Violation) → Correction</signature>
+      <formal-definition format="latex">```
+   correct(violation: Violation) → Correction
+   = if has_automatic_fix(violation):
+       return Automatic(generate_fix(violation))
+     else:
+       return Manual(suggest_fix(violation))</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Form validation with corrections</name>
+    </manifestation>
+    <manifestation>
+      <name>Code linters with auto-fix</name>
+    </manifestation>
+    <manifestation>
+      <name>Data quality checks</name>
+    </manifestation>
+    <manifestation>
+      <name>Schema validation</name>
+    </manifestation>
+    <manifestation>
+      <name>Constraint satisfaction solvers</name>
+    </manifestation>
+  </manifestations>
+</pattern>

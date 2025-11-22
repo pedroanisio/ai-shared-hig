@@ -1,0 +1,78 @@
+id: P5
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Tabbed Workspace
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $W = (tabs, active, buffers, state)$
+  description: ''
+  components:
+  - name: tabs
+    type: Sequence⟨Tab⟩
+    notation: tabs
+    description: open tabs
+  - name: active
+    type: ℕ
+    notation: active
+    description: active tab index
+  - name: buffers
+    type: Map⟨Tab, Content⟩
+    notation: buffers
+    description: stores tab contents
+  - name: state
+    type: Map⟨Tab, State⟩
+    notation: state
+    description: stores tab states (dirty, saved)
+type_definitions: []
+properties:
+- id: P.P5.1
+  name: Single Active Tab
+  formal_spec: '∀t: active(t) = (t = tabs[active])'
+  description: ''
+  invariants: []
+- id: P.P5.2
+  name: Unsaved Warning
+  formal_spec: close(tab) ∧ dirty(tab) → confirm("Unsaved changes. Close anyway?")
+  description: ''
+  invariants: []
+- id: P.P5.3
+  name: Tab Persistence
+  formal_spec: Application restart → restore(tabs, active)
+  description: ''
+  invariants: []
+operations:
+- name: Open Tab
+  signature: 'open(item: Item) → Effect'
+  formal_definition: "```\n   open(item: Item) → Effect\n   = if ∃tab: tab.item = item:\n       activate(tab)\n\
+    \     else:\n       tabs := tabs ++ [Tab(item)]\n       buffers[tab] := load(item)\n       activate(tab)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Switch Tab
+  signature: 'switch(index: ℕ) → Effect'
+  formal_definition: "```\n   switch(index: ℕ) → Effect\n   = save_state(tabs[active])\n     active :=\
+    \ index\n     restore_state(tabs[index])\n     focus(tabs[index])"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Close Tab
+  signature: 'close(index: ℕ) → Effect'
+  formal_definition: "```\n   close(index: ℕ) → Effect\n   = if dirty(tabs[index]):\n       if confirm_close():\n\
+    \         remove(tabs, index)\n         activate(max(0, index - 1))\n     else:\n       remove(tabs,\
+    \ index)\n       activate(max(0, index - 1))"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Editor tabs
+  description: VS Code
+- name: Document tabs
+  description: browsers
+- name: Multi-file editing
+  description: IDEs
+- name: Chat tabs
+  description: messaging apps

@@ -1,0 +1,92 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $F = (source, validator, normalizer, store)$
+  description: ''
+  components:
+  - name: source
+    type: Input
+    notation: source
+    description: external input source
+  - name: validator
+    type: Input → Valid | Invalid
+    notation: validator
+    description: checks input validity
+  - name: normalizer
+    type: Valid → Internal
+    notation: normalizer
+    description: converts to internal format
+  - name: store
+    type: Internal → Effect
+    notation: store
+    description: persists in system
+type_definitions:
+- name: Input
+  definition: External data or event
+  notation: Input := External data or event
+- name: Valid
+  definition: Validated input that passed checks
+  notation: Valid := Validated input that passed checks
+- name: Internal
+  definition: Normalized internal representation
+  notation: Internal := Normalized internal representation
+- name: Effect
+  definition: Side effect of storage operation
+  notation: Effect := Side effect of storage operation
+properties:
+- id: P.F1.1.1
+  name: Validation Required
+  formal_spec: '∀i ∈ Input: store(i) ⇒ validator(i) = Valid
+
+    No invalid input reaches storage'
+  description: ''
+  invariants: []
+- id: P.F1.1.2
+  name: Normalization
+  formal_spec: '∀v ∈ Valid: normalizer(v) produces consistent Internal format'
+  description: ''
+  invariants: []
+- id: P.F1.1.3
+  name: Persistence
+  formal_spec: '∀i ∈ Internal: store(i) ⇒ retrievable(i)'
+  description: ''
+  invariants: []
+operations:
+- name: Capture
+  signature: 'capture(input: Input) → Effect'
+  formal_definition: "```\n   capture(input: Input) → Effect\n   = case validator(input) of\n       Valid(v)\
+    \ → store(normalizer(v))\n       Invalid(e) → log_error(e) ; reject(input)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Validate
+  signature: 'validate(input: Input) → Valid | Invalid'
+  formal_definition: "```\n   validate(input: Input) → Valid | Invalid\n   = check_schema(input) ∧ \n\
+    \     check_constraints(input) ∧\n     check_permissions(input)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Normalize
+  signature: 'normalize(valid: Valid) → Internal'
+  formal_definition: "```\n   normalize(valid: Valid) → Internal\n   = transform_to_canonical_format(valid)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: User input forms
+  description: ''
+- name: File upload handlers
+  description: ''
+- name: API request handlers
+  description: ''
+- name: Sensor data ingestion
+  description: ''
+- name: Clipboard paste operations
+  description: ''

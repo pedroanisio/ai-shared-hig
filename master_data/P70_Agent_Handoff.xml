@@ -1,0 +1,131 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P70" version="1.1">
+  <metadata>
+    <name>Agent Handoff</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$H = (A_{from}, A_{to}, \Sigma_{state}, T_{transfer}, V_{verify}) : \text{Task} \times \text{Context} \to \text{Transfer}$</tuple-notation>
+    <components>
+      <component>
+        <name>A_{from}</name>
+        <type>Agent</type>
+        <notation>A_{from}</notation>
+        <description>source agent initiating handoff</description>
+      </component>
+      <component>
+        <name>A_{to}</name>
+        <type>Agent</type>
+        <notation>A_{to}</notation>
+        <description>target agent receiving handoff</description>
+      </component>
+      <component>
+        <name>\Sigma_{state}</name>
+        <type>State</type>
+        <notation>\Sigma_{state}</notation>
+        <description>state being transferred between agents</description>
+      </component>
+      <component>
+        <name>T_{transfer}</name>
+        <type>TransferProtocol</type>
+        <notation>T_{transfer}</notation>
+        <description>protocol for state transfer</description>
+      </component>
+      <component>
+        <name>V_{verify}</name>
+        <type>State → Boolean</type>
+        <notation>V_{verify}</notation>
+        <description>verification function for transfer integrity</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>State</name>
+      <definition>$\text{State} = (\text{context}, \text{progress}, \text{data}, \text{history})$</definition>
+    </type-def>
+    <type-def>
+      <name>TransferProtocol</name>
+      <definition>$\text{TransferProtocol} = \{\text{synchronous}, \text{asynchronous}, \text{atomic}, \text{gradual}\}$</definition>
+    </type-def>
+    <type-def>
+      <name>Transfer</name>
+      <definition>$\text{Transfer} = (\text{state}, \text{status}, \text{timestamp}, \text{acknowledgment})$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P70.1">
+      <name>State Preservation</name>
+      <formal-spec format="latex">$\forall s \in \Sigma_{state} : \text{handoff}(A_{from}, A_{to}, s) \implies s' = s$ (no state loss)</formal-spec>
+    </property>
+    <property id="P.P70.2">
+      <name>Handoff Atomicity</name>
+      <formal-spec format="latex">$\text{handoff}(A_{from}, A_{to}) \implies \exists t : \text{owner}(\text{task}, t^-) = A_{from} \land \text{owner}(\text{task}, t^+) = A_{to}$</formal-spec>
+    </property>
+    <property id="P.P70.3">
+      <name>Capability Compatibility</name>
+      <formal-spec format="latex">$\forall \text{task} : \text{capabilities}(A_{from}) \subseteq \text{capabilities}(A_{to})$ for handoff</formal-spec>
+    </property>
+    <property id="P.P70.4">
+      <name>Verification Required</name>
+      <formal-spec format="latex">$\forall \text{transfer} : \text{complete}(\text{transfer}) \iff V_{verify}(\Sigma_{state}) = \text{true}$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Initiate Handoff</name>
+      <signature>initiate: Agent × Agent × State → Transfer</signature>
+      <formal-definition format="latex">$\text{initiate}(a_1, a_2, s) = t$ where
+  $t.state = \text{serialize}(s)$
+  $t.status = \text{pending}$
+  $\text{notify}(a_2, t)$</formal-definition>
+    </operation>
+    <operation>
+      <name>Accept Handoff</name>
+      <signature>accept: Agent × Transfer → State</signature>
+      <formal-definition format="latex">$\text{accept}(a, t) = s$ where
+  $s = \text{deserialize}(t.state)$
+  $V_{verify}(s) = \text{true}$
+  $t.status \leftarrow \text{complete}$
+  $t.acknowledgment \leftarrow \text{signed}(a)$</formal-definition>
+    </operation>
+    <operation>
+      <name>Rollback Handoff</name>
+      <signature>rollback: Transfer → State</signature>
+      <formal-definition format="latex">$\text{rollback}(t) = s$ where
+  $s = t.state_{original}$
+  $\text{owner}(\text{task}) \leftarrow A_{from}$
+  $t.status \leftarrow \text{cancelled}$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P14</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P68</pattern-ref>
+      <pattern-ref>P69</pattern-ref>
+      <pattern-ref>P91</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>CrewAI task delegation</name>
+      <description>tasks passed between specialized agents</description>
+    </manifestation>
+    <manifestation>
+      <name>LangGraph conditional edges</name>
+      <description>routing between agent nodes with state transfer</description>
+    </manifestation>
+    <manifestation>
+      <name>AutoGPT sub-agent spawning</name>
+      <description>parent agent hands off subtasks to children</description>
+    </manifestation>
+    <manifestation>
+      <name>Customer service agent escalation</name>
+      <description>tier-1 bot hands off to tier-2 specialist</description>
+    </manifestation>
+  </manifestations>
+</pattern>

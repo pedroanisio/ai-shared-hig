@@ -1,0 +1,143 @@
+# Universal Corpus Pattern Schema (YAML)
+# Version: 1.0
+# Preserves full formal rigor in machine-readable format
+
+schema_version: "1.0"
+description: "Schema for Universal Corpus patterns with formal mathematical specifications"
+
+# Pattern Structure
+pattern_structure:
+  id:
+    type: string
+    pattern: "^[CPF][0-9]+(\\.[0-9]+)?$"
+    description: "Pattern identifier (e.g., P36, C1, F1.1)"
+    required: true
+  
+  name:
+    type: string
+    description: "Human-readable pattern name"
+    required: true
+  
+  category:
+    type: enum
+    values: [concept, pattern, flow]
+    required: true
+  
+  definition:
+    type: object
+    required: true
+    properties:
+      tuple_notation:
+        type: string
+        description: "Mathematical tuple definition (LaTeX format)"
+        example: "$S = (selection, content, \\phi_{36}, observers)$"
+      
+      components:
+        type: array
+        items:
+          name: string
+          type: string
+          description: string
+          notation: string  # Mathematical notation
+  
+  type_definitions:
+    type: array
+    description: "Formal type definitions"
+    items:
+      name: string
+      definition: string
+      notation: string  # Mathematical expression
+  
+  properties:
+    type: array
+    description: "Formal properties with mathematical specifications"
+    items:
+      id: string  # e.g., "P.P36.1"
+      name: string
+      formal_specification: string  # Mathematical expression
+      description: string
+      invariants:
+        type: array
+        items: string
+  
+  operations:
+    type: array
+    description: "Operational semantics"
+    items:
+      name: string
+      signature: string  # Type signature
+      formal_definition: string  # Mathematical/algorithmic definition
+      effects: 
+        type: array
+        items: string
+      preconditions:
+        type: array
+        items: string
+      postconditions:
+        type: array
+        items: string
+  
+  dependencies:
+    type: object
+    properties:
+      requires:
+        type: array
+        items: string  # Pattern IDs
+      uses:
+        type: array
+        items: string
+      specializes:
+        type: array
+        items: string
+      specialized_by:
+        type: array
+        items: string
+  
+  manifestations:
+    type: array
+    description: "Real-world examples"
+    items:
+      name: string
+      description: string
+  
+  metadata:
+    type: object
+    properties:
+      version: string
+      last_updated: date
+      status: enum [draft, stable, deprecated]
+      complexity: enum [low, medium, high]
+      domains:
+        type: array
+        items: string
+
+# Notation Standards
+notation:
+  mathematical:
+    format: "LaTeX"
+    encoding: "UTF-8"
+    symbols:
+      - "∀ (universal quantifier)"
+      - "∃ (existential quantifier)"
+      - "→ (implies)"
+      - "⇒ (logical consequence)"
+      - "⇔ (if and only if)"
+      - "∈ (element of)"
+      - "⊆ (subset)"
+      - "∪ (union)"
+      - "∩ (intersection)"
+      - "∖ (set difference)"
+  
+  type_system:
+    primitives: [ℕ, ℤ, ℝ, 𝔹, String, Time]
+    collections: ["Set⟨T⟩", "Sequence⟨T⟩", "Map⟨K,V⟩", "Graph⟨N,E⟩", "Tree⟨T⟩"]
+    functions: ["T → U", "T × U → V"]
+
+# Validation Rules
+validation:
+  - "All mathematical expressions must be valid LaTeX"
+  - "All pattern references must resolve to existing patterns"
+  - "Type signatures must conform to type system"
+  - "Tuple components must match definition"
+  - "Property IDs must follow pattern: P.{PatternID}.{Number}"
+

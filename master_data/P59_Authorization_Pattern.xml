@@ -1,0 +1,201 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P59" version="1.1">
+  <metadata>
+    <name>Authorization Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$Z = (subjects, objects, permissions, policies, check)$</tuple-notation>
+    <components>
+      <component>
+        <name>subjects</name>
+        <type>Set⟨Subject⟩</type>
+        <notation>subjects</notation>
+        <description>actors (users, services)</description>
+      </component>
+      <component>
+        <name>objects</name>
+        <type>Set⟨Object⟩</type>
+        <notation>objects</notation>
+        <description>resources</description>
+      </component>
+      <component>
+        <name>permissions</name>
+        <type>Set⟨Permission⟩</type>
+        <notation>permissions</notation>
+        <description>allowed actions</description>
+      </component>
+      <component>
+        <name>policies</name>
+        <type>Subject \times Object \times Action → \mathbb{B}</type>
+        <notation>policies</notation>
+        <description>define rules</description>
+      </component>
+      <component>
+        <name>check</name>
+        <type>(Subject, Object, Action) → \mathbb{B}</type>
+        <notation>check</notation>
+        <description>evaluates access</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Subject</name>
+      <definition format="latex">User | Service | Group</definition>
+    </type-def>
+    <type-def>
+      <name>Object</name>
+      <definition format="latex">Resource(id: ID, type: Type, owner: Subject)</definition>
+    </type-def>
+    <type-def>
+      <name>Permission</name>
+      <definition format="latex">(subject: Subject, object: Object, actions: Set⟨Action⟩)</definition>
+    </type-def>
+    <type-def>
+      <name>Action</name>
+      <definition format="latex">Read | Write | Execute | Delete | Share | Admin</definition>
+    </type-def>
+    <type-def>
+      <name>Policy</name>
+      <definition format="latex">(condition: Predicate, effect: Allow | Deny)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P59.1">
+      <name>Least Privilege</name>
+      <formal-spec format="latex">Default deny: access denied unless explicitly allowed</formal-spec>
+    </property>
+    <property id="P.P59.2">
+      <name>Policy Evaluation</name>
+      <formal-spec format="latex">Explicit deny overrides allow
+Multiple policies combined with AND</formal-spec>
+    </property>
+    <property id="P.P59.3">
+      <name>Inheritance</name>
+      <formal-spec format="latex">Group permissions inherited by members
+Parent resource permissions inherited by children</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Check Permission</name>
+      <signature>check(subject: Subject, object: Object, action: Action) → 𝔹</signature>
+      <formal-definition format="latex">```
+   check(subject: Subject, object: Object, action: Action) → 𝔹
+   = policies_applicable := filter(policies, λp: p.applies(subject, object, action))
+     
+     // Check for explicit deny
+     if ∃p ∈ policies_applicable: p.effect = Deny:
+       return false
+     
+     // Check for explicit allow
+     if ∃p ∈ policies_applicable: p.effect = Allow:
+       return true
+     
+     // Default deny
+     return false</formal-definition>
+    </operation>
+    <operation>
+      <name>Grant Permission</name>
+      <signature>grant(subject: Subject, object: Object, actions: Set⟨Action⟩) → Effect</signature>
+      <formal-definition format="latex">```
+   grant(subject: Subject, object: Object, actions: Set⟨Action⟩) → Effect
+   = permission := Permission(subject, object, actions)
+     permissions := permissions ∪ {permission}</formal-definition>
+    </operation>
+    <operation>
+      <name>Revoke Permission</name>
+      <signature>revoke(subject: Subject, object: Object) → Effect</signature>
+      <formal-definition format="latex">```
+   revoke(subject: Subject, object: Object) → Effect
+   = permissions := permissions ∖ {p : p.subject = subject ∧ p.object = object}</formal-definition>
+    </operation>
+    <operation>
+      <name>Evaluate Policy</name>
+      <signature>evaluate_policy(policy: Policy, context: Context) → Allow | Deny</signature>
+      <formal-definition format="latex">```
+   evaluate_policy(policy: Policy, context: Context) → Allow | Deny
+   = if policy.condition(context):
+       return policy.effect
+     else:
+       return NotApplicable</formal-definition>
+    </operation>
+    <operation>
+      <name>Role-Based Access Control (RBAC)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Users assigned to roles
+   Roles have permissions
+   user → roles → permissions → resources
+   
+   Example:
+     Admin role: can do everything
+     Editor role: can read, write
+     Viewer role: can read only</formal-definition>
+    </operation>
+    <operation>
+      <name>Attribute-Based Access Control (ABAC)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Policies based on attributes of subject, object, environment
+   
+   Example:
+     Allow if user.department = resource.department
+     Allow if time_of_day between 9am and 5pm</formal-definition>
+    </operation>
+    <operation>
+      <name>Access Control Lists (ACL)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Each resource has list of allowed subjects and actions
+   
+   Example:
+     document123.acl = [
+       (alice, Read|Write),
+       (bob, Read),
+       (admin_group, *)
+     ]</formal-definition>
+    </operation>
+    <operation>
+      <name>Ownership</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Resource owner has full control
+   Owner can grant permissions to others
+```
+Policy 1: Owner full access
+  condition: subject = object.owner
+  effect: Allow all actions
+
+Policy 2: Department access
+  condition: subject.department = object.department
+  effect: Allow Read
+
+Policy 3: Admin access
+  condition: subject.role = Admin
+  effect: Allow all actions
+
+Policy 4: Deny deleted users
+  condition: subject.status = Deleted
+  effect: Deny all actions</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>File permission systems</name>
+    </manifestation>
+    <manifestation>
+      <name>API authorization</name>
+    </manifestation>
+    <manifestation>
+      <name>Database row-level security</name>
+    </manifestation>
+    <manifestation>
+      <name>Cloud resource access</name>
+      <description>AWS IAM</description>
+    </manifestation>
+  </manifestations>
+</pattern>

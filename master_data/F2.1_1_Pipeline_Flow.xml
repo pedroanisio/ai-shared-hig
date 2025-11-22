@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$P = (stages, ir, error\_handler, compose)$</tuple-notation>
+    <components>
+      <component>
+        <name>stages</name>
+        <type>Sequence⟨Stage⟩</type>
+        <notation>stages</notation>
+        <description>transformation stages</description>
+      </component>
+      <component>
+        <name>ir</name>
+        <type>Sequence⟨IR⟩</type>
+        <notation>ir</notation>
+        <description>intermediate representations</description>
+      </component>
+      <component>
+        <name>error\_handler</name>
+        <type>Error → Recovery</type>
+        <notation>error\_handler</notation>
+        <description>handles stage failures</description>
+      </component>
+      <component>
+        <name>compose</name>
+        <type>Sequence⟨Stage⟩ → (Input → Output)</type>
+        <notation>compose</notation>
+        <description>composes stages</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Stage</name>
+      <definition format="latex">(name: String, transform: Input → Output | Error)</definition>
+    </type-def>
+    <type-def>
+      <name>IR</name>
+      <definition format="latex">Intermediate representation between stages</definition>
+    </type-def>
+    <type-def>
+      <name>Recovery</name>
+      <definition format="latex">Retry | Skip | Abort | Fallback</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F2.1.1">
+      <name>Sequential Composition</name>
+      <formal-spec format="latex">output(stage_n) = input(stage_{n+1})
+Stages connect sequentially</formal-spec>
+    </property>
+    <property id="P.F2.1.2">
+      <name>Error Propagation</name>
+      <formal-spec format="latex">error(stage_i) ⇒ handle_error ∨ abort_pipeline</formal-spec>
+    </property>
+    <property id="P.F2.1.3">
+      <name>Determinism</name>
+      <formal-spec format="latex">∀input: compose(stages)(input) produces same output</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Execute Pipeline</name>
+      <signature>execute(input: Input) → Output | Error</signature>
+      <formal-definition format="latex">```
+   execute(input: Input) → Output | Error
+   = result := input
+     for stage in stages:
+       result := stage.transform(result)
+       if is_error(result):
+         result := error_handler(result)
+         if abort(result): return result
+     return result</formal-definition>
+    </operation>
+    <operation>
+      <name>Compose Stages</name>
+      <signature>compose(stages: Sequence⟨Stage⟩) → (Input → Output)</signature>
+      <formal-definition format="latex">```
+   compose(stages: Sequence⟨Stage⟩) → (Input → Output)
+   = λ input: fold(stages, input, λ(acc, stage): stage(acc))</formal-definition>
+    </operation>
+    <operation>
+      <name>Handle Error</name>
+      <signature>handle_error(error: Error, stage: Stage) → Recovery</signature>
+      <formal-definition format="latex">```
+   handle_error(error: Error, stage: Stage) → Recovery
+   = case error_type(error) of
+       Transient → Retry(stage, max_attempts=3)
+       Permanent → Abort(error)
+       Recoverable → Fallback(alternative_stage)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Compiler pipelines</name>
+      <description>source → AST → IR → binary</description>
+    </manifestation>
+    <manifestation>
+      <name>Data transformation</name>
+      <description>ETL pipelines</description>
+    </manifestation>
+    <manifestation>
+      <name>Build systems</name>
+      <description>source → compile → link → package</description>
+    </manifestation>
+    <manifestation>
+      <name>Markdown renderers</name>
+      <description>MD → AST → HTML</description>
+    </manifestation>
+    <manifestation>
+      <name>Image processing</name>
+      <description>raw → decode → transform → encode</description>
+    </manifestation>
+  </manifestations>
+</pattern>

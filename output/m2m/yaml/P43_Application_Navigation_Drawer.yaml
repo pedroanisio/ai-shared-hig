@@ -1,0 +1,80 @@
+id: P43
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Application Navigation Drawer
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $D = (S_{43}, C, O, \alpha_{43}, \omega_{43}, \pi_{43})$
+  description: ''
+  components:
+  - name: O
+    type: S_{43} → \mathbb{B}
+    notation: O
+    description: determines **overlay visibility**
+  - name: \alpha_{43}
+    type: S_{43} \times S_{43} → Animation
+    notation: \alpha_{43}
+    description: '**transition animation**'
+  - name: \pi_{43}
+    type: C → Route
+    notation: \pi_{43}
+    description: maps items to **routes**
+type_definitions: []
+properties:
+- id: P.P43.1
+  name: State Machine
+  formal_spec: 'Transitions:
+
+    collapsed ↔ expanded
+
+    expanded ↔ pinned
+
+    collapsed ↔ pinned'
+  description: ''
+  invariants: []
+- id: P.P43.2
+  name: Space Management
+  formal_spec: 'available_width = viewport.width - (σ₄₃ ∈ {expanded, pinned} ? ω₄₃ : 0)'
+  description: ''
+  invariants: []
+- id: P.P43.3
+  name: Overlay Behavior
+  formal_spec: O(σ₄₃) = true ⇔ σ₄₃ = expanded
+  description: ''
+  invariants: []
+operations:
+- name: Toggle
+  signature: toggle() → Effect
+  formal_definition: "```\n   toggle() → Effect\n   = σ₄₃ := case σ₄₃ of\n              collapsed → expanded\n\
+    \              expanded → collapsed\n              pinned → pinned (no change)\n     animate(α₄₃(old_state,\
+    \ σ₄₃))"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Pin
+  signature: pin() → Effect
+  formal_definition: "```\n   pin() → Effect\n   = σ₄₃ := pinned\n     O := false\n     persist(\"drawer.pinned\"\
+    , true)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Navigate
+  signature: 'navigate(item: Item) → Effect'
+  formal_definition: "```\n   navigate(item: Item) → Effect\n   = route := π₄₃(item)\n     goto(route)\n\
+    \     if mobile(): σ₄₃ := collapsed"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Gmail sidebar
+  description: ''
+- name: VS Code activity bar
+  description: ''
+- name: Mobile hamburger menus
+  description: ''
+- name: CMS tool selector
+  description: ''

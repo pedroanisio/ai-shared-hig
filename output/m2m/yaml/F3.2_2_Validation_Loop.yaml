@@ -1,0 +1,94 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $V = (validate, report, correct, verify)$
+  description: ''
+  components:
+  - name: validate
+    type: Data → Set⟨Violation⟩
+    notation: validate
+    description: checks constraints
+  - name: report
+    type: Violation → Notification
+    notation: report
+    description: reports issues
+  - name: correct
+    type: Violation → Correction
+    notation: correct
+    description: attempts fixes
+  - name: verify
+    type: Correction → 𝔹
+    notation: verify
+    description: confirms fix
+type_definitions:
+- name: Violation
+  definition: '(rule: Rule, location: Location, severity: Severity)'
+  notation: 'Violation := (rule: Rule, location: Location, severity: Severity)'
+- name: Rule
+  definition: '(id: String, check: Data → 𝔹, message: String)'
+  notation: 'Rule := (id: String, check: Data → 𝔹, message: String)'
+- name: Correction
+  definition: 'Automatic(fix: Fix) | Manual(suggestion: String)'
+  notation: 'Correction := Automatic(fix: Fix) | Manual(suggestion: String)'
+- name: Severity
+  definition: Error | Warning | Info
+  notation: Severity := Error | Warning | Info
+properties:
+- id: P.F3.2.1
+  name: Completeness
+  formal_spec: '∀d ∈ Data: validate(d) finds all violations according to defined rules'
+  description: ''
+  invariants: []
+- id: P.F3.2.2
+  name: Non-Destructive
+  formal_spec: '∀v ∈ Violations: correct(v) preserves valid data'
+  description: ''
+  invariants: []
+- id: P.F3.2.3
+  name: Verification
+  formal_spec: '∀c ∈ Corrections: verify(c) ⇒ ¬violation_exists(after_correction)'
+  description: ''
+  invariants: []
+operations:
+- name: Execute Validation
+  signature: 'execute(data: Data) → Report'
+  formal_definition: "```\n   execute(data: Data) → Report\n   = violations := validate(data)\n     if\
+    \ empty(violations):\n       return Success\n     else:\n       for v in violations:\n         report(v)\n\
+    \         if auto_correctable(v):\n           correction := correct(v)\n           if verify(correction):\n\
+    \             apply(correction)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Validate
+  signature: 'validate(data: Data) → Set⟨Violation⟩'
+  formal_definition: "```\n   validate(data: Data) → Set⟨Violation⟩\n   = violations := {}\n     for rule\
+    \ in rules:\n       if ¬rule.check(data):\n         violations := violations ∪ {Violation(rule, location(data),\
+    \ severity(rule))}\n     return violations"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Correct
+  signature: 'correct(violation: Violation) → Correction'
+  formal_definition: "```\n   correct(violation: Violation) → Correction\n   = if has_automatic_fix(violation):\n\
+    \       return Automatic(generate_fix(violation))\n     else:\n       return Manual(suggest_fix(violation))"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Form validation with corrections
+  description: ''
+- name: Code linters with auto-fix
+  description: ''
+- name: Data quality checks
+  description: ''
+- name: Schema validation
+  description: ''
+- name: Constraint satisfaction solvers
+  description: ''

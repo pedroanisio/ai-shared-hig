@@ -1,0 +1,79 @@
+id: P11
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Validator/Checker
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $V = (rules, input, report, severity)$
+  description: ''
+  components:
+  - name: rules
+    type: Set⟨Rule⟩
+    notation: rules
+    description: validation rules
+  - name: input
+    type: Data
+    notation: input
+    description: data to validate
+  - name: report
+    type: Sequence⟨Violation⟩
+    notation: report
+    description: found violations
+  - name: severity
+    type: Rule → Level
+    notation: severity
+    description: assigns severity levels
+type_definitions:
+- name: Rule
+  definition: '(name: String, check: Data → Sequence⟨Violation⟩)'
+  notation: 'Rule := (name: String, check: Data → Sequence⟨Violation⟩)'
+- name: Violation
+  definition: '(rule: Rule, location: Location, message: String)'
+  notation: 'Violation := (rule: Rule, location: Location, message: String)'
+- name: Level
+  definition: Error | Warning | Info
+  notation: Level := Error | Warning | Info
+properties:
+- id: P.P11.1
+  name: Completeness
+  formal_spec: All rules are checked for all applicable data
+  description: ''
+  invariants: []
+- id: P.P11.2
+  name: Correctness
+  formal_spec: report contains only actual violations (no false positives)
+  description: ''
+  invariants: []
+- id: P.P11.3
+  name: Actionability
+  formal_spec: Each violation includes location and fix suggestion
+  description: ''
+  invariants: []
+operations:
+- name: Validate
+  signature: 'validate(data: Data) → Report'
+  formal_definition: "```\n   validate(data: Data) → Report\n   = violations := []\n     for rule in rules:\n\
+    \       violations := violations ++ rule.check(data)\n     return Report(violations, sort_by_severity)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Add Rule
+  signature: 'add_rule(rule: Rule, level: Level) → Effect'
+  formal_definition: "```\n   add_rule(rule: Rule, level: Level) → Effect\n   = rules := rules ∪ {rule}\n\
+    \     severity[rule] := level"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Proof checkers
+  description: Lean, Coq
+- name: Type checkers
+  description: ''
+- name: Constraint validators
+  description: ''
+- name: Linters
+  description: ''

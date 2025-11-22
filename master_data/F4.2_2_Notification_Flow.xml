@@ -1,0 +1,134 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$N = (trigger, route, format, deliver)$</tuple-notation>
+    <components>
+      <component>
+        <name>trigger</name>
+        <type>Event → Notification</type>
+        <notation>trigger</notation>
+        <description>creates notification from event</description>
+      </component>
+      <component>
+        <name>route</name>
+        <type>Notification → Set⟨Channel⟩</type>
+        <notation>route</notation>
+        <description>selects delivery channels</description>
+      </component>
+      <component>
+        <name>format</name>
+        <type>(Notification, Channel) → Message</type>
+        <notation>format</notation>
+        <description>formats for channel</description>
+      </component>
+      <component>
+        <name>deliver</name>
+        <type>(Message, Channel) → Effect</type>
+        <notation>deliver</notation>
+        <description>sends notification</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Notification</name>
+      <definition format="latex">(id: String, type: NotificationType,</definition>
+    </type-def>
+    <type-def>
+      <name>Channel</name>
+      <definition format="latex">Email | Push | SMS | InApp | Webhook</definition>
+    </type-def>
+    <type-def>
+      <name>Priority</name>
+      <definition format="latex">Urgent | High | Normal | Low</definition>
+    </type-def>
+    <type-def>
+      <name>NotificationType</name>
+      <definition format="latex">Alert | Info | Success | Warning | Error</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F4.2.1">
+      <name>Priority-Based Delivery</name>
+      <formal-spec format="latex">∀n ∈ Notifications: priority(n) = Urgent ⇒
+all_channels_enabled(n) ∧ immediate_delivery(n)</formal-spec>
+    </property>
+    <property id="P.F4.2.2">
+      <name>User Preferences</name>
+      <formal-spec format="latex">∀u ∈ Users, n ∈ Notifications:
+deliver(n, channel) only if user_allows(u, channel, type(n))</formal-spec>
+    </property>
+    <property id="P.F4.2.3">
+      <name>Deduplication</name>
+      <formal-spec format="latex">∀n₁, n₂: similar(n₁, n₂) ∧ recent(n₁) ⇒ suppress(n₂)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Notify</name>
+      <signature>notify(event: Event) → Effect</signature>
+      <formal-definition format="latex">```
+   notify(event: Event) → Effect
+   = notification := trigger(event)
+     if should_suppress(notification):
+       return
+     channels := route(notification)
+     for channel in channels:
+       message := format(notification, channel)
+       deliver(message, channel)
+       log_delivery(notification, channel)</formal-definition>
+    </operation>
+    <operation>
+      <name>Route</name>
+      <signature>route(notification: Notification) → Set⟨Channel⟩</signature>
+      <formal-definition format="latex">```
+   route(notification: Notification) → Set⟨Channel⟩
+   = user := notification.recipient
+     preferences := user.notification_preferences
+     
+     channels := {}
+     case notification.priority of
+       Urgent → channels := all_channels(user)
+       High → channels := preferred_channels(user) ∪ {InApp}
+       Normal → channels := preferred_channels(user)
+       Low → channels := {InApp}
+     
+     return channels ∩ enabled_channels(preferences, notification.type)</formal-definition>
+    </operation>
+    <operation>
+      <name>Format</name>
+      <signature>format(notification: Notification, channel: Channel) → Message</signature>
+      <formal-definition format="latex">```
+   format(notification: Notification, channel: Channel) → Message
+   = case channel of
+       Email → format_email(notification.subject, notification.body, notification.action_url)
+       Push → format_push(notification.title, notification.short_text, notification.icon)
+       SMS → format_sms(notification.short_text, max_length=160)
+       InApp → format_in_app(notification.full_content)
+       Webhook → format_json(notification)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Alert systems</name>
+    </manifestation>
+    <manifestation>
+      <name>Email notifications</name>
+    </manifestation>
+    <manifestation>
+      <name>Push notifications</name>
+    </manifestation>
+    <manifestation>
+      <name>In-app messages</name>
+    </manifestation>
+    <manifestation>
+      <name>Webhook deliveries</name>
+    </manifestation>
+  </manifestations>
+</pattern>

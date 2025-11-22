@@ -1,0 +1,173 @@
+# Concept C1: Graph Structure
+# Machine-readable format preserving full formal rigor
+# Generated from Universal Corpus v1.1
+
+id: C1
+version: "1.1"
+schema_version: "1.0"
+
+metadata:
+  name: "Graph Structure"
+  category: concept
+  status: stable
+  complexity: low
+  domains:
+    - Data_Structures
+    - Graph_Theory
+    - Foundational_Concepts
+  last_updated: "2025-11-22"
+
+definition:
+  tuple_notation: "$G = (N, E, \\lambda_n, \\lambda_e)$"
+  description: "A mathematical graph structure with labeled nodes and edges"
+  components:
+    - name: N
+      type: "Set⟨Node⟩"
+      notation: "N"
+      description: "A finite set of nodes"
+      
+    - name: E
+      type: "Set⟨Edge⟩"
+      notation: "E \\subseteq N \\times N"
+      description: "A set of edges (ordered pairs of nodes)"
+      
+    - name: λ_n
+      type: "N → Label_n"
+      notation: "\\lambda_n"
+      description: "A node labeling function"
+      
+    - name: λ_e
+      type: "E → Label_e"
+      notation: "\\lambda_e"
+      description: "An edge labeling function"
+
+type_definitions:
+  - name: Node
+    definition: "Basic graph node"
+    notation: "Node := vertex in graph"
+    
+  - name: Edge
+    definition: "(n₁, n₂) where n₁, n₂ ∈ N"
+    notation: "Edge := N × N"
+    
+  - name: Label_n
+    definition: "Node label type"
+    notation: "Label_n := String | Object"
+    
+  - name: Label_e
+    definition: "Edge label type"
+    notation: "Label_e := String | ℝ | Object"
+
+properties:
+  - id: "P.C1.1"
+    name: "Connectivity"
+    formal_spec: |
+      connected(G) ⇔ ∀n₁, n₂ ∈ N: ∃ path from n₁ to n₂
+    description: "Graph is connected if every pair of nodes has a path between them"
+    invariants:
+      - "connected(G) ⇔ ∀n₁, n₂ ∈ N: ∃p: path(n₁, n₂) ≠ null"
+    
+  - id: "P.C1.2"
+    name: "Cycle Detection"
+    formal_spec: |
+      acyclic(G) ⇔ ¬∃ path: n → ... → n
+    description: "Graph is acyclic if no node has a path back to itself"
+    invariants:
+      - "acyclic(G) ⇔ ∀n ∈ N: ¬∃p: path(n, n)"
+      - "DAG ⇔ acyclic(G) ∧ directed(G)"
+
+operations:
+  - name: "Traverse"
+    signature: "traverse(n: N, depth: ℕ) → Set⟨N⟩"
+    formal_definition: |
+      = {n' ∈ N : distance(n, n') ≤ depth}
+    preconditions:
+      - "n ∈ N"
+      - "depth ≥ 0"
+    postconditions:
+      - "result ⊆ N"
+      - "∀n' ∈ result: distance(n, n') ≤ depth"
+    effects:
+      - "Returns reachable nodes within depth"
+      
+  - name: "Neighbors"
+    signature: "neighbors(n: N) → Set⟨N⟩"
+    formal_definition: |
+      = {n' ∈ N : (n, n') ∈ E ∨ (n', n) ∈ E}
+    preconditions:
+      - "n ∈ N"
+    postconditions:
+      - "result ⊆ N"
+      - "∀n' ∈ result: (n, n') ∈ E ∨ (n', n) ∈ E"
+    effects:
+      - "Returns adjacent nodes"
+      
+  - name: "Path"
+    signature: "path(n₁: N, n₂: N) → Sequence⟨N⟩ | null"
+    formal_definition: |
+      = shortest path from n₁ to n₂, or null if none exists
+    preconditions:
+      - "n₁ ∈ N"
+      - "n₂ ∈ N"
+    postconditions:
+      - "result = null ∨ (result[0] = n₁ ∧ result[|result|-1] = n₂)"
+      - "result ≠ null ⇒ ∀i: (result[i], result[i+1]) ∈ E"
+    effects:
+      - "Returns shortest path or null"
+
+dependencies:
+  requires: []
+  uses: []
+  specializes: []
+  specialized_by: []
+  used_by:
+    - P19  # Graph Database
+    - P8   # Search-Based Navigation
+    - P9   # Backlinks/References
+
+manifestations:
+  - name: "Knowledge graphs"
+    description: "Semantic networks and knowledge bases"
+    
+  - name: "File trees"
+    description: "Hierarchical file systems"
+    
+  - name: "Feature history"
+    description: "CAD feature dependencies"
+    
+  - name: "Axiom dependencies"
+    description: "Proof assistant theorem dependencies"
+    
+  - name: "Part hierarchies"
+    description: "Engineering part dependencies"
+    
+  - name: "Social networks"
+    description: "User relationship graphs"
+    
+  - name: "Dependency graphs"
+    description: "Software module dependencies"
+
+# Additional graph properties
+graph_properties:
+  directed: "can be directed or undirected"
+  weighted: "edge labels can represent weights"
+  cyclic: "may contain cycles"
+  connected: "may be connected or disconnected"
+
+# Common algorithms applicable
+algorithms:
+  - "Depth-First Search (DFS)"
+  - "Breadth-First Search (BFS)"
+  - "Dijkstra's shortest path"
+  - "Topological sort (for DAGs)"
+  - "Cycle detection"
+  - "Connected components"
+
+# Validation metadata
+validation:
+  tuple_arity: 4
+  required_properties: 2
+  required_operations: 3
+  mathematical_rigor: "complete"
+  foundational_concept: true
+

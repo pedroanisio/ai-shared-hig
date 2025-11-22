@@ -1,0 +1,103 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $N = (trigger, route, format, deliver)$
+  description: ''
+  components:
+  - name: trigger
+    type: Event → Notification
+    notation: trigger
+    description: creates notification from event
+  - name: route
+    type: Notification → Set⟨Channel⟩
+    notation: route
+    description: selects delivery channels
+  - name: format
+    type: (Notification, Channel) → Message
+    notation: format
+    description: formats for channel
+  - name: deliver
+    type: (Message, Channel) → Effect
+    notation: deliver
+    description: sends notification
+type_definitions:
+- name: Notification
+  definition: '(id: String, type: NotificationType,'
+  notation: 'Notification := (id: String, type: NotificationType,'
+- name: Channel
+  definition: Email | Push | SMS | InApp | Webhook
+  notation: Channel := Email | Push | SMS | InApp | Webhook
+- name: Priority
+  definition: Urgent | High | Normal | Low
+  notation: Priority := Urgent | High | Normal | Low
+- name: NotificationType
+  definition: Alert | Info | Success | Warning | Error
+  notation: NotificationType := Alert | Info | Success | Warning | Error
+properties:
+- id: P.F4.2.1
+  name: Priority-Based Delivery
+  formal_spec: '∀n ∈ Notifications: priority(n) = Urgent ⇒
+
+    all_channels_enabled(n) ∧ immediate_delivery(n)'
+  description: ''
+  invariants: []
+- id: P.F4.2.2
+  name: User Preferences
+  formal_spec: '∀u ∈ Users, n ∈ Notifications:
+
+    deliver(n, channel) only if user_allows(u, channel, type(n))'
+  description: ''
+  invariants: []
+- id: P.F4.2.3
+  name: Deduplication
+  formal_spec: '∀n₁, n₂: similar(n₁, n₂) ∧ recent(n₁) ⇒ suppress(n₂)'
+  description: ''
+  invariants: []
+operations:
+- name: Notify
+  signature: 'notify(event: Event) → Effect'
+  formal_definition: "```\n   notify(event: Event) → Effect\n   = notification := trigger(event)\n   \
+    \  if should_suppress(notification):\n       return\n     channels := route(notification)\n     for\
+    \ channel in channels:\n       message := format(notification, channel)\n       deliver(message, channel)\n\
+    \       log_delivery(notification, channel)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Route
+  signature: 'route(notification: Notification) → Set⟨Channel⟩'
+  formal_definition: "```\n   route(notification: Notification) → Set⟨Channel⟩\n   = user := notification.recipient\n\
+    \     preferences := user.notification_preferences\n     \n     channels := {}\n     case notification.priority\
+    \ of\n       Urgent → channels := all_channels(user)\n       High → channels := preferred_channels(user)\
+    \ ∪ {InApp}\n       Normal → channels := preferred_channels(user)\n       Low → channels := {InApp}\n\
+    \     \n     return channels ∩ enabled_channels(preferences, notification.type)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Format
+  signature: 'format(notification: Notification, channel: Channel) → Message'
+  formal_definition: "```\n   format(notification: Notification, channel: Channel) → Message\n   = case\
+    \ channel of\n       Email → format_email(notification.subject, notification.body, notification.action_url)\n\
+    \       Push → format_push(notification.title, notification.short_text, notification.icon)\n     \
+    \  SMS → format_sms(notification.short_text, max_length=160)\n       InApp → format_in_app(notification.full_content)\n\
+    \       Webhook → format_json(notification)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Alert systems
+  description: ''
+- name: Email notifications
+  description: ''
+- name: Push notifications
+  description: ''
+- name: In-app messages
+  description: ''
+- name: Webhook deliveries
+  description: ''

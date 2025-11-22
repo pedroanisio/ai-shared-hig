@@ -1,0 +1,149 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P56" version="1.1">
+  <metadata>
+    <name>Cache Strategy Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$C = (storage, policy, ttl, evict)$</tuple-notation>
+    <components>
+      <component>
+        <name>storage</name>
+        <type>Map⟨Key, (Value, Metadata)⟩</type>
+        <notation>storage</notation>
+        <description>cache store</description>
+      </component>
+      <component>
+        <name>policy</name>
+        <type>EvictionPolicy</type>
+        <notation>policy</notation>
+        <description>determines what to evict</description>
+      </component>
+      <component>
+        <name>ttl</name>
+        <type>Key → Duration</type>
+        <notation>ttl</notation>
+        <description>defines time-to-live</description>
+      </component>
+      <component>
+        <name>evict</name>
+        <type>() → Effect</type>
+        <notation>evict</notation>
+        <description>removes stale entries</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>EvictionPolicy</name>
+      <definition format="latex">LRU | LFU | FIFO | TTL | Custom</definition>
+    </type-def>
+    <type-def>
+      <name>Metadata</name>
+      <definition format="latex">(last_accessed: Time, access_count: ℕ, inserted: Time)</definition>
+    </type-def>
+    <type-def>
+      <name>Duration</name>
+      <definition format="latex">ℕ  // milliseconds</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P56.1">
+      <name>Bounded Size</name>
+      <formal-spec format="latex">|storage| ≤ max_size</formal-spec>
+    </property>
+    <property id="P.P56.2">
+      <name>Cache Hit</name>
+      <formal-spec format="latex">get(key) → O(1) if key ∈ storage</formal-spec>
+    </property>
+    <property id="P.P56.3">
+      <name>Automatic Eviction</name>
+      <formal-spec format="latex">|storage| = max_size ∧ insert(new_key) → evict() → insert(new_key)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Get (with Cache-Through)</name>
+      <signature>get(key: Key, load: () → Value) → Value</signature>
+      <formal-definition format="latex">```
+   get(key: Key, load: () → Value) → Value
+   = if key ∈ storage ∧ ¬expired(key):
+       update_metadata(key)
+       return storage[key].value
+     else:
+       value := load()
+       set(key, value)
+       return value</formal-definition>
+    </operation>
+    <operation>
+      <name>Set</name>
+      <signature>set(key: Key, value: Value) → Effect</signature>
+      <formal-definition format="latex">```
+   set(key: Key, value: Value) → Effect
+   = if |storage| = max_size:
+       evict()
+     storage[key] := (value, Metadata(now(), 0, now()))</formal-definition>
+    </operation>
+    <operation>
+      <name>Evict</name>
+      <signature>evict() → Effect</signature>
+      <formal-definition format="latex">```
+   evict() → Effect
+   = victim := select_victim(policy)
+     delete storage[victim]
+   
+   select_victim(LRU) = key with oldest last_accessed
+   select_victim(LFU) = key with lowest access_count
+   select_victim(TTL) = oldest expired key</formal-definition>
+    </operation>
+    <operation>
+      <name>Cache-Aside</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Application checks cache
+   On miss: load from DB, populate cache
+   On hit: return cached value</formal-definition>
+    </operation>
+    <operation>
+      <name>Read-Through</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Cache automatically loads on miss
+   Application only talks to cache</formal-definition>
+    </operation>
+    <operation>
+      <name>Write-Through</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Writes go to cache and DB simultaneously
+   Ensures consistency</formal-definition>
+    </operation>
+    <operation>
+      <name>Write-Behind</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Writes go to cache immediately
+   Async writeback to DB
+   Better write performance</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Browser cache</name>
+    </manifestation>
+    <manifestation>
+      <name>CDN caching</name>
+    </manifestation>
+    <manifestation>
+      <name>Database query cache</name>
+    </manifestation>
+    <manifestation>
+      <name>Computed value cache</name>
+    </manifestation>
+    <manifestation>
+      <name>Image thumbnails</name>
+    </manifestation>
+  </manifestations>
+</pattern>

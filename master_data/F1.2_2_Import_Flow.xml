@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$I = (source, parser, transformer, integrator)$</tuple-notation>
+    <components>
+      <component>
+        <name>source</name>
+        <type>ExternalFormat</type>
+        <notation>source</notation>
+        <description>external data source</description>
+      </component>
+      <component>
+        <name>parser</name>
+        <type>ExternalFormat → ParsedData</type>
+        <notation>parser</notation>
+        <description>parses external format</description>
+      </component>
+      <component>
+        <name>transformer</name>
+        <type>ParsedData → InternalData</type>
+        <notation>transformer</notation>
+        <description>transforms to internal schema</description>
+      </component>
+      <component>
+        <name>integrator</name>
+        <type>InternalData → Effect</type>
+        <notation>integrator</notation>
+        <description>integrates into system</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>ExternalFormat</name>
+      <definition format="latex">File | Stream | API Response</definition>
+    </type-def>
+    <type-def>
+      <name>ParsedData</name>
+      <definition format="latex">Structured representation of external data</definition>
+    </type-def>
+    <type-def>
+      <name>InternalData</name>
+      <definition format="latex">Data conforming to internal schema</definition>
+    </type-def>
+    <type-def>
+      <name>MergeStrategy</name>
+      <definition format="latex">Replace | Merge | Append</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F1.2.1">
+      <name>Format Support</name>
+      <formal-spec format="latex">∀f ∈ ExternalFormat: parser(f) defined ⇒ supported_format(f)</formal-spec>
+    </property>
+    <property id="P.F1.2.2">
+      <name>Schema Transformation</name>
+      <formal-spec format="latex">∀p ∈ ParsedData: transformer(p) conforms to internal schema</formal-spec>
+    </property>
+    <property id="P.F1.2.3">
+      <name>Conflict Resolution</name>
+      <formal-spec format="latex">∀d ∈ InternalData: integrator(d) applies merge strategy consistently</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Import</name>
+      <signature>import(source: ExternalFormat, strategy: MergeStrategy) → Effect</signature>
+      <formal-definition format="latex">```
+   import(source: ExternalFormat, strategy: MergeStrategy) → Effect
+   = parsed := parser(source)
+     internal := transformer(parsed)
+     integrator(internal, strategy)</formal-definition>
+    </operation>
+    <operation>
+      <name>Parse</name>
+      <signature>parse(source: ExternalFormat) → ParsedData</signature>
+      <formal-definition format="latex">```
+   parse(source: ExternalFormat) → ParsedData
+   = case format_of(source) of
+       JSON → parse_json(source)
+       CSV → parse_csv(source)
+       XML → parse_xml(source)
+       _ → error("Unsupported format")</formal-definition>
+    </operation>
+    <operation>
+      <name>Transform</name>
+      <signature>transform(parsed: ParsedData) → InternalData</signature>
+      <formal-definition format="latex">```
+   transform(parsed: ParsedData) → InternalData
+   = map_fields(parsed, field_mapping) ;
+     validate_schema(result)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>File importers</name>
+      <description>CSV, JSON, XML</description>
+    </manifestation>
+    <manifestation>
+      <name>Database migration tools</name>
+    </manifestation>
+    <manifestation>
+      <name>API integrations</name>
+    </manifestation>
+    <manifestation>
+      <name>Bulk data imports</name>
+    </manifestation>
+    <manifestation>
+      <name>Document converters</name>
+    </manifestation>
+  </manifestations>
+</pattern>

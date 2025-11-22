@@ -1,0 +1,54 @@
+id: F5
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Collaborative Editing Flow
+  category: flow
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $E = (U, D, O, T, M, \delta_{F5})$
+  description: ''
+  components:
+  - name: T
+    type: O \times O → O
+    notation: T
+    description: '**transformation function**'
+  - name: M
+    type: U → Cursor
+    notation: M
+    description: tracks **user presence**
+type_definitions: []
+properties: []
+operations:
+- name: Local Edit
+  signature: 'edit(user: User, op: Operation) → Effect'
+  formal_definition: "```\n   edit(user: User, op: Operation) → Effect\n   = D_user := apply(op, D_user)\n\
+    \     broadcast(op, user)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Receive Remote Edit
+  signature: 'receive(op: Operation, u_remote: User) → Effect'
+  formal_definition: "```\n   receive(op: Operation, u_remote: User) → Effect\n   = op' := transform(op,\
+    \ local_ops)\n     D := apply(op', D)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Transform
+  signature: ''
+  formal_definition: "```\n   T(op₁, op₂) = adjust op₁ for effects of op₂\n```\nConcurrent inserts at\
+    \ same position:\n  Use user ID as tiebreaker\n  \nDelete vs Modify:\n  Delete wins"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Google Docs
+  description: ''
+- name: Figma multiplayer
+  description: ''
+- name: VS Code Live Share
+  description: ''
+- name: Notion collaboration
+  description: ''

@@ -1,0 +1,132 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P22" version="1.1">
+  <metadata>
+    <name>Event Bus</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$B = (publishers, subscribers, topics, broker)$</tuple-notation>
+    <components>
+      <component>
+        <name>publishers</name>
+        <type>Set⟨Publisher⟩</type>
+        <notation>publishers</notation>
+        <description>emit events</description>
+      </component>
+      <component>
+        <name>subscribers</name>
+        <type>Map⟨Topic, Set⟨Subscriber⟩⟩</type>
+        <notation>subscribers</notation>
+        <description>listen for events</description>
+      </component>
+      <component>
+        <name>topics</name>
+        <type>Set⟨Topic⟩</type>
+        <notation>topics</notation>
+        <description>event channels</description>
+      </component>
+      <component>
+        <name>broker</name>
+        <type>(Topic, Event) → Effect</type>
+        <notation>broker</notation>
+        <description>routes events</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Publisher</name>
+      <definition format="latex">(id: ID, publish: (Topic, Event) → Effect)</definition>
+    </type-def>
+    <type-def>
+      <name>Subscriber</name>
+      <definition format="latex">(id: ID, handle: Event → Effect)</definition>
+    </type-def>
+    <type-def>
+      <name>Topic</name>
+      <definition format="latex">String</definition>
+    </type-def>
+    <type-def>
+      <name>Event</name>
+      <definition format="latex">(type: String, payload: Map⟨String, Value⟩, timestamp: Time)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P22.1">
+      <name>Decoupling</name>
+      <formal-spec format="latex">Publishers don't know subscribers
+Subscribers don't know publishers</formal-spec>
+    </property>
+    <property id="P.P22.2">
+      <name>Many-to-Many</name>
+      <formal-spec format="latex">One event → multiple subscribers
+One subscriber → multiple topics</formal-spec>
+    </property>
+    <property id="P.P22.3">
+      <name>Async Delivery</name>
+      <formal-spec format="latex">publish(event) returns immediately
+Delivery happens asynchronously</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Subscribe</name>
+      <signature>subscribe(topic: Topic, subscriber: Subscriber) → Effect</signature>
+      <formal-definition format="latex">```
+   subscribe(topic: Topic, subscriber: Subscriber) → Effect
+   = subscribers[topic] := subscribers[topic] ∪ {subscriber}</formal-definition>
+    </operation>
+    <operation>
+      <name>Publish</name>
+      <signature>publish(topic: Topic, event: Event) → Effect</signature>
+      <formal-definition format="latex">```
+   publish(topic: Topic, event: Event) → Effect
+   = for subscriber in subscribers[topic]:
+       async_invoke(subscriber.handle, event)</formal-definition>
+    </operation>
+    <operation>
+      <name>Unsubscribe</name>
+      <signature>unsubscribe(topic: Topic, subscriber: Subscriber) → Effect</signature>
+      <formal-definition format="latex">```
+   unsubscribe(topic: Topic, subscriber: Subscriber) → Effect
+   = subscribers[topic] := subscribers[topic] ∖ {subscriber}</formal-definition>
+    </operation>
+    <operation>
+      <name>At-Most-Once</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Fire and forget
+   Fast but may lose events</formal-definition>
+    </operation>
+    <operation>
+      <name>At-Least-Once</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Retry until acknowledged
+   May duplicate events</formal-definition>
+    </operation>
+    <operation>
+      <name>Exactly-Once</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Deduplication + acknowledgment
+   Expensive but reliable</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>UI event system</name>
+    </manifestation>
+    <manifestation>
+      <name>Component communication</name>
+    </manifestation>
+    <manifestation>
+      <name>Plugin events</name>
+    </manifestation>
+    <manifestation>
+      <name>Message queues</name>
+    </manifestation>
+  </manifestations>
+</pattern>

@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$A = (agents, coordinator, tasks, results)$</tuple-notation>
+    <components>
+      <component>
+        <name>agents</name>
+        <type>Set⟨Agent⟩</type>
+        <notation>agents</notation>
+        <description>available agents</description>
+      </component>
+      <component>
+        <name>coordinator</name>
+        <type>Task → Agent</type>
+        <notation>coordinator</notation>
+        <description>assigns tasks to agents</description>
+      </component>
+      <component>
+        <name>tasks</name>
+        <type>Queue⟨Task⟩</type>
+        <notation>tasks</notation>
+        <description>pending tasks</description>
+      </component>
+      <component>
+        <name>results</name>
+        <type>Map⟨Task, Result⟩</type>
+        <notation>results</notation>
+        <description>store task results</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Agent</name>
+      <definition format="latex">(id: String, capabilities: Set⟨Capability⟩,</definition>
+    </type-def>
+    <type-def>
+      <name>Task</name>
+      <definition format="latex">(id: String, requirements: Set⟨Capability⟩,</definition>
+    </type-def>
+    <type-def>
+      <name>Result</name>
+      <definition format="latex">Success(value: Value) | Failure(error: Error)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F2.2.1">
+      <name>Capability Matching</name>
+      <formal-spec format="latex">∀t ∈ tasks: coordinator(t) = a ⇒ t.requirements ⊆ a.capabilities</formal-spec>
+    </property>
+    <property id="P.F2.2.2">
+      <name>Load Balancing</name>
+      <formal-spec format="latex">distribution(agents) should be approximately uniform</formal-spec>
+    </property>
+    <property id="P.F2.2.3">
+      <name>Deadline Awareness</name>
+      <formal-spec format="latex">∀t ∈ tasks: priority(t) considers deadline(t)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Orchestrate</name>
+      <signature>orchestrate(tasks: Queue⟨Task⟩) → Effect</signature>
+      <formal-definition format="latex">```
+   orchestrate(tasks: Queue⟨Task⟩) → Effect
+   = while ¬empty(tasks):
+       task := dequeue_by_priority(tasks)
+       agent := coordinator(task)
+       if agent.busy:
+         re_enqueue(task)
+       else:
+         assign(task, agent)</formal-definition>
+    </operation>
+    <operation>
+      <name>Assign Task</name>
+      <signature>assign(task: Task, agent: Agent) → Effect</signature>
+      <formal-definition format="latex">```
+   assign(task: Task, agent: Agent) → Effect
+   = agent.busy := true
+     result := agent.execute(task)
+     results[task] := result
+     agent.busy := false
+     notify_completion(task, result)</formal-definition>
+    </operation>
+    <operation>
+      <name>Select Agent</name>
+      <signature>select_agent(task: Task) → Agent</signature>
+      <formal-definition format="latex">```
+   select_agent(task: Task) → Agent
+   = available := {a ∈ agents : ¬a.busy ∧ task.requirements ⊆ a.capabilities}
+     if empty(available): return null
+     return argmin(a ∈ available, load(a))</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Multi-agent AI systems</name>
+    </manifestation>
+    <manifestation>
+      <name>Task distribution in distributed systems</name>
+    </manifestation>
+    <manifestation>
+      <name>Worker pool management</name>
+    </manifestation>
+    <manifestation>
+      <name>Microservice orchestration</name>
+    </manifestation>
+    <manifestation>
+      <name>Parallel computation frameworks</name>
+    </manifestation>
+  </manifestations>
+</pattern>

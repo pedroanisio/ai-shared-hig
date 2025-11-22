@@ -1,0 +1,55 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P37" version="1.1">
+  <metadata>
+    <name>Empty State Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$E = (C, \epsilon_{37}, P, A)$</tuple-notation>
+    <components>
+      <component>
+        <name>\epsilon_{37}</name>
+        <type>C → \{\text{empty}, \text{populated}\}</type>
+        <notation>\epsilon_{37}</notation>
+        <description>**emptiness predicate**</description>
+      </component>
+    </components>
+  </definition>
+  <properties/>
+  <operations>
+    <operation>
+      <name>Check Empty</name>
+      <signature>check_empty(C: Container) → 𝔹</signature>
+      <formal-definition format="latex">```
+   check_empty(C: Container) → 𝔹
+   = items(C) = ∅</formal-definition>
+    </operation>
+    <operation>
+      <name>Render Placeholder</name>
+      <signature>render(P: Placeholder) → Component</signature>
+      <formal-definition format="latex">```
+   render(P: Placeholder) → Component
+   = VStack([
+       Text(P.message, style: prominent),
+       Image(P.illustration),
+       HStack(map(A, render_button))
+     ])</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>"No annotations yet"</name>
+    </manifestation>
+    <manifestation>
+      <name>Empty inbox</name>
+    </manifestation>
+    <manifestation>
+      <name>Empty canvas</name>
+    </manifestation>
+    <manifestation>
+      <name>No search results</name>
+    </manifestation>
+  </manifestations>
+</pattern>

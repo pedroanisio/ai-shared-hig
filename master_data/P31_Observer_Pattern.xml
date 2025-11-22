@@ -1,0 +1,91 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P31" version="1.1">
+  <metadata>
+    <name>Observer Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$O = (subject, observers, notify)$</tuple-notation>
+    <components>
+      <component>
+        <name>subject</name>
+        <type>Subject</type>
+        <notation>subject</notation>
+        <description>observed object</description>
+      </component>
+      <component>
+        <name>observers</name>
+        <type>Set⟨Observer⟩</type>
+        <notation>observers</notation>
+        <description>listeners</description>
+      </component>
+      <component>
+        <name>notify</name>
+        <type>() → Effect</type>
+        <notation>notify</notation>
+        <description>notifies all observers</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Subject</name>
+      <definition format="latex">(state: State, attach: Observer → Effect, detach: Observer → Effect)</definition>
+    </type-def>
+    <type-def>
+      <name>Observer</name>
+      <definition format="latex">(update: State → Effect)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P31.1">
+      <name>Loose Coupling</name>
+      <formal-spec format="latex">Subject doesn't know observer details
+Observers independent of each other</formal-spec>
+    </property>
+    <property id="P.P31.2">
+      <name>Automatic Updates</name>
+      <formal-spec format="latex">subject.state changes → notify_all_observers()</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Attach Observer</name>
+      <signature>attach(observer: Observer) → Effect</signature>
+      <formal-definition format="latex">```
+   attach(observer: Observer) → Effect
+   = observers := observers ∪ {observer}</formal-definition>
+    </operation>
+    <operation>
+      <name>Detach Observer</name>
+      <signature>detach(observer: Observer) → Effect</signature>
+      <formal-definition format="latex">```
+   detach(observer: Observer) → Effect
+   = observers := observers ∖ {observer}</formal-definition>
+    </operation>
+    <operation>
+      <name>Notify</name>
+      <signature>notify() → Effect</signature>
+      <formal-definition format="latex">```
+   notify() → Effect
+   = for observer in observers:
+       observer.update(subject.state)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Data binding</name>
+    </manifestation>
+    <manifestation>
+      <name>Event listeners</name>
+    </manifestation>
+    <manifestation>
+      <name>Reactive subscriptions</name>
+    </manifestation>
+    <manifestation>
+      <name>Pub/sub systems</name>
+    </manifestation>
+  </manifestations>
+</pattern>

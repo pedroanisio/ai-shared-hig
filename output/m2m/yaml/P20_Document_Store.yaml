@@ -1,0 +1,78 @@
+id: P20
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Document Store
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $D = (collections, documents, queries, indices)$
+  description: ''
+  components:
+  - name: collections
+    type: Map⟨String, Set⟨Document⟩⟩
+    notation: collections
+    description: group documents
+  - name: documents
+    type: Set⟨Document⟩
+    notation: documents
+    description: schema-free documents
+  - name: queries
+    type: Query → Set⟨Document⟩
+    notation: queries
+    description: find documents
+  - name: indices
+    type: Map⟨Path, Index⟩
+    notation: indices
+    description: speed queries
+type_definitions:
+- name: Document
+  definition: Map⟨String, Value⟩  // JSON-like structure
+  notation: Document := Map⟨String, Value⟩  // JSON-like structure
+- name: Value
+  definition: String | ℕ | ℝ | 𝔹 | null | Sequence⟨Value⟩ | Map⟨String,Value⟩
+  notation: Value := String | ℕ | ℝ | 𝔹 | null | Sequence⟨Value⟩ | Map⟨String,Value⟩
+- name: Query
+  definition: '(filters: Map⟨Path, Predicate⟩, projection: Set⟨Path⟩)'
+  notation: 'Query := (filters: Map⟨Path, Predicate⟩, projection: Set⟨Path⟩)'
+properties:
+- id: P.P20.1
+  name: Schema-Free
+  formal_spec: Documents in same collection can have different structures
+  description: ''
+  invariants: []
+- id: P.P20.2
+  name: Nested Data
+  formal_spec: Documents can contain nested objects and arrays
+  description: ''
+  invariants: []
+operations:
+- name: Find
+  signature: 'find({age: {$gt: 25}, city: "NYC"}) → Set⟨Document⟩'
+  formal_definition: "```\n   find({age: {$gt: 25}, city: \"NYC\"}) → Set⟨Document⟩"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Insert
+  signature: insert(collection, document) → Effect
+  formal_definition: "```\n   insert(collection, document) → Effect"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Update
+  signature: update(query, changes) → Effect
+  formal_definition: "```\n   update(query, changes) → Effect"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Note storage
+  description: Notion, Roam
+- name: Configuration
+  description: JSON files
+- name: Log aggregation
+  description: ''
+- name: CMS content
+  description: ''

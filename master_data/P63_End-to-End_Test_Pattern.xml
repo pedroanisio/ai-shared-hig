@@ -1,0 +1,253 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P63" version="1.1">
+  <metadata>
+    <name>End-to-End Test Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$E = (scenario, browser, pages, assertions, data)$</tuple-notation>
+    <components>
+      <component>
+        <name>scenario</name>
+        <type>UserStory</type>
+        <notation>scenario</notation>
+        <description>user scenario being tested</description>
+      </component>
+      <component>
+        <name>browser</name>
+        <type>Browser</type>
+        <notation>browser</notation>
+        <description>automated browser</description>
+      </component>
+      <component>
+        <name>pages</name>
+        <type>Map⟨String, PageObject⟩</type>
+        <notation>pages</notation>
+        <description>represent UI pages</description>
+      </component>
+      <component>
+        <name>assertions</name>
+        <type>Sequence⟨Assertion⟩</type>
+        <notation>assertions</notation>
+        <description>verify expected outcomes</description>
+      </component>
+      <component>
+        <name>data</name>
+        <type>TestData</type>
+        <notation>data</notation>
+        <description>test data for the scenario</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>UserStory</name>
+      <definition format="latex">(actor: Actor, action: Action, outcome: Outcome)</definition>
+    </type-def>
+    <type-def>
+      <name>Browser</name>
+      <definition format="latex">(driver: WebDriver, capabilities: Set⟨Capability⟩)</definition>
+    </type-def>
+    <type-def>
+      <name>PageObject</name>
+      <definition format="latex">(locators: Map⟨String, Locator⟩, actions: Map⟨String, Action⟩)</definition>
+    </type-def>
+    <type-def>
+      <name>Locator</name>
+      <definition format="latex">CSS(selector: String) | XPath(expression: String) | ID(id: String)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P63.1">
+      <name>Full System</name>
+      <formal-spec format="latex">Tests complete system from user perspective
+Real browser, real UI, real backend</formal-spec>
+    </property>
+    <property id="P.P63.2">
+      <name>User Scenarios</name>
+      <formal-spec format="latex">Tests realistic user workflows
+Example: Register → Login → Purchase → Logout</formal-spec>
+    </property>
+    <property id="P.P63.3">
+      <name>Slowest Tests</name>
+      <formal-spec format="latex">Execution time: seconds to minutes
+Run less frequently than unit/integration tests</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Launch Browser</name>
+      <signature>launch_browser(config: BrowserConfig) → Browser</signature>
+      <formal-definition format="latex">```
+   launch_browser(config: BrowserConfig) → Browser
+   = driver := create_webdriver(config.type, config.capabilities)
+     browser := Browser(driver, config)
+     return browser</formal-definition>
+    </operation>
+    <operation>
+      <name>Execute Scenario</name>
+      <signature>execute_scenario(scenario: UserStory, browser: Browser) → TestResult</signature>
+      <formal-definition format="latex">```
+   execute_scenario(scenario: UserStory, browser: Browser) → TestResult
+   = pages := load_page_objects(browser)
+     for step in scenario.steps:
+       execute_step(step, pages, browser)
+     results := verify_assertions(scenario.assertions)
+     return TestResult(results)</formal-definition>
+    </operation>
+    <operation>
+      <name>Cleanup Session</name>
+      <signature>cleanup(browser: Browser) → Effect</signature>
+      <formal-definition format="latex">```
+   cleanup(browser: Browser) → Effect
+   = browser.delete_cookies()
+     browser.clear_local_storage()
+     browser.quit()
+```
+Page objects encapsulate UI structure:
+
+class LoginPage:
+  locators = {
+    username_input: CSS("#username"),
+    password_input: CSS("#password"),
+    login_button: CSS("button[type=submit]"),
+    error_message: CSS(".error")
+  }
+  
+  def login(username: String, password: String) → Effect:
+    this.find(username_input).type(username)
+    this.find(password_input).type(password)
+    this.find(login_button).click()
+  
+  def get_error() → String:
+    return this.find(error_message).text()
+
+class DashboardPage:
+  locators = {
+    welcome_message: CSS(".welcome"),
+    logout_button: CSS("#logout")
+  }
+  
+  def is_displayed() → 𝔹:
+    return this.find(welcome_message).is_visible()
+  
+  def logout() → Effect:
+    this.find(logout_button).click()
+```
+e2e_test_user_login_flow()
+  // Setup
+  = browser := launch_browser(Chrome)
+    test_user := create_test_user("testuser", "password123")
+    
+    // Navigate to login page
+    login_page := LoginPage(browser)
+    browser.navigate("https://app.example.com/login")
+    
+    // Execute login
+    login_page.login("testuser", "password123")
+    
+    // Verify redirect to dashboard
+    dashboard := DashboardPage(browser)
+    assert(dashboard.is_displayed())
+    assert(contains(dashboard.welcome_message, "Welcome, testuser"))
+    
+    // Execute logout
+    dashboard.logout()
+    
+    // Verify redirect to login
+    assert(login_page.is_displayed())
+    
+    // Cleanup
+    delete_test_user(test_user)
+    browser.quit()
+```
+Browser actions:
+  - navigate(url)
+  - refresh()
+  - back()
+  - forward()
+  - take_screenshot()
+  - execute_script(js)
+
+Element actions:
+  - find(locator) → Element
+  - click()
+  - type(text)
+  - clear()
+  - submit()
+  - select(option)
+  - hover()
+  - drag_and_drop(source, target)
+
+Waits:
+  - wait_for_element(locator, timeout)
+  - wait_for_visibility(element, timeout)
+  - wait_for_text(element, text, timeout)
+  - wait_for_url(url, timeout)
+
+Assertions:
+  - assert_visible(element)
+  - assert_text(element, expected)
+  - assert_url(expected)
+  - assert_title(expected)
+  - assert_element_count(locator, count)
+```
+1. Use Page Objects:
+   Encapsulate page structure
+   Reusable across tests
+   Easier maintenance
+
+2. Explicit Waits:
+   Wait for specific conditions
+   Don't use sleep()
+   Handle async behavior
+
+3. Independent Tests:
+   Each test starts from clean state
+   No dependencies between tests
+   Can run in any order
+
+4. Minimize Test Data:
+   Use minimum data needed
+   Clean up after test
+   Avoid shared test data
+
+5. Stable Locators:
+   Use IDs or data attributes
+   Avoid brittle CSS selectors
+   Don't rely on text content
+Test Environments:**
+```
+Headless mode:
+  browser := Chrome(headless=true)
+  Faster, no GUI
+  Good for CI/CD
+
+Grid/Cloud:
+  Run tests on multiple browsers in parallel
+  Selenium Grid, BrowserStack, Sauce Labs
+
+Docker:
+  Consistent environment
+  Isolated tests
+  Easy CI/CD integration</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>UI automation</name>
+      <description>Selenium, Playwright, Cypress</description>
+    </manifestation>
+    <manifestation>
+      <name>Acceptance tests</name>
+    </manifestation>
+    <manifestation>
+      <name>Smoke tests</name>
+    </manifestation>
+    <manifestation>
+      <name>Regression tests</name>
+    </manifestation>
+  </manifestations>
+</pattern>

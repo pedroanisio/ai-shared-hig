@@ -1,0 +1,182 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P48" version="1.1">
+  <metadata>
+    <name>Form Validation Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V = (fields, rules, state, errors)$</tuple-notation>
+    <components>
+      <component>
+        <name>fields</name>
+        <type>Map⟨String, Field⟩</type>
+        <notation>fields</notation>
+        <description>form fields</description>
+      </component>
+      <component>
+        <name>rules</name>
+        <type>Map⟨String, Validator⟩</type>
+        <notation>rules</notation>
+        <description>validation rules</description>
+      </component>
+      <component>
+        <name>state</name>
+        <type>Map⟨String, ValidationState⟩</type>
+        <notation>state</notation>
+        <description>tracks validation status</description>
+      </component>
+      <component>
+        <name>errors</name>
+        <type>Map⟨String, Sequence⟨String⟩⟩</type>
+        <notation>errors</notation>
+        <description>stores error messages</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Field</name>
+      <definition format="latex">(value: Value, dirty: 𝔹, touched: 𝔹)</definition>
+    </type-def>
+    <type-def>
+      <name>Validator</name>
+      <definition format="latex">Value → ValidationResult</definition>
+    </type-def>
+    <type-def>
+      <name>ValidationResult</name>
+      <definition format="latex">Valid | Invalid(errors: Sequence⟨String⟩)</definition>
+    </type-def>
+    <type-def>
+      <name>ValidationState</name>
+      <definition format="latex">Pristine | Valid | Invalid | Validating</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P48.1">
+      <name>Eager Validation</name>
+      <formal-spec format="latex">field.dirty ∧ field.touched ⇒ validate(field) on change</formal-spec>
+    </property>
+    <property id="P.P48.2">
+      <name>Form-Level Validation</name>
+      <formal-spec format="latex">valid(form) ⇔ ∀f ∈ fields: state[f] ∈ {Valid, Pristine}</formal-spec>
+    </property>
+    <property id="P.P48.3">
+      <name>Async Validation</name>
+      <formal-spec format="latex">validate_async(field) → ValidationResult (eventually)
+state[field] = Validating during execution</formal-spec>
+    </property>
+    <property id="P.P48.4">
+      <name>Cross-Field Validation</name>
+      <formal-spec format="latex">validate_group([field₁, field₂, ...]) → ValidationResult
+Example: password confirmation</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Validate Field</name>
+      <signature>validate(field_name: String) → ValidationResult</signature>
+      <formal-definition format="latex">```
+   validate(field_name: String) → ValidationResult
+   = value := fields[field_name].value
+     validator := rules[field_name]
+     result := validator(value)
+     
+     state[field_name] := case result of
+       Valid → Valid
+       Invalid(errs) → Invalid
+     
+     errors[field_name] := result.errors
+     return result</formal-definition>
+    </operation>
+    <operation>
+      <name>Validate Form</name>
+      <signature>validate_form() → 𝔹</signature>
+      <formal-definition format="latex">```
+   validate_form() → 𝔹
+   = results := map(keys(fields), validate)
+     return all(results, λr: r = Valid)</formal-definition>
+    </operation>
+    <operation>
+      <name>Register Rule</name>
+      <signature>register_rule(field: String, rule: Validator) → Effect</signature>
+      <formal-definition format="latex">```
+   register_rule(field: String, rule: Validator) → Effect
+   = rules[field] := compose_validators(rules[field], rule)</formal-definition>
+    </operation>
+    <operation>
+      <name>Built-in Validators</name>
+      <signature>required(value: Value) → ValidationResult</signature>
+      <formal-definition format="latex">```
+   required(value: Value) → ValidationResult
+   = if value ≠ null ∧ value ≠ "":
+       Valid
+     else:
+       Invalid(["This field is required"])
+   
+   min_length(n: ℕ) → Validator
+   = λvalue: if length(value) ≥ n:
+               Valid
+             else:
+               Invalid([f"Minimum length is {n}"])
+   
+   email(value: String) → ValidationResult
+   = if matches(value, email_regex):
+       Valid
+     else:
+       Invalid(["Invalid email address"])
+   
+   custom(predicate: Value → 𝔹, message: String) → Validator
+   = λvalue: if predicate(value):
+               Valid
+             else:
+               Invalid([message])</formal-definition>
+    </operation>
+    <operation>
+      <name>On Submit</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Validate all fields when form submitted
+   Show all errors at once</formal-definition>
+    </operation>
+    <operation>
+      <name>On Blur</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Validate field when it loses focus
+   Show errors immediately</formal-definition>
+    </operation>
+    <operation>
+      <name>On Change</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Validate field on every keystroke
+   Show errors after field touched</formal-definition>
+    </operation>
+    <operation>
+      <name>Hybrid (Recommended)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   First error: on blur
+   Subsequent: on change (immediate feedback)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Registration forms</name>
+    </manifestation>
+    <manifestation>
+      <name>Login forms</name>
+    </manifestation>
+    <manifestation>
+      <name>Settings panels</name>
+    </manifestation>
+    <manifestation>
+      <name>Data entry forms</name>
+    </manifestation>
+    <manifestation>
+      <name>Survey forms</name>
+    </manifestation>
+  </manifestations>
+</pattern>

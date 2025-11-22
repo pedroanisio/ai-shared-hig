@@ -1,0 +1,52 @@
+id: P28
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Progress Indicator
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $P = (current, total, label, eta, state)$
+  description: ''
+  components:
+  - name: current
+    type: ℕ
+    notation: current
+    description: completed work
+  - name: total
+    type: ℕ
+    notation: total
+    description: total work
+  - name: label
+    type: String
+    notation: label
+    description: describes the task
+  - name: eta
+    type: Time
+    notation: eta
+    description: estimated completion time
+  - name: state
+    type: \{\text{running}, \text{paused}, \text{complete}, \text{error}\}
+    notation: state
+    description: status
+type_definitions: []
+properties:
+- id: P.P28.1
+  name: Monotonic Progress
+  formal_spec: 'current only increases: currentₜ₊₁ ≥ currentₜ'
+  description: ''
+  invariants: []
+operations: []
+manifestations:
+- name: File upload/download
+  description: ''
+- name: Build progress
+  description: ''
+- name: Test execution
+  description: ''
+- name: Verification progress
+  description: ''
+- name: Installation progress
+  description: ''

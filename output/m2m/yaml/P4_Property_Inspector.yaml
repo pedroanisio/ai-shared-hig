@@ -1,0 +1,78 @@
+id: P4
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Property Inspector
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $I = (selection, fields, validators, commit)$
+  description: ''
+  components:
+  - name: selection
+    type: Element | null
+    notation: selection
+    description: inspected object
+  - name: fields
+    type: Map⟨String, Field⟩
+    notation: fields
+    description: editable properties
+  - name: validators
+    type: Map⟨String, Validator⟩
+    notation: validators
+    description: validate changes
+  - name: commit
+    type: (String, Value) → Effect
+    notation: commit
+    description: applies changes
+type_definitions: []
+properties:
+- id: P.P4.1
+  name: Selection-Driven
+  formal_spec: selection changes → reload_fields(selection)
+  description: ''
+  invariants: []
+- id: P.P4.2
+  name: Validation Before Commit
+  formal_spec: commit(field, value) succeeds ⇔ validators[field](value) = valid
+  description: ''
+  invariants: []
+- id: P.P4.3
+  name: Immediate or Delayed Commit
+  formal_spec: 'Mode 1 (immediate): onChange → commit
+
+    Mode 2 (delayed): onChange → stage, onBlur → commit'
+  description: ''
+  invariants: []
+operations:
+- name: Load Properties
+  signature: 'load(element: Element) → Map⟨String, Value⟩'
+  formal_definition: "```\n   load(element: Element) → Map⟨String, Value⟩\n   = {(k, v) : k ∈ properties(element),\
+    \ v = element[k]}"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Validate Field
+  signature: 'validate(field: String, value: Value) → ValidationResult'
+  formal_definition: "```\n   validate(field: String, value: Value) → ValidationResult\n   = validators[field](value)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Commit Change
+  signature: 'commit(field: String, value: Value) → Effect'
+  formal_definition: "```\n   commit(field: String, value: Value) → Effect\n   = if validate(field, value)\
+    \ = valid:\n       selection[field] := value\n       update_dependents(field)\n       notify_observers(selection)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Properties panel
+  description: design tools
+- name: Inspector
+  description: browser DevTools
+- name: Settings panel
+  description: applications
+- name: Attributes editor
+  description: HTML editors

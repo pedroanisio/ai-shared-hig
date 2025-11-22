@@ -1,0 +1,130 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P80" version="1.1">
+  <metadata>
+    <name>Voice Conversation</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V_{conv} = (I_{speech}, R_{intent}, M_{dialog}, O_{speech}, H_{int}) : \text{Speech} \leftrightarrow \text{Response}$</tuple-notation>
+    <components>
+      <component>
+        <name>I_{speech}</name>
+        <type>AudioStream</type>
+        <notation>I_{speech}</notation>
+        <description>continuous audio input stream from user</description>
+      </component>
+      <component>
+        <name>R_{intent}</name>
+        <type>Intent \times Confidence</type>
+        <notation>R_{intent}</notation>
+        <description>recognized intent with confidence score</description>
+      </component>
+      <component>
+        <name>M_{dialog}</name>
+        <type>List⟨Turn⟩</type>
+        <notation>M_{dialog}</notation>
+        <description>conversation history and dialog state</description>
+      </component>
+      <component>
+        <name>O_{speech}</name>
+        <type>AudioStream</type>
+        <notation>O_{speech}</notation>
+        <description>synthesized speech output to user</description>
+      </component>
+      <component>
+        <name>H_{int}</name>
+        <type>\{\text{listening}, \text{processing}, \text{speaking}, \text{idle}\}</type>
+        <notation>H_{int}</notation>
+        <description>current interaction state</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>AudioStream</name>
+      <definition>$\text{AudioStream} = \text{Time} \to \mathbb{R}^n$ (time-series audio signal)</definition>
+    </type-def>
+    <type-def>
+      <name>Intent</name>
+      <definition>$\text{Intent} = \text{String} \times \text{Parameters}$ (action with params)</definition>
+    </type-def>
+    <type-def>
+      <name>Confidence</name>
+      <definition>$\text{Confidence} = [0, 1] \subset \mathbb{R}$ (probability score)</definition>
+    </type-def>
+    <type-def>
+      <name>Turn</name>
+      <definition>$\text{Turn} = \{\text{user}, \text{agent}\} \times \text{String} \times \text{Timestamp}$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P80.1">
+      <name>Full-Duplex Communication</name>
+      <formal-spec format="latex">$\forall t : I_{speech}(t) \land O_{speech}(t)$ can occur simultaneously (bidirectional)</formal-spec>
+    </property>
+    <property id="P.P80.2">
+      <name>Context Preservation</name>
+      <formal-spec format="latex">$\forall i : \text{Turn}_i \in M_{dialog} \implies \text{context}(\text{Turn}_{i+1}) \supseteq \text{context}(\text{Turn}_i)$</formal-spec>
+    </property>
+    <property id="P.P80.3">
+      <name>Low Latency</name>
+      <formal-spec format="latex">$\Delta t_{response} = t_{O_{speech}} - t_{I_{speech}} &lt; 300ms$ (perceptual real-time)</formal-spec>
+    </property>
+    <property id="P.P80.4">
+      <name>Confidence Threshold</name>
+      <formal-spec format="latex">$\exists \theta \in (0,1) : \text{Confidence}(R_{intent}) \geq \theta \implies \text{execute}(R_{intent})$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Process Speech</name>
+      <signature>processSpeech: AudioStream → Intent × Confidence</signature>
+      <formal-definition format="latex">$\text{processSpeech}(I_{speech}) = (intent, conf)$ where
+  $\text{audio} \xrightarrow{\text{STT}} \text{text}$
+  $\text{text} \xrightarrow{\text{NLU}} (intent, conf)$
+  $conf = P(\text{intent} | \text{text})$</formal-definition>
+    </operation>
+    <operation>
+      <name>Generate Response</name>
+      <signature>generateResponse: Intent × M_dialog → AudioStream</signature>
+      <formal-definition format="latex">$\text{generateResponse}(intent, M_{dialog}) = O_{speech}$ where
+  $\text{response} = \text{LLM}(intent, M_{dialog})$
+  $O_{speech} = \text{TTS}(\text{response})$
+  $M_{dialog}' = M_{dialog} \oplus [\text{agent}, \text{response}, t]$</formal-definition>
+    </operation>
+    <operation>
+      <name>Update Dialog State</name>
+      <signature>updateDialog: Turn → M_dialog</signature>
+      <formal-definition format="latex">$\text{updateDialog}(turn) = M_{dialog}'$ where
+  $M_{dialog}' = M_{dialog} \oplus [turn]$
+  $|M_{dialog}'| \leq \text{max\_context}$ (sliding window)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P2</pattern-ref>
+      <pattern-ref>P82</pattern-ref>
+      <pattern-ref>P85</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>OpenAI Advanced Voice Mode</name>
+      <description>full-duplex voice interaction with GPT-4</description>
+    </manifestation>
+    <manifestation>
+      <name>Google Assistant</name>
+      <description>real-time streaming voice commands</description>
+    </manifestation>
+    <manifestation>
+      <name>Alexa Conversations</name>
+      <description>multi-turn voice dialog system</description>
+    </manifestation>
+    <manifestation>
+      <name>Siri voice interaction</name>
+      <description>natural language voice commands</description>
+    </manifestation>
+  </manifestations>
+</pattern>

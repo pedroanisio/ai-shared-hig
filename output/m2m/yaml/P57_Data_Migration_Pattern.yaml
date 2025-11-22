@@ -1,0 +1,107 @@
+id: P57
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Data Migration Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $M = (versions, migrations, current, rollback)$
+  description: ''
+  components:
+  - name: versions
+    type: Sequence⟨Version⟩
+    notation: versions
+    description: schema versions
+  - name: migrations
+    type: Map⟨(Version, Version), Migration⟩
+    notation: migrations
+    description: define transitions
+  - name: current
+    type: Version
+    notation: current
+    description: active version
+  - name: rollback
+    type: Migration → Migration
+    notation: rollback
+    description: reverses migrations
+type_definitions:
+- name: Version
+  definition: '(number: ℕ, schema: Schema)'
+  notation: 'Version := (number: ℕ, schema: Schema)'
+- name: Migration
+  definition: '(up: Data → Data, down: Data → Data)'
+  notation: 'Migration := (up: Data → Data, down: Data → Data)'
+- name: Schema
+  definition: description of data structure
+  notation: Schema := description of data structure
+properties:
+- id: P.P57.1
+  name: Bidirectionality
+  formal_spec: '∀m ∈ migrations: ∃m⁻¹: m⁻¹(m(data)) = data'
+  description: ''
+  invariants: []
+- id: P.P57.2
+  name: Transactional
+  formal_spec: Migration completes fully or rolls back
+  description: ''
+  invariants: []
+- id: P.P57.3
+  name: Version Ordering
+  formal_spec: 'versions totally ordered: v₁ < v₂ < v₃ < ...'
+  description: ''
+  invariants: []
+operations:
+- name: Migrate Up
+  signature: 'migrate_up(target: Version) → Effect'
+  formal_definition: "```\n   migrate_up(target: Version) → Effect\n   = while current < target:\n   \
+    \    migration := migrations[(current, next(current))]\n       data := migration.up(data)\n      \
+    \ current := next(current)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Migrate Down
+  signature: 'migrate_down(target: Version) → Effect'
+  formal_definition: "```\n   migrate_down(target: Version) → Effect\n   = while current > target:\n \
+    \      migration := migrations[(prev(current), current)]\n       data := migration.down(data)\n  \
+    \     current := prev(current)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Create Migration
+  signature: 'create_migration(from: Version, to: Version, up: Transform, down: Transform) → Migration'
+  formal_definition: "```\n   create_migration(from: Version, to: Version, up: Transform, down: Transform)\
+    \ → Migration\n   = Migration(up, down)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Additive (Safe)
+  signature: ''
+  formal_definition: "```\n   Add new fields with defaults\n   No data loss\n   Can roll back easily"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Transformative
+  signature: ''
+  formal_definition: "```\n   Change field types or structure\n   Requires data transformation\n   Test\
+    \ rollback carefully"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Destructive (Dangerous)
+  signature: ''
+  formal_definition: "```\n   Remove fields or tables\n   Potential data loss\n   Ensure backups"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Database schema migrations
+  description: ''
+- name: API version upgrades
+  description: ''
+- name: File format conversions
+  description: ''
+- name: Configuration updates
+  description: ''

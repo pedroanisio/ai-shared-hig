@@ -1,0 +1,99 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P10" version="1.1">
+  <metadata>
+    <name>Parser/Compiler Pipeline</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$C = (stages, ir, errors, optimize)$</tuple-notation>
+    <components>
+      <component>
+        <name>stages</name>
+        <type>Sequence⟨Stage⟩</type>
+        <notation>stages</notation>
+        <description>transformation stages</description>
+      </component>
+      <component>
+        <name>ir</name>
+        <type>Sequence⟨IR⟩</type>
+        <notation>ir</notation>
+        <description>intermediate representations</description>
+      </component>
+      <component>
+        <name>errors</name>
+        <type>Sequence⟨Error⟩</type>
+        <notation>errors</notation>
+        <description>accumulate errors</description>
+      </component>
+      <component>
+        <name>optimize</name>
+        <type>IR → IR</type>
+        <notation>optimize</notation>
+        <description>optimization pass</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Stage</name>
+      <definition format="latex">(name: String, transform: Input → Output | Error)</definition>
+    </type-def>
+    <type-def>
+      <name>IR</name>
+      <definition format="latex">intermediate representation (AST, bytecode, etc.)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P10.1">
+      <name>Pipeline Flow</name>
+      <formal-spec format="latex">source → lex → tokens → parse → AST → analyze → typed_AST →
+codegen → target</formal-spec>
+    </property>
+    <property id="P.P10.2">
+      <name>Error Propagation</name>
+      <formal-spec format="latex">error in stage_i ⇒ abort or continue with partial result</formal-spec>
+    </property>
+    <property id="P.P10.3">
+      <name>Symbol Table Maintenance</name>
+      <formal-spec format="latex">∀stage: symbol_table updated and passed forward</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Execute Pipeline</name>
+      <signature>compile(source: String) → Target | Error</signature>
+      <formal-definition format="latex">```
+   compile(source: String) → Target | Error
+   = result := source
+     for stage in stages:
+       result := stage.transform(result)
+       if is_error(result):
+         return result
+     return result</formal-definition>
+    </operation>
+    <operation>
+      <name>Add Stage</name>
+      <signature>add_stage(stage: Stage, position: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   add_stage(stage: Stage, position: ℕ) → Effect
+   = stages := insert(stages, stage, position)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Code compilers</name>
+      <description>C++, Rust</description>
+    </manifestation>
+    <manifestation>
+      <name>LaTeX renderers</name>
+    </manifestation>
+    <manifestation>
+      <name>Formula parsers</name>
+    </manifestation>
+    <manifestation>
+      <name>Constraint compilers</name>
+    </manifestation>
+  </manifestations>
+</pattern>

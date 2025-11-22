@@ -1,0 +1,95 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $L = (observe, learn, update, apply)$
+  description: ''
+  components:
+  - name: observe
+    type: Environment → Observations
+    notation: observe
+    description: collects data
+  - name: learn
+    type: Observations → Model
+    notation: learn
+    description: trains or updates model
+  - name: update
+    type: Model → Policy
+    notation: update
+    description: updates decision policy
+  - name: apply
+    type: Policy → Actions
+    notation: apply
+    description: applies learned policy
+type_definitions:
+- name: Observations
+  definition: Sequence⟨(State, Action, Reward)⟩
+  notation: Observations := Sequence⟨(State, Action, Reward)⟩
+- name: Model
+  definition: Learned representation of environment
+  notation: Model := Learned representation of environment
+- name: Policy
+  definition: Decision-making strategy
+  notation: Policy := Decision-making strategy
+- name: Actions
+  definition: Commands applied to environment
+  notation: Actions := Commands applied to environment
+properties:
+- id: P.F3.1.1
+  name: Continuous Improvement
+  formal_spec: '∀t: accuracy(model_t+1) ≥ accuracy(model_t) ∨ explore(new_strategy)'
+  description: ''
+  invariants: []
+- id: P.F3.1.2
+  name: Feedback Integration
+  formal_spec: '∀observation ∈ Observations: observation influences future policy'
+  description: ''
+  invariants: []
+- id: P.F3.1.3
+  name: Convergence
+  formal_spec: 'lim_{t→∞} improvement(model_t) → 0
+
+    Eventually reaches optimal or near-optimal'
+  description: ''
+  invariants: []
+operations:
+- name: Execute Loop
+  signature: 'loop(environment: Environment) → Effect'
+  formal_definition: "```\n   loop(environment: Environment) → Effect\n   = observations := []\n     model\
+    \ := initialize_model()\n     while running:\n       obs := observe(environment)\n       observations\
+    \ := observations + [obs]\n       if should_update(observations):\n         model := learn(observations)\n\
+    \         policy := update(model)\n         actions := apply(policy, environment)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Learn
+  signature: 'learn(observations: Observations) → Model'
+  formal_definition: "```\n   learn(observations: Observations) → Model\n   = features := extract_features(observations)\n\
+    \     model := train(features, current_model)\n     validate(model, validation_set)\n     return model"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Apply
+  signature: 'apply(policy: Policy, env: Environment) → Actions'
+  formal_definition: "```\n   apply(policy: Policy, env: Environment) → Actions\n   = state := env.current_state()\n\
+    \     action := policy.select_action(state)\n     env.execute(action)\n     return action"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Reinforcement learning systems
+  description: ''
+- name: Recommender systems
+  description: ''
+- name: Adaptive user interfaces
+  description: ''
+- name: Auto-tuning systems
+  description: ''
+- name: Online learning algorithms
+  description: ''

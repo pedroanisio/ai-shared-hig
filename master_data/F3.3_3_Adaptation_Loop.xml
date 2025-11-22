@@ -1,0 +1,81 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$A = (monitor, detect, adjust, measure)$</tuple-notation>
+    <components>
+      <component>
+        <name>monitor</name>
+        <type>System → Metrics</type>
+        <notation>monitor</notation>
+        <description>observes system behavior</description>
+      </component>
+      <component>
+        <name>detect</name>
+        <type>Metrics → Anomalies</type>
+        <notation>detect</notation>
+        <description>identifies issues</description>
+      </component>
+      <component>
+        <name>adjust</name>
+        <type>Anomalies → Adjustments</type>
+        <notation>adjust</notation>
+        <description>modifies system</description>
+      </component>
+      <component>
+        <name>measure</name>
+        <type>Adjustments → Performance</type>
+        <notation>measure</notation>
+        <description>evaluates changes</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Metrics</name>
+      <definition format="latex">Map⟨String, Value⟩</definition>
+    </type-def>
+    <type-def>
+      <name>Anomaly</name>
+      <definition format="latex">(metric: String, threshold: ℝ, actual: ℝ, severity: ℕ)</definition>
+    </type-def>
+    <type-def>
+      <name>Adjustment</name>
+      <definition format="latex">(parameter: String, old_value: Value, new_value: Value)</definition>
+    </type-def>
+    <type-def>
+      <name>Performance</name>
+      <definition format="latex">Improvement | Degradation | Neutral</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F3.3.1">
+      <name>Stability</name>
+      <formal-spec format="latex">∀adjustments: system remains stable after applying adjustments
+No oscillation or divergence</formal-spec>
+    </property>
+  </properties>
+  <operations/>
+  <manifestations>
+    <manifestation>
+      <name>Auto-scaling systems</name>
+    </manifestation>
+    <manifestation>
+      <name>Self-healing infrastructure</name>
+    </manifestation>
+    <manifestation>
+      <name>Adaptive bitrate streaming</name>
+    </manifestation>
+    <manifestation>
+      <name>Dynamic resource allocation</name>
+    </manifestation>
+    <manifestation>
+      <name>Traffic load balancing</name>
+    </manifestation>
+  </manifestations>
+</pattern>

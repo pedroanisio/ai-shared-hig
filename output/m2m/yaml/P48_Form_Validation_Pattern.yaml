@@ -1,0 +1,138 @@
+id: P48
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Form Validation Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $V = (fields, rules, state, errors)$
+  description: ''
+  components:
+  - name: fields
+    type: Map⟨String, Field⟩
+    notation: fields
+    description: form fields
+  - name: rules
+    type: Map⟨String, Validator⟩
+    notation: rules
+    description: validation rules
+  - name: state
+    type: Map⟨String, ValidationState⟩
+    notation: state
+    description: tracks validation status
+  - name: errors
+    type: Map⟨String, Sequence⟨String⟩⟩
+    notation: errors
+    description: stores error messages
+type_definitions:
+- name: Field
+  definition: '(value: Value, dirty: 𝔹, touched: 𝔹)'
+  notation: 'Field := (value: Value, dirty: 𝔹, touched: 𝔹)'
+- name: Validator
+  definition: Value → ValidationResult
+  notation: Validator := Value → ValidationResult
+- name: ValidationResult
+  definition: 'Valid | Invalid(errors: Sequence⟨String⟩)'
+  notation: 'ValidationResult := Valid | Invalid(errors: Sequence⟨String⟩)'
+- name: ValidationState
+  definition: Pristine | Valid | Invalid | Validating
+  notation: ValidationState := Pristine | Valid | Invalid | Validating
+properties:
+- id: P.P48.1
+  name: Eager Validation
+  formal_spec: field.dirty ∧ field.touched ⇒ validate(field) on change
+  description: ''
+  invariants: []
+- id: P.P48.2
+  name: Form-Level Validation
+  formal_spec: 'valid(form) ⇔ ∀f ∈ fields: state[f] ∈ {Valid, Pristine}'
+  description: ''
+  invariants: []
+- id: P.P48.3
+  name: Async Validation
+  formal_spec: 'validate_async(field) → ValidationResult (eventually)
+
+    state[field] = Validating during execution'
+  description: ''
+  invariants: []
+- id: P.P48.4
+  name: Cross-Field Validation
+  formal_spec: 'validate_group([field₁, field₂, ...]) → ValidationResult
+
+    Example: password confirmation'
+  description: ''
+  invariants: []
+operations:
+- name: Validate Field
+  signature: 'validate(field_name: String) → ValidationResult'
+  formal_definition: "```\n   validate(field_name: String) → ValidationResult\n   = value := fields[field_name].value\n\
+    \     validator := rules[field_name]\n     result := validator(value)\n     \n     state[field_name]\
+    \ := case result of\n       Valid → Valid\n       Invalid(errs) → Invalid\n     \n     errors[field_name]\
+    \ := result.errors\n     return result"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Validate Form
+  signature: validate_form() → 𝔹
+  formal_definition: "```\n   validate_form() → \U0001D539\n   = results := map(keys(fields), validate)\n\
+    \     return all(results, λr: r = Valid)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Register Rule
+  signature: 'register_rule(field: String, rule: Validator) → Effect'
+  formal_definition: "```\n   register_rule(field: String, rule: Validator) → Effect\n   = rules[field]\
+    \ := compose_validators(rules[field], rule)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Built-in Validators
+  signature: 'required(value: Value) → ValidationResult'
+  formal_definition: "```\n   required(value: Value) → ValidationResult\n   = if value ≠ null ∧ value\
+    \ ≠ \"\":\n       Valid\n     else:\n       Invalid([\"This field is required\"])\n   \n   min_length(n:\
+    \ ℕ) → Validator\n   = λvalue: if length(value) ≥ n:\n               Valid\n             else:\n \
+    \              Invalid([f\"Minimum length is {n}\"])\n   \n   email(value: String) → ValidationResult\n\
+    \   = if matches(value, email_regex):\n       Valid\n     else:\n       Invalid([\"Invalid email address\"\
+    ])\n   \n   custom(predicate: Value → \U0001D539, message: String) → Validator\n   = λvalue: if predicate(value):\n\
+    \               Valid\n             else:\n               Invalid([message])"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: On Submit
+  signature: ''
+  formal_definition: "```\n   Validate all fields when form submitted\n   Show all errors at once"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: On Blur
+  signature: ''
+  formal_definition: "```\n   Validate field when it loses focus\n   Show errors immediately"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: On Change
+  signature: ''
+  formal_definition: "```\n   Validate field on every keystroke\n   Show errors after field touched"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Hybrid (Recommended)
+  signature: ''
+  formal_definition: "```\n   First error: on blur\n   Subsequent: on change (immediate feedback)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Registration forms
+  description: ''
+- name: Login forms
+  description: ''
+- name: Settings panels
+  description: ''
+- name: Data entry forms
+  description: ''
+- name: Survey forms
+  description: ''

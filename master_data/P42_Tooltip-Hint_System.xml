@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P42" version="1.1">
+  <metadata>
+    <name>Tooltip/Hint System</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$H = (T, C, \tau_{42}, \rho_{42}, \delta_{42}, \kappa_{42})$</tuple-notation>
+    <components>
+      <component>
+        <name>C</name>
+        <type>T → String</type>
+        <notation>C</notation>
+        <description>**content function**</description>
+      </component>
+      <component>
+        <name>\rho_{42}</name>
+        <type>T \times Viewport → \mathbb{R}^2</type>
+        <notation>\rho_{42}</notation>
+        <description>**positioning**</description>
+      </component>
+    </components>
+  </definition>
+  <properties/>
+  <operations>
+    <operation>
+      <name>Show Tooltip</name>
+      <signature>show(T: Element) → Effect</signature>
+      <formal-definition format="latex">```
+   show(T: Element) → Effect
+   = schedule(display(H), τ₄₂^show)
+     position := ρ₄₂(T, viewport)
+     content := C(T)
+     render(H, position, content)</formal-definition>
+    </operation>
+    <operation>
+      <name>Position</name>
+      <signature>ρ₄₂(T: Element, vp: Viewport) → Point</signature>
+      <formal-definition format="latex">```
+   ρ₄₂(T: Element, vp: Viewport) → Point
+   = preferred := (T.center_x, T.bottom + gap)
+     if fits(preferred, vp):
+       preferred
+     else:
+       find_best_position([below, above, right, left], T, vp)
+```
+τ₄₂^show ∈ [200ms, 800ms]  (typical: 500ms)
+τ₄₂^hide ∈ [0ms, 200ms]     (typical: 100ms)
+κ₄₂ ∈ [50, 100] characters</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Icon button hints</name>
+    </manifestation>
+    <manifestation>
+      <name>Abbreviated text expansion</name>
+    </manifestation>
+    <manifestation>
+      <name>Keyboard shortcut hints</name>
+    </manifestation>
+    <manifestation>
+      <name>Help text for controls</name>
+    </manifestation>
+  </manifestations>
+</pattern>

@@ -1,0 +1,152 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P55" version="1.1">
+  <metadata>
+    <name>Virtualization Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V = (data, viewport, item\_height, buffer, visible)$</tuple-notation>
+    <components>
+      <component>
+        <name>data</name>
+        <type>Sequence⟨Item⟩</type>
+        <notation>data</notation>
+        <description>full dataset</description>
+      </component>
+      <component>
+        <name>viewport</name>
+        <type>Rectangle</type>
+        <notation>viewport</notation>
+        <description>visible area</description>
+      </component>
+      <component>
+        <name>item\_height</name>
+        <type>Item → ℝ</type>
+        <notation>item\_height</notation>
+        <description>calculates item height</description>
+      </component>
+      <component>
+        <name>buffer</name>
+        <type>ℕ</type>
+        <notation>buffer</notation>
+        <description>number of items to pre-render beyond viewport</description>
+      </component>
+      <component>
+        <name>visible</name>
+        <type>Sequence⟨Item⟩</type>
+        <notation>visible</notation>
+        <description>currently rendered items</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P55.1">
+      <name>Minimal Rendering</name>
+      <formal-spec format="latex">|visible| ≪ |data|
+Only render items in viewport ± buffer</formal-spec>
+    </property>
+    <property id="P.P55.2">
+      <name>Scroll Performance</name>
+      <formal-spec format="latex">scroll_event → update_visible() completes in &lt; 16ms</formal-spec>
+    </property>
+    <property id="P.P55.3">
+      <name>Memory Efficiency</name>
+      <formal-spec format="latex">memory_usage = O(|visible|), not O(|data|)</formal-spec>
+    </property>
+    <property id="P.P55.4">
+      <name>Content Height</name>
+      <formal-spec format="latex">total_height = ∑_{item ∈ data} item_height(item)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Calculate Visible Items</name>
+      <signature>calculate_visible(scroll_top: ℝ) → (start: ℕ, end: ℕ)</signature>
+      <formal-definition format="latex">```
+   calculate_visible(scroll_top: ℝ) → (start: ℕ, end: ℕ)
+   = start_idx := binary_search(data, λi:
+       cumulative_height(data[0:i]) ≥ scroll_top - buffer_height
+     )
+     end_idx := binary_search(data, λi:
+       cumulative_height(data[0:i]) ≥ scroll_top + viewport.height + buffer_height
+     )
+     return (start_idx, end_idx)</formal-definition>
+    </operation>
+    <operation>
+      <name>Update On Scroll</name>
+      <signature>on_scroll(scroll_top: ℝ) → Effect</signature>
+      <formal-definition format="latex">```
+   on_scroll(scroll_top: ℝ) → Effect
+   = (start, end) := calculate_visible(scroll_top)
+     visible := data[start:end]
+     offset := cumulative_height(data[0:start])
+     render(visible, offset)</formal-definition>
+    </operation>
+    <operation>
+      <name>Handle Variable Heights</name>
+      <signature/>
+      <formal-definition format="latex">```
+   For variable item heights:
+     - Maintain height cache: Map⟨ℕ, ℝ⟩
+     - Estimate unknown heights
+     - Measure rendered items
+     - Update cache and reflow if necessary
+4. Fixed Height:**
+```
+   All items same height
+   Simplest and most performant</formal-definition>
+    </operation>
+    <operation>
+      <name>Variable Height (Estimated)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Estimate heights before rendering
+   Adjust on actual measurement</formal-definition>
+    </operation>
+    <operation>
+      <name>Dynamic Height</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Measure items as they render
+   Maintain running height cache
+   Update scroll container size
+```
+1. Overscan buffer:
+   Render N items beyond viewport
+   Reduces blank areas during fast scroll
+
+2. Debounced updates:
+   Wait τ ms after scroll stops
+   Reduces re-renders during scroll
+
+3. Recycled DOM:
+   Reuse DOM nodes for different items
+   Reduces GC pressure
+
+4. Intersection Observer:
+   Use native API for visibility detection
+   Better performance than scroll events</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Large lists</name>
+      <description>1000+ items</description>
+    </manifestation>
+    <manifestation>
+      <name>Data grids</name>
+    </manifestation>
+    <manifestation>
+      <name>Feed viewers</name>
+      <description>social media</description>
+    </manifestation>
+    <manifestation>
+      <name>Log viewers</name>
+    </manifestation>
+    <manifestation>
+      <name>File explorers</name>
+    </manifestation>
+  </manifestations>
+</pattern>

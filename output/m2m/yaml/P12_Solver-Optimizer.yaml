@@ -1,0 +1,84 @@
+id: P12
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Solver/Optimizer
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (constraints, variables, objective, algorithm)$
+  description: ''
+  components:
+  - name: constraints
+    type: Set⟨Constraint⟩
+    notation: constraints
+    description: problem constraints
+  - name: variables
+    type: Set⟨Variable⟩
+    notation: variables
+    description: decision variables
+  - name: objective
+    type: Variables → ℝ
+    notation: objective
+    description: optimization objective (optional)
+  - name: algorithm
+    type: Problem → Solution | Infeasible
+    notation: algorithm
+    description: solving algorithm
+type_definitions:
+- name: Constraint
+  definition: '(type: ConstraintType, expr: Expression)'
+  notation: 'Constraint := (type: ConstraintType, expr: Expression)'
+- name: ConstraintType
+  definition: Equality | Inequality | Boundary
+  notation: ConstraintType := Equality | Inequality | Boundary
+- name: Variable
+  definition: '(name: String, domain: Domain, value: Value | Unknown)'
+  notation: 'Variable := (name: String, domain: Domain, value: Value | Unknown)'
+- name: Domain
+  definition: 'Continuous(min, max) | Discrete(values: Set⟨Value⟩)'
+  notation: 'Domain := Continuous(min, max) | Discrete(values: Set⟨Value⟩)'
+properties:
+- id: P.P12.1
+  name: Soundness
+  formal_spec: solution satisfies all constraints ∨ return infeasible
+  description: ''
+  invariants: []
+- id: P.P12.2
+  name: Optimality
+  formal_spec: 'If optimization: solution maximizes/minimizes objective (or is local optimum)'
+  description: ''
+  invariants: []
+- id: P.P12.3
+  name: Completeness
+  formal_spec: If solution exists, algorithm finds it (eventually)
+  description: ''
+  invariants: []
+operations:
+- name: Solve
+  signature: 'solve(problem: Problem) → Solution | Infeasible'
+  formal_definition: "```\n   solve(problem: Problem) → Solution | Infeasible\n   = assignment := algorithm(constraints,\
+    \ variables, objective)\n     if verify(assignment, constraints):\n       return Solution(assignment)\n\
+    \     else:\n       return Infeasible"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Add Constraint
+  signature: 'add_constraint(c: Constraint) → Effect'
+  formal_definition: "```\n   add_constraint(c: Constraint) → Effect\n   = constraints := constraints\
+    \ ∪ {c}\n     invalidate_cache()\n- SAT solvers (Boolean constraints)\n- SMT solvers (theories)\n\
+    - Linear programming (LP)\n- Constraint propagation\n- Backtracking search"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Constraint solvers
+  description: CAD
+- name: Parametric solvers
+  description: engineering
+- name: Theorem provers
+  description: mathematics
+- name: Layout engines
+  description: CSS Grid

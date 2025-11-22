@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P114" version="1.1">
+  <metadata>
+    <name>Stream Backpressure</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$B_{press} = (Stream, Buffer, Rate_{control}, Drop_{strategy}) : \text{Events}_{overwhelming} \to \text{Events}_{managed}$</tuple-notation>
+    <components>
+      <component>
+        <name>Stream</name>
+        <type>Stream⟨Event⟩</type>
+        <notation>Stream</notation>
+        <description>incoming event stream with variable rate</description>
+      </component>
+      <component>
+        <name>Buffer</name>
+        <type>BoundedQueue⟨Event⟩</type>
+        <notation>Buffer</notation>
+        <description>bounded buffer for temporary storage</description>
+      </component>
+      <component>
+        <name>Rate_{control}</name>
+        <type>ℕ × Time</type>
+        <notation>Rate_{control}</notation>
+        <description>maximum events per time unit</description>
+      </component>
+      <component>
+        <name>Drop_{strategy}</name>
+        <type>Strategy</type>
+        <notation>Drop_{strategy}</notation>
+        <description>policy for dropping events when overwhelmed</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>Strategy</name>
+        <definition>$\text{Strategy} = \{\text{drop-oldest}, \text{drop-newest}, \text{drop-random}, \text{drop-lowest-priority}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>BoundedQueue</name>
+        <definition>$\text{BoundedQueue}\langle T \rangle = \{q \mid |q| \leq \text{capacity}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>Rate</name>
+        <definition>$\text{Rate} = \frac{\text{events}}{\text{second}} \in \mathbb{R}_{\geq 0}$</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P114.1">
+      <name>Buffer Boundedness</name>
+      <formal-spec format="latex">$\forall t : |Buffer(t)| \leq \text{capacity}$ (no unbounded growth)</formal-spec>
+    </property>
+    <property id="P.P114.2">
+      <name>Rate Limiting</name>
+      <formal-spec format="latex">$\forall \Delta t : |\{e \in \text{processed} \mid e.timestamp \in [t, t + \Delta t]\}| \leq Rate_{control} \times \Delta t$</formal-spec>
+    </property>
+    <property id="P.P114.3">
+      <name>Backpressure Signal</name>
+      <formal-spec format="latex">$|Buffer| > \theta \times \text{capacity} \implies \text{signal}(\text{upstream}, \text{slow\_down})$</formal-spec>
+    </property>
+    <property id="P.P114.4">
+      <name>Fairness (when drop-random)</name>
+      <formal-spec format="latex">$\forall e_1, e_2 \in Buffer : P(\text{drop}(e_1)) = P(\text{drop}(e_2))$ (uniform probability)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Enqueue with Backpressure</name>
+      <signature>enqueue: Event × Buffer → (Buffer, Signal)</signature>
+      <formal-definition format="latex">$\text{enqueue}(e, b) = (b', s)$ where
+  $(b', s) = \begin{cases}
+    (b \oplus [e], \text{ok}) &amp; \text{if } |b| &lt; \text{capacity} \\
+    (\text{drop}(b, Drop_{strategy}) \oplus [e], \text{backpressure}) &amp; \text{otherwise}
+  \end{cases}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Apply Drop Strategy</name>
+      <signature>drop: Buffer × Strategy → Buffer</signature>
+      <formal-definition format="latex">$\text{drop}(b, s) = b'$ where
+  $b' = \begin{cases}
+    \text{tail}(b) &amp; \text{if } s = \text{drop-oldest} \\
+    \text{init}(b) &amp; \text{if } s = \text{drop-newest} \\
+    b \setminus \{\text{random}(b)\} &amp; \text{if } s = \text{drop-random}
+  \end{cases}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Throttle Stream</name>
+      <signature>throttle: Stream⟨Event⟩ × Rate → Stream⟨Event⟩</signature>
+      <formal-definition format="latex">$\text{throttle}(S, r) = S'$ where
+  $S'(t) = \begin{cases} S(t) &amp; \text{if } \text{rate}(t) \leq r \\ \text{None} &amp; \text{otherwise} \end{cases}$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P22</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P112</pattern-ref>
+      <pattern-ref>P116</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Reactive Streams backpressure</name>
+      <description>RxJS, Project Reactor throttling</description>
+    </manifestation>
+    <manifestation>
+      <name>Kafka consumer backpressure</name>
+      <description>consumer group lag management</description>
+    </manifestation>
+    <manifestation>
+      <name>TCP flow control</name>
+      <description>sliding window protocol for backpressure</description>
+    </manifestation>
+    <manifestation>
+      <name>AG-UI event throttling</name>
+      <description>managing high-frequency agent events in UI</description>
+    </manifestation>
+  </manifestations>
+</pattern>

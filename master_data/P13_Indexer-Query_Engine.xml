@@ -1,0 +1,153 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P13" version="1.1">
+  <metadata>
+    <name>Indexer/Query Engine</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$I = (data, index, query\_processor, update)$</tuple-notation>
+    <components>
+      <component>
+        <name>data</name>
+        <type>Set⟨Item⟩</type>
+        <notation>data</notation>
+        <description>data being indexed</description>
+      </component>
+      <component>
+        <name>index</name>
+        <type>Index</type>
+        <notation>index</notation>
+        <description>index structure (inverted index, B-tree, etc.)</description>
+      </component>
+      <component>
+        <name>query\_processor</name>
+        <type>Query → Sequence⟨Item⟩</type>
+        <notation>query\_processor</notation>
+        <description>executes queries</description>
+      </component>
+      <component>
+        <name>update</name>
+        <type>Item → Effect</type>
+        <notation>update</notation>
+        <description>maintains index consistency</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Index</name>
+      <definition format="latex">InvertedIndex | BTree | HashMap | RTree | KDTree</definition>
+    </type-def>
+    <type-def>
+      <name>Query</name>
+      <definition format="latex">(predicates: Sequence⟨Predicate⟩, order: Order, limit: ℕ)</definition>
+    </type-def>
+    <type-def>
+      <name>Predicate</name>
+      <definition format="latex">(field: String, op: Operator, value: Value)</definition>
+    </type-def>
+    <type-def>
+      <name>Operator</name>
+      <definition format="latex">Eq | Lt | Gt | Contains | ...</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P13.1">
+      <name>Index Consistency</name>
+      <formal-spec format="latex">∀item ∈ data: item in index
+data changes → index updated</formal-spec>
+    </property>
+    <property id="P.P13.2">
+      <name>Query Performance</name>
+      <formal-spec format="latex">query(index) ≪ query(data)  // Much faster than linear scan</formal-spec>
+    </property>
+    <property id="P.P13.3">
+      <name>Space Trade-off</name>
+      <formal-spec format="latex">space(index) = O(|data|)  // Linear space overhead</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Build Index</name>
+      <signature>build_index(data: Set⟨Item⟩) → Index</signature>
+      <formal-definition format="latex">```
+   build_index(data: Set⟨Item⟩) → Index
+   = index := empty_index()
+     for item in data:
+       for field in indexed_fields:
+         value := extract(item, field)
+         index[field][value] := index[field][value] ∪ {item}
+     return index</formal-definition>
+    </operation>
+    <operation>
+      <name>Query</name>
+      <signature>query(q: Query) → Sequence⟨Item⟩</signature>
+      <formal-definition format="latex">```
+   query(q: Query) → Sequence⟨Item⟩
+   = candidates := index_lookup(q.predicates[0])  // Use index for first predicate
+     results := filter(candidates, q.predicates[1:])  // Filter rest
+     results := sort(results, q.order)
+     return take(results, q.limit)</formal-definition>
+    </operation>
+    <operation>
+      <name>Update Index</name>
+      <signature>update_item(old: Item, new: Item) → Effect</signature>
+      <formal-definition format="latex">```
+   update_item(old: Item, new: Item) → Effect
+   = for field in indexed_fields:
+       old_val := extract(old, field)
+       new_val := extract(new, field)
+       if old_val ≠ new_val:
+         index[field][old_val] := index[field][old_val] ∖ {old}
+         index[field][new_val] := index[field][new_val] ∪ {new}</formal-definition>
+    </operation>
+    <operation>
+      <name>Inverted Index (Text)</name>
+      <signature>token → {documents containing token}</signature>
+      <formal-definition format="latex">```
+   token → {documents containing token}
+   Example: "hello" → {doc1, doc5, doc8}</formal-definition>
+    </operation>
+    <operation>
+      <name>B-Tree (Range Queries)</name>
+      <signature>Sorted key → value</signature>
+      <formal-definition format="latex">```
+   Sorted key → value
+   Efficient for range queries: find(x, y)</formal-definition>
+    </operation>
+    <operation>
+      <name>Spatial Index (Geometric)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   R-Tree or KD-Tree
+   Efficient for spatial queries: near(point, radius)</formal-definition>
+    </operation>
+    <operation>
+      <name>Graph Index</name>
+      <signature>node → {adjacent nodes}</signature>
+      <formal-definition format="latex">```
+   node → {adjacent nodes}
+   Efficient for graph traversal</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Full-text search</name>
+      <description>documents</description>
+    </manifestation>
+    <manifestation>
+      <name>Graph indexes</name>
+      <description>knowledge graphs</description>
+    </manifestation>
+    <manifestation>
+      <name>Symbol tables</name>
+      <description>code</description>
+    </manifestation>
+    <manifestation>
+      <name>Spatial indexes</name>
+      <description>GIS</description>
+    </manifestation>
+  </manifestations>
+</pattern>

@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P73" version="1.1">
+  <metadata>
+    <name>Composite Action</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$C = (A_{atomic}, compose, exec, rollback) : \text{Set}\langle \text{Action} \rangle \to \text{Action}_{composite}$</tuple-notation>
+    <components>
+      <component>
+        <name>A_{atomic}</name>
+        <type>Set⟨AtomicAction⟩</type>
+        <notation>A_{atomic}</notation>
+        <description>set of atomic actions to compose</description>
+      </component>
+      <component>
+        <name>compose</name>
+        <type>Seq⟨Action⟩ → CompositeAction</type>
+        <notation>compose</notation>
+        <description>composition function creating compound action</description>
+      </component>
+      <component>
+        <name>exec</name>
+        <type>CompositeAction → Result</type>
+        <notation>exec</notation>
+        <description>execution function for composite action</description>
+      </component>
+      <component>
+        <name>rollback</name>
+        <type>CompositeAction → Effect</type>
+        <notation>rollback</notation>
+        <description>rollback function for failed composites</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>AtomicAction</name>
+      <definition>$\text{AtomicAction} = (\text{name}, \text{params}, \text{execute}, \text{undo})$</definition>
+    </type-def>
+    <type-def>
+      <name>CompositeAction</name>
+      <definition>$\text{CompositeAction} = (\text{actions}, \text{order}, \text{dependencies}, \text{compensation})$</definition>
+    </type-def>
+    <type-def>
+      <name>Result</name>
+      <definition>$\text{Result} = \{\text{success}, \text{partial}, \text{failure}\} \times \text{Data}$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P73.1">
+      <name>Compositional Semantics</name>
+      <formal-spec format="latex">$\forall a_1, a_2 : exec(compose([a_1, a_2])) = exec(a_2) \circ exec(a_1)$ (sequential composition)</formal-spec>
+    </property>
+    <property id="P.P73.2">
+      <name>Atomicity of Composite</name>
+      <formal-spec format="latex">$\forall c \in \text{CompositeAction} : \text{partial\_failure}(c) \implies rollback(c)$ (all-or-nothing)</formal-spec>
+    </property>
+    <property id="P.P73.3">
+      <name>Dependency Ordering</name>
+      <formal-spec format="latex">$\forall a_i, a_j \in c : a_i \xrightarrow{\text{depends}} a_j \implies \text{order}(a_i) &lt; \text{order}(a_j)$</formal-spec>
+    </property>
+    <property id="P.P73.4">
+      <name>Compensation Completeness</name>
+      <formal-spec format="latex">$\forall a \in A_{atomic} : \exists u : a.\text{undo} = u$ (every action has undo)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Compose Actions</name>
+      <signature>compose: Seq⟨Action⟩ → CompositeAction</signature>
+      <formal-definition format="latex">$\text{compose}([a_1, ..., a_n]) = c$ where
+  $c.\text{actions} = [a_1, ..., a_n]$
+  $c.\text{order} = \text{topological\_sort}(\text{dependencies})$
+  $c.\text{compensation} = [a_n.\text{undo}, ..., a_1.\text{undo}]$ (reverse order)</formal-definition>
+    </operation>
+    <operation>
+      <name>Execute Composite</name>
+      <signature>execute: CompositeAction → Result</signature>
+      <formal-definition format="latex">$\text{execute}(c) = r$ where
+  $r = \text{foldl}(\lambda s, a. s \land \text{exec}(a), \text{true}, c.\text{actions})$
+  if $r = \text{failure}$ then $rollback(c)$</formal-definition>
+    </operation>
+    <operation>
+      <name>Rollback Composite</name>
+      <signature>rollback: CompositeAction → Effect</signature>
+      <formal-definition format="latex">$\text{rollback}(c) = $ effect where
+  $\forall a \in \text{executed}(c) : a.\text{undo}()$
+  in reverse order of execution</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P30</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P14</pattern-ref>
+      <pattern-ref>P92</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>LangChain sequential chains</name>
+      <description>composing multiple LLM calls</description>
+    </manifestation>
+    <manifestation>
+      <name>Database transactions</name>
+      <description>composite operations with rollback</description>
+    </manifestation>
+    <manifestation>
+      <name>Workflow orchestration</name>
+      <description>composing atomic tasks into workflows</description>
+    </manifestation>
+    <manifestation>
+      <name>API composition patterns</name>
+      <description>chaining multiple API calls with compensation</description>
+    </manifestation>
+  </manifestations>
+</pattern>

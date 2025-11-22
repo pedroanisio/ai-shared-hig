@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P105" version="1.1">
+  <metadata>
+    <name>Semantic Similarity Visualizer</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V_{sim} = (Concepts, Sim_{matrix}, Layout, Threshold) : \text{Set}\langle \text{Concept} \rangle \to \text{Similarity}_{visual}$</tuple-notation>
+    <components>
+      <component>
+        <name>Concepts</name>
+        <type>Set⟨Concept⟩</type>
+        <notation>Concepts</notation>
+        <description>set of semantic concepts to compare</description>
+      </component>
+      <component>
+        <name>Sim_{matrix}</name>
+        <type>Concept × Concept → [0,1]</type>
+        <notation>Sim_{matrix}</notation>
+        <description>pairwise similarity scores</description>
+      </component>
+      <component>
+        <name>Layout</name>
+        <type>Concept → ℝ²</type>
+        <notation>Layout</notation>
+        <description>2D spatial positioning of concepts</description>
+      </component>
+      <component>
+        <name>Threshold</name>
+        <type>ℝ ∈ [0,1]</type>
+        <notation>Threshold</notation>
+        <description>minimum similarity to display connection</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>Concept</name>
+        <definition>$\text{Concept} = (\text{id}, \text{label}, \text{embedding})$ where $\text{embedding} \in \mathbb{R}^d$</definition>
+      </type-def>
+      <type-def>
+        <name>SimilarityMetric</name>
+        <definition>$\text{SimilarityMetric} = \{\text{cosine}, \text{euclidean}, \text{jaccard}, \text{semantic}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>LayoutAlgorithm</name>
+        <definition>$\text{LayoutAlgorithm} = \{\text{force-directed}, \text{tsne}, \text{umap}, \text{mds}\}$</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P105.1">
+      <name>Similarity Symmetry</name>
+      <formal-spec format="latex">$\forall c_1, c_2 \in Concepts : Sim_{matrix}(c_1, c_2) = Sim_{matrix}(c_2, c_1)$ (symmetric)</formal-spec>
+    </property>
+    <property id="P.P105.2">
+      <name>Distance Preservation</name>
+      <formal-spec format="latex">$\forall c_1, c_2 : Sim_{matrix}(c_1, c_2) > Sim_{matrix}(c_1, c_3) \implies$
+  $\|Layout(c_1) - Layout(c_2)\| &lt; \|Layout(c_1) - Layout(c_3)\|$ (spatial proximity reflects similarity)</formal-spec>
+    </property>
+    <property id="P.P105.3">
+      <name>Threshold Filtering</name>
+      <formal-spec format="latex">$\forall c_1, c_2 : Sim_{matrix}(c_1, c_2) &lt; Threshold \implies \neg \text{visible}(\text{edge}(c_1, c_2))$</formal-spec>
+    </property>
+    <property id="P.P105.4">
+      <name>Self-Similarity Identity</name>
+      <formal-spec format="latex">$\forall c \in Concepts : Sim_{matrix}(c, c) = 1$ (maximum self-similarity)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Compute Similarity Matrix</name>
+      <signature>computeSimilarity: Set⟨Concept⟩ × SimilarityMetric → Matrix</signature>
+      <formal-definition format="latex">$\text{computeSimilarity}(C, metric) = M$ where
+  $M[i,j] = \text{metric}(c_i.embedding, c_j.embedding)$
+  $\text{for cosine: } M[i,j] = \frac{e_i \cdot e_j}{\|e_i\| \|e_j\|}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Generate Layout</name>
+      <signature>generateLayout: Sim_matrix × LayoutAlgorithm → (Concept → ℝ²)</signature>
+      <formal-definition format="latex">$\text{generateLayout}(M, alg) = L$ where
+  $L = \arg\min_{L'} \sum_{i,j} (M[i,j] - \frac{1}{\|L'(c_i) - L'(c_j)\|}^2$ (stress minimization)</formal-definition>
+    </operation>
+    <operation>
+      <name>Filter by Threshold</name>
+      <signature>filter: Sim_matrix × ℝ → Set⟨Edge⟩</signature>
+      <formal-definition format="latex">$\text{filter}(M, \theta) = \{(c_i, c_j) \mid M[i,j] \geq \theta \land i \neq j\}$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P99</pattern-ref>
+      <pattern-ref>P101</pattern-ref>
+      <pattern-ref>P108</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Embedding space visualization</name>
+      <description>t-SNE/UMAP plots of concept embeddings</description>
+    </manifestation>
+    <manifestation>
+      <name>Document similarity networks</name>
+      <description>graph showing related documents</description>
+    </manifestation>
+    <manifestation>
+      <name>Topic clustering visualization</name>
+      <description>semantic clusters in 2D space</description>
+    </manifestation>
+    <manifestation>
+      <name>Knowledge graph similarity view</name>
+      <description>concepts positioned by semantic distance</description>
+    </manifestation>
+  </manifestations>
+</pattern>

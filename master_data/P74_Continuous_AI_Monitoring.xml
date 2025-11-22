@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P74" version="1.1">
+  <metadata>
+    <name>Continuous AI Monitoring</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$M_{cont} = (S_{stream}, D_{detect}, T_{threshold}, A_{alert}) : \text{State}_{stream} \to \text{Anomalies}$</tuple-notation>
+    <components>
+      <component>
+        <name>S_{stream}</name>
+        <type>Stream⟨State⟩</type>
+        <notation>S_{stream}</notation>
+        <description>continuous stream of system state</description>
+      </component>
+      <component>
+        <name>D_{detect}</name>
+        <type>State → Set⟨Anomaly⟩</type>
+        <notation>D_{detect}</notation>
+        <description>anomaly detection function</description>
+      </component>
+      <component>
+        <name>T_{threshold}</name>
+        <type>Map⟨Metric, ℝ⟩</type>
+        <notation>T_{threshold}</notation>
+        <description>threshold values for each monitored metric</description>
+      </component>
+      <component>
+        <name>A_{alert}</name>
+        <type>Anomaly → Alert</type>
+        <notation>A_{alert}</notation>
+        <description>alert generation function</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>State</name>
+      <definition>$\text{State} = (\text{metrics}, \text{context}, \text{timestamp})$</definition>
+    </type-def>
+    <type-def>
+      <name>Anomaly</name>
+      <definition>$\text{Anomaly} = (\text{type}, \text{severity}, \text{metric}, \text{value}, \text{expected})$</definition>
+    </type-def>
+    <type-def>
+      <name>Alert</name>
+      <definition>$\text{Alert} = (\text{anomaly}, \text{priority}, \text{actions}, \text{recipients})$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P74.1">
+      <name>Continuous Observation</name>
+      <formal-spec format="latex">$\forall t : \exists s \in S_{stream} : s.\text{timestamp} = t$ (always monitoring)</formal-spec>
+    </property>
+    <property id="P.P74.2">
+      <name>Low-Latency Detection</name>
+      <formal-spec format="latex">$\forall a \in \text{Anomalies} : \Delta t_{detect} = t_{alert}(a) - t_{occur}(a) &lt; 1s$</formal-spec>
+    </property>
+    <property id="P.P74.3">
+      <name>Threshold Sensitivity</name>
+      <formal-spec format="latex">$\forall m \in \text{Metrics} : |m| > T_{threshold}[m] \implies \exists a : a.\text{metric} = m$</formal-spec>
+    </property>
+    <property id="P.P74.4">
+      <name>False Positive Rate</name>
+      <formal-spec format="latex">$\frac{|\text{false\_positives}|}{|\text{all\_alerts}|} &lt; \alpha$ where $\alpha &lt; 0.05$ (acceptable rate)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Detect Anomalies</name>
+      <signature>detect: State → Set⟨Anomaly⟩</signature>
+      <formal-definition format="latex">$\text{detect}(s) = \{a \mid m \in s.\text{metrics} \land |m - \mu_m| > k \cdot \sigma_m\}$
+where $\mu_m$ = mean, $\sigma_m$ = std dev, $k$ = sensitivity</formal-definition>
+    </operation>
+    <operation>
+      <name>Generate Alert</name>
+      <signature>generateAlert: Anomaly → Alert</signature>
+      <formal-definition format="latex">$\text{generateAlert}(a) = alert$ where
+  $alert.\text{priority} = f(a.\text{severity})$
+  $alert.\text{actions} = \text{recommend}(a)$
+  $alert.\text{recipients} = \text{escalate}(a.\text{severity})$</formal-definition>
+    </operation>
+    <operation>
+      <name>Update Thresholds</name>
+      <signature>updateThresholds: History → T_threshold</signature>
+      <formal-definition format="latex">$\text{updateThresholds}(H) = T'$ where
+  $\forall m : T'[m] = \mu_m + k \cdot \sigma_m$ (adaptive thresholds)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P22</pattern-ref>
+      <pattern-ref>P112</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P27</pattern-ref>
+      <pattern-ref>P75</pattern-ref>
+      <pattern-ref>P129</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>LangSmith monitoring</name>
+      <description>continuous LLM application monitoring</description>
+    </manifestation>
+    <manifestation>
+      <name>Datadog AI observability</name>
+      <description>real-time AI system monitoring</description>
+    </manifestation>
+    <manifestation>
+      <name>Weights & Biases monitoring</name>
+      <description>ML model performance tracking</description>
+    </manifestation>
+    <manifestation>
+      <name>Arize AI monitoring</name>
+      <description>production ML monitoring and alerting</description>
+    </manifestation>
+  </manifestations>
+</pattern>

@@ -1,0 +1,112 @@
+id: P23
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Real-Time Sync
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (local, remote, diff, merge, conflicts)$
+  description: ''
+  components:
+  - name: local
+    type: State
+    notation: local
+    description: local state
+  - name: remote
+    type: State
+    notation: remote
+    description: remote state
+  - name: diff
+    type: State × State → Delta
+    notation: diff
+    description: computes differences
+  - name: merge
+    type: State × Delta → State
+    notation: merge
+    description: applies changes
+  - name: conflicts
+    type: Sequence⟨Conflict⟩
+    notation: conflicts
+    description: tracks unresolved conflicts
+type_definitions:
+- name: State
+  definition: Map⟨Path, Value⟩  // Complete state snapshot
+  notation: State := Map⟨Path, Value⟩  // Complete state snapshot
+- name: Delta
+  definition: Sequence⟨Change⟩  // Incremental changes
+  notation: Delta := Sequence⟨Change⟩  // Incremental changes
+- name: Conflict
+  definition: '(path: Path, local_value: Value, remote_value: Value)'
+  notation: 'Conflict := (path: Path, local_value: Value, remote_value: Value)'
+properties:
+- id: P.P23.1
+  name: Eventual Consistency
+  formal_spec: 'After quiescence: local = remote'
+  description: ''
+  invariants: []
+- id: P.P23.2
+  name: Conflict Resolution
+  formal_spec: Concurrent changes → detect conflicts → resolve
+  description: ''
+  invariants: []
+- id: P.P23.3
+  name: Efficient Sync
+  formal_spec: Only send deltas, not full state
+  description: ''
+  invariants: []
+operations:
+- name: Compute Delta
+  signature: 'diff(old: State, new: State) → Delta'
+  formal_definition: "```\n   diff(old: State, new: State) → Delta\n   = changes := []\n     for path\
+    \ in keys(old) ∪ keys(new):\n       if old[path] ≠ new[path]:\n         changes := changes ++ [Change(path,\
+    \ old[path], new[path])]\n     return changes"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Apply Delta
+  signature: 'merge(state: State, delta: Delta) → State'
+  formal_definition: "```\n   merge(state: State, delta: Delta) → State\n   = for change in delta:\n \
+    \      if ¬conflict(change, state):\n         state[change.path] := change.new_value\n       else:\n\
+    \         conflicts := conflicts ++ [Conflict(change.path, state[change.path], change.new_value)]\n\
+    \     return state"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Resolve Conflict
+  signature: 'resolve(conflict: Conflict, strategy: Strategy) → Value'
+  formal_definition: "```\n   resolve(conflict: Conflict, strategy: Strategy) → Value\n   = case strategy\
+    \ of\n       LastWriteWins → newer(conflict.local_value, conflict.remote_value)\n       ManualResolve\
+    \ → prompt_user(conflict)\n       MergeValues → merge_function(conflict.local_value, conflict.remote_value)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Polling
+  signature: ''
+  formal_definition: "```\n   Every τ seconds: fetch remote, diff, merge\n   Simple but wasteful"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: WebSocket
+  signature: ''
+  formal_definition: "```\n   Persistent connection, push updates\n   Real-time, efficient"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Operational Transformation
+  signature: ''
+  formal_definition: "```\n   Transform operations to account for concurrent edits\n   Complex but powerful"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Collaborative editing
+  description: ''
+- name: Live preview
+  description: ''
+- name: Cloud sync
+  description: Dropbox
+- name: Multi-device sync
+  description: ''

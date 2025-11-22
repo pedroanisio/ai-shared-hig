@@ -1,0 +1,73 @@
+id: P47
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Inline Editing Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $E = (M, \sigma_{47}, \tau_{47}, \phi_{47}, \psi_{47})$
+  description: ''
+  components:
+  - name: \tau_{47}
+    type: Event → M
+    notation: \tau_{47}
+    description: '**trigger function**'
+  - name: \phi_{47}
+    type: Value \times Value → Effect
+    notation: \phi_{47}
+    description: '**commit handler**'
+  - name: \psi_{47}
+    type: () → Effect
+    notation: \psi_{47}
+    description: '**cancel handler**'
+type_definitions: []
+properties:
+- id: P.P47.1
+  name: Mode Exclusivity
+  formal_spec: '|{m : active(m)}| = 1'
+  description: ''
+  invariants: []
+- id: P.P47.2
+  name: Position Preservation
+  formal_spec: bounds(view) ≈ bounds(edit)
+  description: ''
+  invariants: []
+- id: P.P47.3
+  name: Validation Gate
+  formal_spec: commit(v) succeeds ⇔ valid(v)
+  description: ''
+  invariants: []
+operations:
+- name: Enter Edit Mode
+  signature: activate() → Effect
+  formal_definition: "```\n   activate() → Effect\n   = value_original := value\n     σ₄₇ := edit\n  \
+    \   render_input()\n     focus(input)\n     select_all(input)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Commit Changes
+  signature: commit() → Effect
+  formal_definition: "```\n   commit() → Effect\n   = v_new := get_input_value()\n     if valid(v_new):\n\
+    \       φ₄₇(value_original, v_new)\n       value := v_new\n       σ₄₇ := view"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Cancel Edit
+  signature: cancel() → Effect
+  formal_definition: "```\n   cancel() → Effect\n   = ψ₄₇()\n     value := value_original\n     σ₄₇ :=\
+    \ view"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Click paragraph to edit
+  description: ''
+- name: Spreadsheet cell editing
+  description: ''
+- name: Filename rename
+  description: ''
+- name: Tag editing
+  description: ''

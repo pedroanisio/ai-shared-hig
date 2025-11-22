@@ -1,0 +1,119 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P116" version="1.1">
+  <metadata>
+    <name>Multi-Stream Coordination UI</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$C_{streams} = (Streams, Sync, Merge, Display) : \text{Set}\langle \text{Stream} \rangle \to \text{Unified}_{view}$</tuple-notation>
+    <components>
+      <component>
+        <name>Streams</name>
+        <type>Set⟨Stream⟨Event⟩⟩</type>
+        <notation>Streams</notation>
+        <description>multiple independent event streams</description>
+      </component>
+      <component>
+        <name>Sync</name>
+        <type>SyncStrategy</type>
+        <notation>Sync</notation>
+        <description>time synchronization strategy for streams</description>
+      </component>
+      <component>
+        <name>Merge</name>
+        <type>Set⟨Stream⟩ → Stream</type>
+        <notation>Merge</notation>
+        <description>combines multiple streams into unified stream</description>
+      </component>
+      <component>
+        <name>Display</name>
+        <type>Stream → Visualization</type>
+        <notation>Display</notation>
+        <description>visualization of merged stream</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>SyncStrategy</name>
+        <definition>$\text{SyncStrategy} = \{\text{wall-clock}, \text{logical-clock}, \text{causal}, \text{vector-clock}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>MergeOperation</name>
+        <definition>$\text{MergeOp} = \{\text{union}, \text{interleave}, \text{zip}, \text{priority}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>Timestamp</name>
+        <definition>$\text{Timestamp} = \mathbb{N}$ (logical) or $\mathbb{R}_{\geq 0}$ (wall-clock)</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P116.1">
+      <name>Temporal Ordering</name>
+      <formal-spec format="latex">$\forall s_1, s_2 \in Streams : Merge(\{s_1, s_2\}) = s' \implies$
+  $\forall e_1 \in s_1, e_2 \in s_2 : e_1.ts &lt; e_2.ts \implies \text{order}(e_1, s') &lt; \text{order}(e_2, s')$</formal-spec>
+    </property>
+    <property id="P.P116.2">
+      <name>Causal Consistency</name>
+      <formal-spec format="latex">$\forall e_1, e_2 : e_1 \xrightarrow{\text{causes}} e_2 \implies e_1 \text{ appears before } e_2$ in merged stream</formal-spec>
+    </property>
+    <property id="P.P116.3">
+      <name>Lossless Merge</name>
+      <formal-spec format="latex">$\forall S \subseteq Streams : |\text{events}(Merge(S))| = \sum_{s \in S} |\text{events}(s)|$ (no events lost)</formal-spec>
+    </property>
+    <property id="P.P116.4">
+      <name>Real-Time Coordination</name>
+      <formal-spec format="latex">$\forall s \in Streams : \Delta t_{merge}(s) &lt; \epsilon$ (low latency merging)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Merge Streams</name>
+      <signature>mergeStreams: Set⟨Stream⟩ × SyncStrategy → Stream</signature>
+      <formal-definition format="latex">$\text{mergeStreams}(S, sync) = s'$ where
+  $s' = \text{sortBy}(\bigcup_{s \in S} \text{events}(s), sync.\text{compare})$</formal-definition>
+    </operation>
+    <operation>
+      <name>Synchronize Clocks</name>
+      <signature>syncClocks: Set⟨Stream⟩ → Map⟨Stream, Offset⟩</signature>
+      <formal-definition format="latex">$\text{syncClocks}(S) = \{(s, \delta_s) \mid s \in S \land \delta_s = \text{clockOffset}(s)\}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Interleave Streams</name>
+      <signature>interleave: Seq⟨Stream⟩ → Stream</signature>
+      <formal-definition format="latex">$\text{interleave}([s_1, ..., s_n]) = s$ where
+  $s = [s_1[0], s_2[0], ..., s_n[0], s_1[1], s_2[1], ...]$ (round-robin)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P22</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P68</pattern-ref>
+      <pattern-ref>P114</pattern-ref>
+      <pattern-ref>P115</pattern-ref>
+      <pattern-ref>P117</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Multi-agent activity dashboard</name>
+      <description>coordinated display of multiple agent streams</description>
+    </manifestation>
+    <manifestation>
+      <name>Distributed tracing (Jaeger, Zipkin)</name>
+      <description>merging traces from multiple services</description>
+    </manifestation>
+    <manifestation>
+      <name>Real-time collaboration (Figma, Miro)</name>
+      <description>merging action streams from multiple users</description>
+    </manifestation>
+    <manifestation>
+      <name>Apache Flink stream joining</name>
+      <description>combining multiple Kafka streams</description>
+    </manifestation>
+  </manifestations>
+</pattern>

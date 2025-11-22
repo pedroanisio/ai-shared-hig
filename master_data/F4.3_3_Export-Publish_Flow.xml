@@ -1,0 +1,138 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$E = (source, transform, validate, publish)$</tuple-notation>
+    <components>
+      <component>
+        <name>source</name>
+        <type>InternalData</type>
+        <notation>source</notation>
+        <description>internal data to export</description>
+      </component>
+      <component>
+        <name>transform</name>
+        <type>InternalData → ExternalFormat</type>
+        <notation>transform</notation>
+        <description>converts to external format</description>
+      </component>
+      <component>
+        <name>validate</name>
+        <type>ExternalFormat → Valid | Invalid</type>
+        <notation>validate</notation>
+        <description>checks output validity</description>
+      </component>
+      <component>
+        <name>publish</name>
+        <type>Valid → Destination</type>
+        <notation>publish</notation>
+        <description>delivers to target</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>InternalData</name>
+      <definition format="latex">Data in system's internal representation</definition>
+    </type-def>
+    <type-def>
+      <name>ExternalFormat</name>
+      <definition format="latex">JSON | XML | CSV | PDF | HTML | Binary</definition>
+    </type-def>
+    <type-def>
+      <name>Destination</name>
+      <definition format="latex">File | URL | API | Stream | Storage</definition>
+    </type-def>
+    <type-def>
+      <name>PublishResult</name>
+      <definition format="latex">Success(url: URL) | Failure(error: Error)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F4.3.1">
+      <name>Format Compliance</name>
+      <formal-spec format="latex">∀d ∈ InternalData: validate(transform(d)) = Valid ⇒
+conforms_to_spec(transform(d))</formal-spec>
+    </property>
+    <property id="P.F4.3.2">
+      <name>Lossless Export</name>
+      <formal-spec format="latex">∀d ∈ InternalData: can_round_trip(d) ⇒
+import(transform(d)) = d</formal-spec>
+    </property>
+    <property id="P.F4.3.3">
+      <name>Atomic Publish</name>
+      <formal-spec format="latex">∀d ∈ Data: publish(d) succeeds completely ∨ rolls back completely</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Export</name>
+      <signature>export(data: InternalData, format: FormatType, dest: Destination) → PublishResult</signature>
+      <formal-definition format="latex">```
+   export(data: InternalData, format: FormatType, dest: Destination) → PublishResult
+   = try:
+       external := transform(data, format)
+       if validate(external) ≠ Valid:
+         return Failure("Validation failed")
+       result := publish(external, dest)
+       return result
+     catch error:
+       return Failure(error)</formal-definition>
+    </operation>
+    <operation>
+      <name>Transform</name>
+      <signature>transform(data: InternalData, format: FormatType) → ExternalFormat</signature>
+      <formal-definition format="latex">```
+   transform(data: InternalData, format: FormatType) → ExternalFormat
+   = case format of
+       JSON → serialize_json(data)
+       XML → serialize_xml(data, schema)
+       CSV → flatten_to_csv(data)
+       PDF → render_pdf(data, template)
+       HTML → render_html(data, template)</formal-definition>
+    </operation>
+    <operation>
+      <name>Publish</name>
+      <signature>publish(data: ExternalFormat, dest: Destination) → PublishResult</signature>
+      <formal-definition format="latex">```
+   publish(data: ExternalFormat, dest: Destination) → PublishResult
+   = case dest of
+       File(path) → 
+         write_file(path, data)
+         return Success(file_url(path))
+       URL(endpoint) → 
+         response := http_post(endpoint, data)
+         return Success(response.location)
+       API(service) → 
+         id := service.create(data)
+         return Success(service.url(id))
+       Storage(bucket) → 
+         key := bucket.put(data)
+         return Success(bucket.url(key))</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Document export</name>
+      <description>PDF, Word</description>
+    </manifestation>
+    <manifestation>
+      <name>API publishing</name>
+    </manifestation>
+    <manifestation>
+      <name>Data export</name>
+      <description>CSV, JSON</description>
+    </manifestation>
+    <manifestation>
+      <name>Report generation</name>
+    </manifestation>
+    <manifestation>
+      <name>Static site generation</name>
+    </manifestation>
+  </manifestations>
+</pattern>

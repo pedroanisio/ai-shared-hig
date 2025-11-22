@@ -1,0 +1,131 @@
+id: P52
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Pagination Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $P = (data, page, size, total, nav)$
+  description: ''
+  components:
+  - name: data
+    type: Sequence⟨Item⟩
+    notation: data
+    description: full dataset
+  - name: page
+    type: ℕ
+    notation: page
+    description: current page number (1-indexed)
+  - name: size
+    type: ℕ
+    notation: size
+    description: items per page
+  - name: total
+    type: ℕ
+    notation: total
+    description: total item count
+  - name: nav
+    type: Navigation
+    notation: nav
+    description: provides navigation controls
+type_definitions:
+- name: Navigation
+  definition: '{'
+  notation: Navigation := {
+properties:
+- id: P.P52.1
+  name: Page Calculation
+  formal_spec: 'total_pages = ⌈total / size⌉
+
+    page ∈ [1, total_pages]'
+  description: ''
+  invariants: []
+- id: P.P52.2
+  name: Item Range
+  formal_spec: 'current_items = data[(page-1)·size : page·size]'
+  description: ''
+  invariants: []
+- id: P.P52.3
+  name: Boundary Checks
+  formal_spec: 'has_prev ⇔ page > 1
+
+    has_next ⇔ page < total_pages'
+  description: ''
+  invariants: []
+operations:
+- name: Get Page
+  signature: 'get_page(page_num: ℕ) → Sequence⟨Item⟩'
+  formal_definition: "```\n   get_page(page_num: ℕ) → Sequence⟨Item⟩\n   = start := (page_num - 1) · size\n\
+    \     end := min(start + size, total)\n     return data[start:end]"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Navigate
+  signature: next() → Effect
+  formal_definition: "```\n   next() → Effect\n   = if page < total_pages:\n       page := page + 1\n\
+    \       load_page(page)\n   \n   prev() → Effect\n   = if page > 1:\n       page := page - 1\n   \
+    \    load_page(page)\n   \n   goto(p: ℕ) → Effect\n   = if 1 ≤ p ≤ total_pages:\n       page := p\n\
+    \       load_page(p)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Change Page Size
+  signature: 'set_page_size(new_size: ℕ) → Effect'
+  formal_definition: "```\n   set_page_size(new_size: ℕ) → Effect\n   = size := new_size\n     page :=\
+    \ 1  // Reset to first page\n     load_page(1)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Offset-Based (Traditional)
+  signature: ''
+  formal_definition: "```\n   Query: SELECT * FROM items LIMIT size OFFSET (page-1)*size\n   Pros: Can\
+    \ jump to any page\n   Cons: Performance degrades with large offsets"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Cursor-Based (API)
+  signature: ''
+  formal_definition: "```\n   Query: SELECT * FROM items WHERE id > cursor LIMIT size\n   cursor := last_item.id\n\
+    \   Pros: Consistent performance\n   Cons: Can't jump to arbitrary page"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Infinite Scroll
+  signature: Scroll to bottom → load_next_page() → append to list
+  formal_definition: "```\n   Scroll to bottom → load_next_page() → append to list\n   Pros: Smooth UX\n\
+    \   Cons: No page bookmarks, harder navigation"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Numbered
+  signature: ''
+  formal_definition: "```\n   [< Prev] [1] [2] [3] ... [10] [Next >]"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Simple
+  signature: ''
+  formal_definition: "```\n   [< Previous] Page 3 of 10 [Next >]"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Load More
+  signature: ''
+  formal_definition: "```\n   [Show 25 more items]"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Search results
+  description: ''
+- name: Product listings
+  description: ''
+- name: Data tables
+  description: ''
+- name: Blog archives
+  description: ''
+- name: API responses
+  description: ''

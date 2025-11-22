@@ -1,0 +1,71 @@
+id: C3
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Symbolic Expression
+  category: concept
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $T = (root, children)$
+  description: ''
+  components:
+  - name: root
+    type: Symbol
+    notation: root
+    description: root node (operator or value)
+  - name: children
+    type: Sequence⟨Tree⟩
+    notation: children
+    description: child expressions
+type_definitions: []
+properties:
+- id: P.C3.1
+  name: Parseability
+  formal_spec: parse(serialize(T)) = T
+  description: ''
+  invariants: []
+- id: P.C3.2
+  name: Evaluability
+  formal_spec: '∀T, context: eval(T, context) → Value | Error'
+  description: ''
+  invariants: []
+- id: P.C3.3
+  name: Transformability
+  formal_spec: '∃transform: simplify(T) = T'' where semantics(T) = semantics(T'')
+
+    ∧ complexity(T'') ≤ complexity(T)'
+  description: ''
+  invariants: []
+operations:
+- name: Parse
+  signature: 'parse(s: String) → Tree | ParseError'
+  formal_definition: "```\n   parse(s: String) → Tree | ParseError\n   = construct AST from string representation"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Evaluate
+  signature: 'eval(T: Tree, context: Map⟨String,Value⟩) → Value'
+  formal_definition: "```\n   eval(T: Tree, context: Map⟨String,Value⟩) → Value\n   = case T.root of\n\
+    \       Literal(v) → v\n       Variable(x) → context[x]\n       Operator(op) → op(map(eval, T.children))"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Simplify
+  signature: 'simplify(T: Tree) → Tree'
+  formal_definition: "```\n   simplify(T: Tree) → Tree\n   = apply rewrite rules until fixpoint"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Mathematical formulas
+  description: LaTeX, MathML
+- name: Code AST
+  description: Python, JavaScript
+- name: Constraints
+  description: SMT-LIB
+- name: Queries
+  description: SQL, GraphQL
+- name: Tags/taxonomies
+  description: ''

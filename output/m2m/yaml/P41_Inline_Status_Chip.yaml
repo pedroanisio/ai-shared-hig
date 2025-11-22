@@ -1,0 +1,67 @@
+id: P41
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Inline Status Chip
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (I, L, \theta_{41}, \sigma_{41}, \alpha_{41})$
+  description: ''
+  components:
+  - name: \sigma_{41}
+    type: States → Styles
+    notation: \sigma_{41}
+    description: '**styling function**'
+  - name: \alpha_{41}
+    type: Chip → Action
+    notation: \alpha_{41}
+    description: optional **click action**
+type_definitions: []
+properties:
+- id: P.P41.1
+  name: State-Style Coupling
+  formal_spec: '∀θ ∈ States: style(S) = σ₄₁(θ)'
+  description: ''
+  invariants: []
+- id: P.P41.2
+  name: Compactness
+  formal_spec: width(S) ≤ 20·fontSize ∧ height(S) ≤ 2·fontSize
+  description: ''
+  invariants: []
+- id: P.P41.3
+  name: Color Semantics
+  formal_spec: 'σ₄₁(success) = green
+
+    σ₄₁(warning) = yellow
+
+    σ₄₁(error) = red
+
+    σ₄₁(info) = blue'
+  description: ''
+  invariants: []
+operations:
+- name: Update State
+  signature: 'set_state(θ_new: State) → Effect'
+  formal_definition: "```\n   set_state(θ_new: State) → Effect\n   = θ₄₁ := θ_new\n     apply_style(σ₄₁(θ_new))"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Render
+  signature: 'render(S: Chip) → Component'
+  formal_definition: "```\n   render(S: Chip) → Component\n   = HStack([\n       if I ≠ null then Icon(I),\n\
+    \       Text(L),\n     ], style: σ₄₁(θ₄₁))"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: '"AI: Partial" warning chip'
+  description: ''
+- name: '"✓ Saved" success chip'
+  description: ''
+- name: '"⏱ Syncing..." info chip'
+  description: ''
+- name: '"❌ 2 errors" error chip'
+  description: ''

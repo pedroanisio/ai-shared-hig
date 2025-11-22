@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P71" version="1.1">
+  <metadata>
+    <name>Orchestration Dashboard</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$D_{orch} = (W_{flow}, A_{agents}, M_{metrics}, C_{control}) : \text{Workflow} \to \text{Dashboard}$</tuple-notation>
+    <components>
+      <component>
+        <name>W_{flow}</name>
+        <type>WorkflowGraph</type>
+        <notation>W_{flow}</notation>
+        <description>DAG representing orchestration workflow</description>
+      </component>
+      <component>
+        <name>A_{agents}</name>
+        <type>Set⟨Agent⟩</type>
+        <notation>A_{agents}</notation>
+        <description>set of orchestrated agents</description>
+      </component>
+      <component>
+        <name>M_{metrics}</name>
+        <type>Metrics</type>
+        <notation>M_{metrics}</notation>
+        <description>real-time performance metrics</description>
+      </component>
+      <component>
+        <name>C_{control}</name>
+        <type>Set⟨Control⟩</type>
+        <notation>C_{control}</notation>
+        <description>user controls for orchestration</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>WorkflowGraph</name>
+      <definition>$\text{WorkflowGraph} = (V, E, \lambda)$ where $V$ = nodes (tasks), $E$ = edges (dependencies), $\lambda$ = labels</definition>
+    </type-def>
+    <type-def>
+      <name>Metrics</name>
+      <definition>$\text{Metrics} = (\text{throughput}, \text{latency}, \text{cost}, \text{success\_rate}, \text{bottlenecks})$</definition>
+    </type-def>
+    <type-def>
+      <name>Control</name>
+      <definition>$\text{Control} = \{\text{pause}, \text{resume}, \text{cancel}, \text{retry}, \text{scale}, \text{route}\}$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P71.1">
+      <name>Complete Workflow Visibility</name>
+      <formal-spec format="latex">$\forall n \in W_{flow}.V : \text{visible}(n) \land \text{status}(n) \in \text{Dashboard}$</formal-spec>
+    </property>
+    <property id="P.P71.2">
+      <name>Real-Time Metrics</name>
+      <formal-spec format="latex">$\forall m \in M_{metrics} : \Delta t_{update}(m) &lt; 1s$ (near real-time updates)</formal-spec>
+    </property>
+    <property id="P.P71.3">
+      <name>Control Responsiveness</name>
+      <formal-spec format="latex">$\forall c \in C_{control} : \text{execute}(c) \implies \text{effect}(c) \text{ within } 100ms$</formal-spec>
+    </property>
+    <property id="P.P71.4">
+      <name>Dependency Visualization</name>
+      <formal-spec format="latex">$\forall (u, v) \in W_{flow}.E : \text{visible}(\text{edge}(u, v)) \land \text{direction}(u, v)$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Render Workflow</name>
+      <signature>render: WorkflowGraph → Visualization</signature>
+      <formal-definition format="latex">$\text{render}(W) = v$ where
+  $v.\text{nodes} = \{(n.id, n.status, n.agent) \mid n \in W.V\}$
+  $v.\text{edges} = W.E$
+  $v.\text{layout} = \text{topological\_sort}(W)$</formal-definition>
+    </operation>
+    <operation>
+      <name>Update Metrics</name>
+      <signature>update: WorkflowGraph → Metrics</signature>
+      <formal-definition format="latex">$\text{update}(W) = M$ where
+  $M.\text{throughput} = \frac{|\text{completed}(W)|}{t_{elapsed}}$
+  $M.\text{latency} = \text{avg}(\{t_{complete}(n) - t_{start}(n) \mid n \in W.V\})$
+  $M.\text{cost} = \sum_{a \in A_{agents}} \text{cost}(a)$</formal-definition>
+    </operation>
+    <operation>
+      <name>Execute Control</name>
+      <signature>execute: Control × WorkflowGraph → Effect</signature>
+      <formal-definition format="latex">$\text{execute}(c, W) = $ effect where
+  $\text{pause} : \forall n \in W.V : n.\text{status} \leftarrow \text{paused}$
+  $\text{cancel} : W \leftarrow \emptyset$
+  $\text{retry} : \text{reset}(\text{failed}(W))$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>F2.2</pattern-ref>
+      <pattern-ref>P14</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P68</pattern-ref>
+      <pattern-ref>P69</pattern-ref>
+      <pattern-ref>P129</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>LangGraph Studio</name>
+      <description>visual workflow orchestration dashboard</description>
+    </manifestation>
+    <manifestation>
+      <name>Temporal workflow UI</name>
+      <description>orchestration dashboard with controls</description>
+    </manifestation>
+    <manifestation>
+      <name>Airflow DAG view</name>
+      <description>task orchestration visualization</description>
+    </manifestation>
+    <manifestation>
+      <name>Prefect dashboard</name>
+      <description>workflow orchestration monitoring</description>
+    </manifestation>
+  </manifestations>
+</pattern>

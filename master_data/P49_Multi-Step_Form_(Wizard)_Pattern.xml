@@ -1,0 +1,146 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P49" version="1.1">
+  <metadata>
+    <name>Multi-Step Form (Wizard) Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$W = (steps, current, data, nav, progress)$</tuple-notation>
+    <components>
+      <component>
+        <name>steps</name>
+        <type>Sequence⟨Step⟩</type>
+        <notation>steps</notation>
+        <description>form steps</description>
+      </component>
+      <component>
+        <name>current</name>
+        <type>ℕ</type>
+        <notation>current</notation>
+        <description>active step index</description>
+      </component>
+      <component>
+        <name>data</name>
+        <type>Map⟨String, Value⟩</type>
+        <notation>data</notation>
+        <description>accumulates form data</description>
+      </component>
+      <component>
+        <name>nav</name>
+        <type>Navigation</type>
+        <notation>nav</notation>
+        <description>controls step transitions</description>
+      </component>
+      <component>
+        <name>progress</name>
+        <type>ℕ/ℕ</type>
+        <notation>progress</notation>
+        <description>shows completion progress</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Step</name>
+      <definition format="latex">(title: String, fields: Set⟨Field⟩, validate: () → 𝔹)</definition>
+    </type-def>
+    <type-def>
+      <name>Navigation</name>
+      <definition format="latex">{prev: () → Effect, next: () → Effect, goto: ℕ → Effect}</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P49.1">
+      <name>Sequential Progress</name>
+      <formal-spec format="latex">can_advance(step) ⇔ valid(steps[current])</formal-spec>
+    </property>
+    <property id="P.P49.2">
+      <name>Data Accumulation</name>
+      <formal-spec format="latex">complete(step_i) ⇒ data := data ∪ extract_values(step_i)</formal-spec>
+    </property>
+    <property id="P.P49.3">
+      <name>State Persistence</name>
+      <formal-spec format="latex">Navigate away → persist(data, current)
+Return → restore(data, current)</formal-spec>
+    </property>
+    <property id="P.P49.4">
+      <name>Non-Linear Navigation</name>
+      <formal-spec format="latex">∀i &lt; current: can_goto(i)  // Can revisit completed steps</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Next Step</name>
+      <signature>next() → Effect</signature>
+      <formal-definition format="latex">```
+   next() → Effect
+   = if validate(steps[current]):
+       data := data ∪ extract_values(steps[current])
+       if current &lt; |steps| - 1:
+         current := current + 1
+         render(steps[current])
+       else:
+         submit(data)</formal-definition>
+    </operation>
+    <operation>
+      <name>Previous Step</name>
+      <signature>prev() → Effect</signature>
+      <formal-definition format="latex">```
+   prev() → Effect
+   = if current &gt; 0:
+       current := current - 1
+       render(steps[current])
+3. **Go To Step:
+```
+   goto(index: ℕ) → Effect
+   = if index ≤ max_completed_step:
+       current := index
+       render(steps[index])
+4. Calculate Progress:**
+```
+   progress() → (ℕ, ℕ)
+   = (current + 1, |steps|)</formal-definition>
+    </operation>
+    <operation>
+      <name>Linear</name>
+      <signature/>
+      <formal-definition format="latex">```
+   [=====&gt;      ] 50% (Step 2 of 4)</formal-definition>
+    </operation>
+    <operation>
+      <name>Stepped</name>
+      <signature/>
+      <formal-definition format="latex">```
+   1. Details ✓
+   2. Payment ← (current)
+   3. Review
+   4. Confirm</formal-definition>
+    </operation>
+    <operation>
+      <name>Breadcrumb</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Home &gt; Personal Info &gt; Payment &gt; Review</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Checkout flow</name>
+      <description>e-commerce</description>
+    </manifestation>
+    <manifestation>
+      <name>Onboarding wizard</name>
+    </manifestation>
+    <manifestation>
+      <name>Setup assistant</name>
+    </manifestation>
+    <manifestation>
+      <name>Multi-page survey</name>
+    </manifestation>
+    <manifestation>
+      <name>Installation wizard</name>
+    </manifestation>
+  </manifestations>
+</pattern>

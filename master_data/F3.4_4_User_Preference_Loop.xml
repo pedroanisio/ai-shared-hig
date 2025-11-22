@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$U = (track, infer, personalize, apply)$</tuple-notation>
+    <components>
+      <component>
+        <name>track</name>
+        <type>UserAction → Event</type>
+        <notation>track</notation>
+        <description>records user behavior</description>
+      </component>
+      <component>
+        <name>infer</name>
+        <type>Sequence⟨Event⟩ → Preferences</type>
+        <notation>infer</notation>
+        <description>learns preferences</description>
+      </component>
+      <component>
+        <name>personalize</name>
+        <type>Preferences → Configuration</type>
+        <notation>personalize</notation>
+        <description>customizes experience</description>
+      </component>
+      <component>
+        <name>apply</name>
+        <type>Configuration → Effect</type>
+        <notation>apply</notation>
+        <description>applies personalization</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>UserAction</name>
+      <definition format="latex">Click | View | Purchase | Search | Rate | Configure</definition>
+    </type-def>
+    <type-def>
+      <name>Event</name>
+      <definition format="latex">(user: UserId, action: UserAction, context: Context, timestamp: Time)</definition>
+    </type-def>
+    <type-def>
+      <name>Preferences</name>
+      <definition format="latex">Map⟨Feature, Score⟩</definition>
+    </type-def>
+    <type-def>
+      <name>Configuration</name>
+      <definition format="latex">Personalized settings and content</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F3.4.1">
+      <name>Privacy Preservation</name>
+      <formal-spec format="latex">∀u ∈ Users: preferences(u) stored with user consent ∧ anonymizable</formal-spec>
+    </property>
+    <property id="P.F3.4.2">
+      <name>Preference Decay</name>
+      <formal-spec format="latex">∀p ∈ Preferences: score(p, t) = score(p, 0) · decay_function(t)
+Old preferences have less weight</formal-spec>
+    </property>
+    <property id="P.F3.4.3">
+      <name>Override Capability</name>
+      <formal-spec format="latex">∀u ∈ Users: explicit_preference(u) overrides inferred_preference(u)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Personalize</name>
+      <signature>personalize(user: UserId) → Effect</signature>
+      <formal-definition format="latex">```
+   personalize(user: UserId) → Effect
+   = events := track(user)
+     preferences := infer(events)
+     config := personalize(preferences, user.explicit_settings)
+     apply(config, user.session)</formal-definition>
+    </operation>
+    <operation>
+      <name>Infer Preferences</name>
+      <signature>infer(events: Sequence⟨Event⟩) → Preferences</signature>
+      <formal-definition format="latex">```
+   infer(events: Sequence⟨Event⟩) → Preferences
+   = features := extract_features(events)
+     patterns := find_patterns(features)
+     preferences := {}
+     for (feature, pattern) in patterns:
+       score := calculate_affinity(pattern)
+       preferences[feature] := score
+     return preferences</formal-definition>
+    </operation>
+    <operation>
+      <name>Apply Configuration</name>
+      <signature>apply(config: Configuration, session: Session) → Effect</signature>
+      <formal-definition format="latex">```
+   apply(config: Configuration, session: Session) → Effect
+   = for (setting, value) in config:
+       session.set(setting, value)
+     
+     content := filter_by_preferences(available_content, config)
+     session.recommendations := rank(content, config)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Recommendation engines</name>
+    </manifestation>
+    <manifestation>
+      <name>Adaptive interfaces</name>
+    </manifestation>
+    <manifestation>
+      <name>Content personalization</name>
+    </manifestation>
+    <manifestation>
+      <name>Search result ranking</name>
+    </manifestation>
+    <manifestation>
+      <name>Notification preferences</name>
+    </manifestation>
+  </manifestations>
+</pattern>

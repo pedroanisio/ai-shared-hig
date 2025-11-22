@@ -1,0 +1,74 @@
+id: C4
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Metadata Schema
+  category: concept
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $M = (schema, data, validators)$
+  description: ''
+  components:
+  - name: schema
+    type: Map⟨String, Type⟩
+    notation: schema
+    description: defines field types
+  - name: data
+    type: Map⟨String, Value⟩
+    notation: data
+    description: actual metadata
+  - name: validators
+    type: Map⟨String, Predicate⟩
+    notation: validators
+    description: validation rules
+type_definitions: []
+properties:
+- id: P.C4.1
+  name: Type Safety
+  formal_spec: '∀k ∈ keys(data): type(data[k]) = schema[k]'
+  description: ''
+  invariants: []
+- id: P.C4.2
+  name: Validation
+  formal_spec: 'valid(M) ⇔ ∀k ∈ keys(data): validators[k](data[k])'
+  description: ''
+  invariants: []
+- id: P.C4.3
+  name: Extensibility
+  formal_spec: extend(M, k, v) → M' where keys(M'.data) = keys(M.data) ∪ {k}
+  description: ''
+  invariants: []
+operations:
+- name: Add Field
+  signature: 'add(M: Metadata, k: String, v: Value) → Metadata'
+  formal_definition: "```\n   add(M: Metadata, k: String, v: Value) → Metadata\n   = M' where M'.data[k]\
+    \ = v\n            ∧ validate(M'.schema[k], v)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Query
+  signature: 'query(M: Metadata, pred: Predicate) → 𝔹'
+  formal_definition: "```\n   query(M: Metadata, pred: Predicate) → \U0001D539\n   = pred(M.data)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Index
+  signature: 'index(docs: Set⟨Document⟩, field: String) → Map⟨Value, Set⟨Document⟩⟩'
+  formal_definition: "```\n   index(docs: Set⟨Document⟩, field: String) → Map⟨Value, Set⟨Document⟩⟩\n\
+    \   = group documents by field value"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Tags
+  description: blog posts, notes
+- name: Properties
+  description: CAD features
+- name: Attributes
+  description: HTML elements
+- name: Annotations
+  description: PDF, code comments
+- name: Labels
+  description: issue tracking

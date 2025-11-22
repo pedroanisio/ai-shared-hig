@@ -1,0 +1,117 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P107" version="1.1">
+  <metadata>
+    <name>Suggested Edits</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$E_{suggest} = (Content, Improvements, Confidence, Approval) : \text{Document} \to \text{Edits}_{suggested}$</tuple-notation>
+    <components>
+      <component>
+        <name>Content</name>
+        <type>Document</type>
+        <notation>Content</notation>
+        <description>original document content to be improved</description>
+      </component>
+      <component>
+        <name>Improvements</name>
+        <type>Set⟨Edit⟩</type>
+        <notation>Improvements</notation>
+        <description>set of AI-suggested edits with rationale</description>
+      </component>
+      <component>
+        <name>Confidence</name>
+        <type>Edit → [0,1]</type>
+        <notation>Confidence</notation>
+        <description>confidence score for each suggested edit</description>
+      </component>
+      <component>
+        <name>Approval</name>
+        <type>Edit → \{\text{pending}, \text{accepted}, \text{rejected}\}</type>
+        <notation>Approval</notation>
+        <description>approval state for each edit</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>Edit</name>
+        <definition>$\text{Edit} = (\text{span}, \text{original}, \text{replacement}, \text{reason}, \text{category})$</definition>
+      </type-def>
+      <type-def>
+        <name>EditCategory</name>
+        <definition>$\text{Category} = \{\text{grammar}, \text{clarity}, \text{factual}, \text{style}, \text{structure}\}$</definition>
+      </type-def>
+      <type-def>
+        <name>Span</name>
+        <definition>$\text{Span} = (\text{start}, \text{end}) \subset \mathbb{N} \times \mathbb{N}$</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P107.1">
+      <name>Non-Overlapping Edits</name>
+      <formal-spec format="latex">$\forall e_1, e_2 \in Improvements : e_1 \neq e_2 \implies e_1.span \cap e_2.span = \emptyset$ (disjoint)</formal-spec>
+    </property>
+    <property id="P.P107.2">
+      <name>Confidence-Based Ranking</name>
+      <formal-spec format="latex">$\forall e_1, e_2 : Confidence(e_1) > Confidence(e_2) \implies \text{priority}(e_1) > \text{priority}(e_2)$</formal-spec>
+    </property>
+    <property id="P.P107.3">
+      <name>Explainable Suggestions</name>
+      <formal-spec format="latex">$\forall e \in Improvements : \exists r \in \text{String} : e.reason = r \land |r| > 0$ (all edits explained)</formal-spec>
+    </property>
+    <property id="P.P107.4">
+      <name>Content Preservation</name>
+      <formal-spec format="latex">$\forall e \in Improvements : \text{semantics}(e.original) \approx \text{semantics}(e.replacement)$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Generate Suggestions</name>
+      <signature>generateSuggestions: Document → Set⟨Edit⟩</signature>
+      <formal-definition format="latex">$\text{generateSuggestions}(doc) = \{e \mid$
+  $e = \text{LLM}_{\text{editor}}(span, \text{context}(span)) \land$
+  $Confidence(e) \geq \theta_{min}\}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Apply Edit</name>
+      <signature>applyEdit: Document × Edit → Document</signature>
+      <formal-definition format="latex">$\text{applyEdit}(doc, e) = doc'$ where
+  $doc'[e.span] = e.replacement$
+  $Approval(e) \leftarrow \text{accepted}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Batch Apply</name>
+      <signature>batchApply: Document × Set⟨Edit⟩ → Document</signature>
+      <formal-definition format="latex">$\text{batchApply}(doc, E) = \text{fold}(\text{applyEdit}, doc, \text{sorted}(E))$
+where $\text{sorted}$ orders by span position</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P47</pattern-ref>
+      <pattern-ref>P102</pattern-ref>
+      <pattern-ref>P109</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>Grammarly suggestions</name>
+      <description>inline grammar and style improvements</description>
+    </manifestation>
+    <manifestation>
+      <name>GitHub Copilot code suggestions</name>
+      <description>AI-suggested code improvements</description>
+    </manifestation>
+    <manifestation>
+      <name>Google Docs Smart Compose</name>
+      <description>contextual writing suggestions</description>
+    </manifestation>
+    <manifestation>
+      <name>Notion AI suggested edits</name>
+      <description>content improvement recommendations</description>
+    </manifestation>
+  </manifestations>
+</pattern>

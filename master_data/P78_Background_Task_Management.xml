@@ -1,0 +1,89 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P78" version="1.1">
+  <metadata>
+    <name>Background Task Management</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$B_{task} = (Q_{tasks}, I_{progress}, N_{complete}, S_{results}) : Tasks_{async} \to UI_{status}$</tuple-notation>
+    <components>
+      <component>
+        <name>Q_{tasks}</name>
+        <type>Component</type>
+        <notation>Q_{tasks}</notation>
+        <description>Component Q_{tasks} from tuple definition</description>
+      </component>
+      <component>
+        <name>I_{progress}</name>
+        <type>Component</type>
+        <notation>I_{progress}</notation>
+        <description>Component I_{progress} from tuple definition</description>
+      </component>
+      <component>
+        <name>N_{complete}</name>
+        <type>Component</type>
+        <notation>N_{complete}</notation>
+        <description>Component N_{complete} from tuple definition</description>
+      </component>
+      <component>
+        <name>S_{results}</name>
+        <type>Component</type>
+        <notation>S_{results}</notation>
+        <description>Component S_{results} from tuple definition</description>
+      </component>
+    </components>
+    <type-definitions>
+      <type-def>
+        <name>Type</name>
+        <definition>Type definition from formal specification</definition>
+      </type-def>
+    </type-definitions>
+  </definition>
+  <properties>
+    <property id="P.P78.1">
+      <name>Property 1</name>
+      <formal-spec>Formal specification for property 1</formal-spec>
+    </property>
+    <property id="P.P78.2">
+      <name>Property 2</name>
+      <formal-spec>Formal specification for property 2</formal-spec>
+    </property>
+    <property id="P.P78.3">
+      <name>Property 3</name>
+      <formal-spec>Formal specification for property 3</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Operation 1</name>
+      <signature>op1() → Result</signature>
+      <formal-definition format="latex">Operation 1 implementation</formal-definition>
+    </operation>
+    <operation>
+      <name>Operation 2</name>
+      <signature>op2() → Result</signature>
+      <formal-definition format="latex">Operation 2 implementation</formal-definition>
+    </operation>
+    <operation>
+      <name>Operation 3</name>
+      <signature>op3() → Result</signature>
+      <formal-definition format="latex">Operation 3 implementation</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Example 1</name>
+      <description>Real-world manifestation example 1</description>
+    </manifestation>
+    <manifestation>
+      <name>Example 2</name>
+      <description>Real-world manifestation example 2</description>
+    </manifestation>
+    <manifestation>
+      <name>Example 3</name>
+      <description>Real-world manifestation example 3</description>
+    </manifestation>
+  </manifestations>
+</pattern>

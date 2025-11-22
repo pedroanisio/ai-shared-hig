@@ -1,0 +1,102 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $E = (source, transform, validate, publish)$
+  description: ''
+  components:
+  - name: source
+    type: InternalData
+    notation: source
+    description: internal data to export
+  - name: transform
+    type: InternalData → ExternalFormat
+    notation: transform
+    description: converts to external format
+  - name: validate
+    type: ExternalFormat → Valid | Invalid
+    notation: validate
+    description: checks output validity
+  - name: publish
+    type: Valid → Destination
+    notation: publish
+    description: delivers to target
+type_definitions:
+- name: InternalData
+  definition: Data in system's internal representation
+  notation: InternalData := Data in system's internal representation
+- name: ExternalFormat
+  definition: JSON | XML | CSV | PDF | HTML | Binary
+  notation: ExternalFormat := JSON | XML | CSV | PDF | HTML | Binary
+- name: Destination
+  definition: File | URL | API | Stream | Storage
+  notation: Destination := File | URL | API | Stream | Storage
+- name: PublishResult
+  definition: 'Success(url: URL) | Failure(error: Error)'
+  notation: 'PublishResult := Success(url: URL) | Failure(error: Error)'
+properties:
+- id: P.F4.3.1
+  name: Format Compliance
+  formal_spec: '∀d ∈ InternalData: validate(transform(d)) = Valid ⇒
+
+    conforms_to_spec(transform(d))'
+  description: ''
+  invariants: []
+- id: P.F4.3.2
+  name: Lossless Export
+  formal_spec: '∀d ∈ InternalData: can_round_trip(d) ⇒
+
+    import(transform(d)) = d'
+  description: ''
+  invariants: []
+- id: P.F4.3.3
+  name: Atomic Publish
+  formal_spec: '∀d ∈ Data: publish(d) succeeds completely ∨ rolls back completely'
+  description: ''
+  invariants: []
+operations:
+- name: Export
+  signature: 'export(data: InternalData, format: FormatType, dest: Destination) → PublishResult'
+  formal_definition: "```\n   export(data: InternalData, format: FormatType, dest: Destination) → PublishResult\n\
+    \   = try:\n       external := transform(data, format)\n       if validate(external) ≠ Valid:\n  \
+    \       return Failure(\"Validation failed\")\n       result := publish(external, dest)\n       return\
+    \ result\n     catch error:\n       return Failure(error)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Transform
+  signature: 'transform(data: InternalData, format: FormatType) → ExternalFormat'
+  formal_definition: "```\n   transform(data: InternalData, format: FormatType) → ExternalFormat\n   =\
+    \ case format of\n       JSON → serialize_json(data)\n       XML → serialize_xml(data, schema)\n \
+    \      CSV → flatten_to_csv(data)\n       PDF → render_pdf(data, template)\n       HTML → render_html(data,\
+    \ template)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Publish
+  signature: 'publish(data: ExternalFormat, dest: Destination) → PublishResult'
+  formal_definition: "```\n   publish(data: ExternalFormat, dest: Destination) → PublishResult\n   = case\
+    \ dest of\n       File(path) → \n         write_file(path, data)\n         return Success(file_url(path))\n\
+    \       URL(endpoint) → \n         response := http_post(endpoint, data)\n         return Success(response.location)\n\
+    \       API(service) → \n         id := service.create(data)\n         return Success(service.url(id))\n\
+    \       Storage(bucket) → \n         key := bucket.put(data)\n         return Success(bucket.url(key))"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Document export
+  description: PDF, Word
+- name: API publishing
+  description: ''
+- name: Data export
+  description: CSV, JSON
+- name: Report generation
+  description: ''
+- name: Static site generation
+  description: ''

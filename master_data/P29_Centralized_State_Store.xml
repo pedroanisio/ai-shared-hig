@@ -1,0 +1,119 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P29" version="1.1">
+  <metadata>
+    <name>Centralized State Store</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (store, reducers, selectors, subscriptions)$</tuple-notation>
+    <components>
+      <component>
+        <name>store</name>
+        <type>State</type>
+        <notation>store</notation>
+        <description>application state (single source of truth)</description>
+      </component>
+      <component>
+        <name>reducers</name>
+        <type>Map⟨Action, Reducer⟩</type>
+        <notation>reducers</notation>
+        <description>update state</description>
+      </component>
+      <component>
+        <name>selectors</name>
+        <type>Map⟨String, Selector⟩</type>
+        <notation>selectors</notation>
+        <description>query state</description>
+      </component>
+      <component>
+        <name>subscriptions</name>
+        <type>Set⟨Subscriber⟩</type>
+        <notation>subscriptions</notation>
+        <description>listen for changes</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>State</name>
+      <definition format="latex">Map⟨String, Value⟩</definition>
+    </type-def>
+    <type-def>
+      <name>Action</name>
+      <definition format="latex">(type: String, payload: Value)</definition>
+    </type-def>
+    <type-def>
+      <name>Reducer</name>
+      <definition format="latex">(State, Action) → State</definition>
+    </type-def>
+    <type-def>
+      <name>Selector</name>
+      <definition format="latex">State → Value</definition>
+    </type-def>
+    <type-def>
+      <name>Subscriber</name>
+      <definition format="latex">State → Effect</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P29.1">
+      <name>Single Source of Truth</name>
+      <formal-spec format="latex">∃! store: all application state in store</formal-spec>
+    </property>
+    <property id="P.P29.2">
+      <name>Immutable Updates</name>
+      <formal-spec format="latex">reducer(state, action) returns new state, doesn't mutate old state</formal-spec>
+    </property>
+    <property id="P.P29.3">
+      <name>Unidirectional Flow</name>
+      <formal-spec format="latex">action → reducer → new_state → notify_subscribers</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Dispatch Action</name>
+      <signature>dispatch(action: Action) → Effect</signature>
+      <formal-definition format="latex">```
+   dispatch(action: Action) → Effect
+   = reducer := reducers[action.type]
+     new_state := reducer(store, action)
+     store := new_state
+     notify_all_subscribers(store)</formal-definition>
+    </operation>
+    <operation>
+      <name>Subscribe</name>
+      <signature>subscribe(subscriber: Subscriber) → UnsubscribeFunc</signature>
+      <formal-definition format="latex">```
+   subscribe(subscriber: Subscriber) → UnsubscribeFunc
+   = subscriptions := subscriptions ∪ {subscriber}
+     return λ: subscriptions := subscriptions ∖ {subscriber}</formal-definition>
+    </operation>
+    <operation>
+      <name>Select</name>
+      <signature>select(selector_name: String) → Value</signature>
+      <formal-definition format="latex">```
+   select(selector_name: String) → Value
+   = selector := selectors[selector_name]
+     return selector(store)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Redux</name>
+      <description>JavaScript</description>
+    </manifestation>
+    <manifestation>
+      <name>Vuex</name>
+      <description>Vue.js</description>
+    </manifestation>
+    <manifestation>
+      <name>Global state</name>
+      <description>any framework</description>
+    </manifestation>
+    <manifestation>
+      <name>Application model</name>
+    </manifestation>
+  </manifestations>
+</pattern>

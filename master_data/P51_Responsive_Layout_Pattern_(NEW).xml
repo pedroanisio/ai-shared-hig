@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P51" version="1.1">
+  <metadata>
+    <name>Responsive Layout Pattern (NEW)</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$L = (breakpoints, layouts, current)$</tuple-notation>
+    <components>
+      <component>
+        <name>breakpoints</name>
+        <type>Sequence⟨(width: ℝ, name: String)⟩</type>
+        <notation>breakpoints</notation>
+        <description>define size thresholds</description>
+      </component>
+      <component>
+        <name>layouts</name>
+        <type>Map⟨String, Layout⟩</type>
+        <notation>layouts</notation>
+        <description>map breakpoint names to layouts</description>
+      </component>
+      <component>
+        <name>current</name>
+        <type>String</type>
+        <notation>current</notation>
+        <description>active layout name</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Breakpoint</name>
+      <definition format="latex">(width: ℝ, name: String)</definition>
+    </type-def>
+    <type-def>
+      <name>Layout</name>
+      <definition format="latex">(structure: Component, visibility: Map⟨Element, 𝔹⟩)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P51.1">
+      <name>Breakpoint Selection</name>
+      <formal-spec format="latex">current = max{bp.name : bp.width ≤ viewport.width}</formal-spec>
+    </property>
+    <property id="P.P51.2">
+      <name>Layout Activation</name>
+      <formal-spec format="latex">viewport changes → update_current() → apply(layouts[current])</formal-spec>
+    </property>
+    <property id="P.P51.3">
+      <name>Mobile-First</name>
+      <formal-spec format="latex">breakpoints ordered: mobile &lt; tablet &lt; desktop &lt; wide</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Select Layout</name>
+      <signature>select_layout(width: ℝ) → String</signature>
+      <formal-definition format="latex">```
+   select_layout(width: ℝ) → String
+   = find_last(breakpoints, λbp: bp.width ≤ width).name</formal-definition>
+    </operation>
+    <operation>
+      <name>Apply Layout</name>
+      <signature>apply(layout: Layout) → Effect</signature>
+      <formal-definition format="latex">```
+   apply(layout: Layout) → Effect
+   = structure := layout.structure
+     for (element, visible) in layout.visibility:
+       element.visible := visible
+     reflow()</formal-definition>
+    </operation>
+    <operation>
+      <name>Register Breakpoint</name>
+      <signature>register(bp: Breakpoint, layout: Layout) → Effect</signature>
+      <formal-definition format="latex">```
+   register(bp: Breakpoint, layout: Layout) → Effect
+   = breakpoints := insert_sorted(breakpoints, bp)
+     layouts[bp.name] := layout
+```
+mobile:  &lt; 640px
+tablet:  640px - 1024px
+desktop: 1024px - 1440px
+wide:    ≥ 1440px</formal-definition>
+    </operation>
+    <operation>
+      <name>Collapsing Navigation</name>
+      <signature/>
+      <formal-definition format="latex">```
+   mobile: P43(collapsed)
+   desktop: P43(pinned)</formal-definition>
+    </operation>
+    <operation>
+      <name>Column Reflow</name>
+      <signature/>
+      <formal-definition format="latex">```
+   mobile: 1 column
+   tablet: 2 columns
+   desktop: 3 columns</formal-definition>
+    </operation>
+    <operation>
+      <name>Component Swap</name>
+      <signature/>
+      <formal-definition format="latex">```
+   mobile: Compact cards
+   desktop: Expanded cards with details</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Responsive web apps</name>
+    </manifestation>
+    <manifestation>
+      <name>Mobile-first design</name>
+    </manifestation>
+    <manifestation>
+      <name>Adaptive interfaces</name>
+    </manifestation>
+    <manifestation>
+      <name>Cross-device layouts</name>
+    </manifestation>
+  </manifestations>
+</pattern>

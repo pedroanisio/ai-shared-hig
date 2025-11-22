@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="" version="1.1">
+  <metadata>
+    <name/>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$E = (base, enrichers, combine, output)$</tuple-notation>
+    <components>
+      <component>
+        <name>base</name>
+        <type>BaseData</type>
+        <notation>base</notation>
+        <description>input data to enrich</description>
+      </component>
+      <component>
+        <name>enrichers</name>
+        <type>Set⟨Enricher⟩</type>
+        <notation>enrichers</notation>
+        <description>enrichment sources</description>
+      </component>
+      <component>
+        <name>combine</name>
+        <type>BaseData × Set⟨Enrichment⟩ → EnrichedData</type>
+        <notation>combine</notation>
+        <description>merges enrichments</description>
+      </component>
+      <component>
+        <name>output</name>
+        <type>EnrichedData</type>
+        <notation>output</notation>
+        <description>enriched result</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>BaseData</name>
+      <definition format="latex">Core data requiring enrichment</definition>
+    </type-def>
+    <type-def>
+      <name>Enricher</name>
+      <definition format="latex">(source: String, enrich: BaseData → Enrichment)</definition>
+    </type-def>
+    <type-def>
+      <name>Enrichment</name>
+      <definition format="latex">Additional data from external source</definition>
+    </type-def>
+    <type-def>
+      <name>EnrichedData</name>
+      <definition format="latex">BaseData + aggregated Enrichments</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.F2.4.1">
+      <name>Non-Destructive</name>
+      <formal-spec format="latex">∀b ∈ BaseData: base_fields(combine(b, enrichments)) = b
+Original data preserved</formal-spec>
+    </property>
+    <property id="P.F2.4.2">
+      <name>Parallel Enrichment</name>
+      <formal-spec format="latex">∀e₁, e₂ ∈ enrichers: e₁ and e₂ can execute in parallel</formal-spec>
+    </property>
+    <property id="P.F2.4.3">
+      <name>Partial Failure Tolerance</name>
+      <formal-spec format="latex">failure(enricher_i) ⇏ failure(entire_flow)
+Flow continues with available enrichments</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Enrich</name>
+      <signature>enrich(base: BaseData) → EnrichedData</signature>
+      <formal-definition format="latex">```
+   enrich(base: BaseData) → EnrichedData
+   = enrichments := parallel_map(enrichers, λe: e.enrich(base))
+     successful := {e : e ∈ enrichments ∧ ¬is_error(e)}
+     return combine(base, successful)</formal-definition>
+    </operation>
+    <operation>
+      <name>Fetch Enrichment</name>
+      <signature>fetch(source: Enricher, base: BaseData) → Enrichment | Error</signature>
+      <formal-definition format="latex">```
+   fetch(source: Enricher, base: BaseData) → Enrichment | Error
+   = try:
+       return source.enrich(base)
+     catch timeout:
+       return partial_enrichment(source, base)
+     catch error:
+       return error</formal-definition>
+    </operation>
+    <operation>
+      <name>Combine</name>
+      <signature>combine(base: BaseData, enrichments: Set⟨Enrichment⟩) → EnrichedData</signature>
+      <formal-definition format="latex">```
+   combine(base: BaseData, enrichments: Set⟨Enrichment⟩) → EnrichedData
+   = result := base
+     for enrichment in enrichments:
+       result := merge(result, enrichment)
+     return result</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Data augmentation</name>
+      <description>ML training</description>
+    </manifestation>
+    <manifestation>
+      <name>Content enrichment</name>
+      <description>metadata, tags</description>
+    </manifestation>
+    <manifestation>
+      <name>Profile enrichment</name>
+      <description>user data + social + behavior</description>
+    </manifestation>
+    <manifestation>
+      <name>Product enrichment</name>
+      <description>details + reviews + pricing</description>
+    </manifestation>
+    <manifestation>
+      <name>Log enrichment</name>
+      <description>traces + metrics + context</description>
+    </manifestation>
+  </manifestations>
+</pattern>

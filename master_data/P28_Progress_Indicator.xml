@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P28" version="1.1">
+  <metadata>
+    <name>Progress Indicator</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$P = (current, total, label, eta, state)$</tuple-notation>
+    <components>
+      <component>
+        <name>current</name>
+        <type>ℕ</type>
+        <notation>current</notation>
+        <description>completed work</description>
+      </component>
+      <component>
+        <name>total</name>
+        <type>ℕ</type>
+        <notation>total</notation>
+        <description>total work</description>
+      </component>
+      <component>
+        <name>label</name>
+        <type>String</type>
+        <notation>label</notation>
+        <description>describes the task</description>
+      </component>
+      <component>
+        <name>eta</name>
+        <type>Time</type>
+        <notation>eta</notation>
+        <description>estimated completion time</description>
+      </component>
+      <component>
+        <name>state</name>
+        <type>\{\text{running}, \text{paused}, \text{complete}, \text{error}\}</type>
+        <notation>state</notation>
+        <description>status</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Time</name>
+      <definition>$\text{Time} = \mathbb{R}_{\geq 0}$ (non-negative real)</definition>
+    </type-def>
+    <type-def>
+      <name>ProgressState</name>
+      <definition>$\text{State} = \{\text{running}, \text{paused}, \text{complete}, \text{error}\}$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P28.1">
+      <name>Monotonic Progress</name>
+      <formal-spec format="latex">$\forall t : \text{current}_t \leq \text{current}_{t+1}$ (progress only increases)</formal-spec>
+    </property>
+    <property id="P.P28.2">
+      <name>Bounded Progress</name>
+      <formal-spec format="latex">$\forall t : 0 \leq \text{current}_t \leq \text{total}$ (progress within bounds)</formal-spec>
+    </property>
+    <property id="P.P28.3">
+      <name>Completion Invariant</name>
+      <formal-spec format="latex">$\text{state} = \text{complete} \iff \text{current} = \text{total}$</formal-spec>
+    </property>
+    <property id="P.P28.4">
+      <name>Valid Percentage</name>
+      <formal-spec format="latex">$\text{percentage} = \frac{\text{current}}{\text{total}} \times 100 \in [0, 100]$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Update Progress</name>
+      <signature>update: ℕ → P</signature>
+      <formal-definition format="latex">$\text{update}(n) = P'$ where
+  $P'.current = \min(n, total)$,
+  $P'.state = \begin{cases} 
+    \text{complete} &amp; \text{if } n \geq total \\
+    \text{running} &amp; \text{otherwise}
+  \end{cases}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Reset</name>
+      <signature>reset: P → P</signature>
+      <formal-definition format="latex">$\text{reset}(P) = P'$ where
+  $P'.current = 0$,
+  $P'.state = \text{running}$,
+  $P'.eta = \text{estimate}()$</formal-definition>
+    </operation>
+    <operation>
+      <name>Estimate ETA</name>
+      <signature>estimateETA: P → Time</signature>
+      <formal-definition format="latex">$\text{estimateETA}(P) = \begin{cases}
+    0 &amp; \text{if } state = \text{complete} \\
+    \frac{total - current}{rate} &amp; \text{if } rate > 0 \\
+    \infty &amp; \text{otherwise}
+  \end{cases}$
+where $rate = \frac{current}{elapsed}$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P26</pattern-ref>
+      <pattern-ref>P27</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>File upload/download</name>
+    </manifestation>
+    <manifestation>
+      <name>Build progress</name>
+    </manifestation>
+    <manifestation>
+      <name>Test execution</name>
+    </manifestation>
+    <manifestation>
+      <name>Verification progress</name>
+    </manifestation>
+    <manifestation>
+      <name>Installation progress</name>
+    </manifestation>
+  </manifestations>
+</pattern>

@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P17" version="1.1">
+  <metadata>
+    <name>Key-Value Store</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$K = (store, get, set, delete)$</tuple-notation>
+    <components>
+      <component>
+        <name>store</name>
+        <type>Map⟨Key, Value⟩</type>
+        <notation>store</notation>
+        <description>storage</description>
+      </component>
+      <component>
+        <name>get</name>
+        <type>Key → Value | null</type>
+        <notation>get</notation>
+        <description>retrieves values</description>
+      </component>
+      <component>
+        <name>set</name>
+        <type>Key × Value → Effect</type>
+        <notation>set</notation>
+        <description>stores values</description>
+      </component>
+      <component>
+        <name>delete</name>
+        <type>Key → Effect</type>
+        <notation>delete</notation>
+        <description>removes entries</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P17.1">
+      <name>Fast Lookup</name>
+      <formal-spec format="latex">get(key) completes in O(1) average time</formal-spec>
+    </property>
+    <property id="P.P17.2">
+      <name>Atomic Operations</name>
+      <formal-spec format="latex">set and delete are atomic</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Get</name>
+      <signature>get(key: Key) → Value | null</signature>
+      <formal-definition format="latex">```
+   get(key: Key) → Value | null
+   = store[key] if key ∈ keys(store) else null</formal-definition>
+    </operation>
+    <operation>
+      <name>Set</name>
+      <signature>set(key: Key, value: Value) → Effect</signature>
+      <formal-definition format="latex">```
+   set(key: Key, value: Value) → Effect
+   = store[key] := value</formal-definition>
+    </operation>
+    <operation>
+      <name>Delete</name>
+      <signature>delete(key: Key) → Effect</signature>
+      <formal-definition format="latex">```
+   delete(key: Key) → Effect
+   = store := store ∖ {key}</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Cache</name>
+    </manifestation>
+    <manifestation>
+      <name>Settings storage</name>
+    </manifestation>
+    <manifestation>
+      <name>Session state</name>
+    </manifestation>
+    <manifestation>
+      <name>Metadata store</name>
+    </manifestation>
+  </manifestations>
+</pattern>

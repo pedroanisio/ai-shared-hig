@@ -1,0 +1,92 @@
+id: P16
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Suggestion/Recommendation System
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (context, model, candidates, ranker)$
+  description: ''
+  components:
+  - name: context
+    type: Context
+    notation: context
+    description: current state/situation
+  - name: model
+    type: Model
+    notation: model
+    description: learned from history
+  - name: candidates
+    type: Context → Set⟨Suggestion⟩
+    notation: candidates
+    description: generates options
+  - name: ranker
+    type: Suggestion × Context → ℝ
+    notation: ranker
+    description: scores relevance
+type_definitions:
+- name: Suggestion
+  definition: '(content: Content, confidence: ℝ, source: Source)'
+  notation: 'Suggestion := (content: Content, confidence: ℝ, source: Source)'
+- name: Context
+  definition: '(user: User, location: Location, history: History, ...)'
+  notation: 'Context := (user: User, location: Location, history: History, ...)'
+- name: Model
+  definition: learned patterns and preferences
+  notation: Model := learned patterns and preferences
+properties:
+- id: P.P16.1
+  name: Non-Blocking
+  formal_spec: Suggestions appear asynchronously, don't block user input
+  description: ''
+  invariants: []
+- id: P.P16.2
+  name: Accept/Reject
+  formal_spec: User can accept, reject, or ignore suggestions
+  description: ''
+  invariants: []
+- id: P.P16.3
+  name: Learning
+  formal_spec: User actions → update model → improve future suggestions
+  description: ''
+  invariants: []
+operations:
+- name: Generate Suggestions
+  signature: 'suggest(context: Context) → Sequence⟨Suggestion⟩'
+  formal_definition: "```\n   suggest(context: Context) → Sequence⟨Suggestion⟩\n   = candidates := generate_candidates(context,\
+    \ model)\n     scored := map(candidates, λs: (s, ranker(s, context)))\n     sorted := sort(scored,\
+    \ by: score, desc)\n     return take(sorted, 5)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Accept Suggestion
+  signature: 'accept(suggestion: Suggestion) → Effect'
+  formal_definition: "```\n   accept(suggestion: Suggestion) → Effect\n   = apply(suggestion.content)\n\
+    \     feedback(positive, suggestion)\n     model := update(model, context, suggestion, accepted)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Reject Suggestion
+  signature: 'reject(suggestion: Suggestion) → Effect'
+  formal_definition: "```\n   reject(suggestion: Suggestion) → Effect\n   = dismiss(suggestion)\n    \
+    \ feedback(negative, suggestion)\n     model := update(model, context, suggestion, rejected)\n```\n\
+    score(suggestion, context) = \n  w₁·relevance(suggestion, context)\n  + w₂·confidence(suggestion)\n\
+    \  + w₃·frequency(suggestion, history)\n  + w₄·recency(suggestion)\n  - w₅·redundancy(suggestion,\
+    \ already_shown)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: AI code suggestions
+  description: Copilot
+- name: Autocomplete
+  description: ''
+- name: Code actions
+  description: quick fixes
+- name: Tactic hints
+  description: Lean
+- name: Search suggestions
+  description: ''

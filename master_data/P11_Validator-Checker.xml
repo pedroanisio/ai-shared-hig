@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P11" version="1.1">
+  <metadata>
+    <name>Validator/Checker</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$V = (rules, input, report, severity)$</tuple-notation>
+    <components>
+      <component>
+        <name>rules</name>
+        <type>Set⟨Rule⟩</type>
+        <notation>rules</notation>
+        <description>validation rules</description>
+      </component>
+      <component>
+        <name>input</name>
+        <type>Data</type>
+        <notation>input</notation>
+        <description>data to validate</description>
+      </component>
+      <component>
+        <name>report</name>
+        <type>Sequence⟨Violation⟩</type>
+        <notation>report</notation>
+        <description>found violations</description>
+      </component>
+      <component>
+        <name>severity</name>
+        <type>Rule → Level</type>
+        <notation>severity</notation>
+        <description>assigns severity levels</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Rule</name>
+      <definition format="latex">(name: String, check: Data → Sequence⟨Violation⟩)</definition>
+    </type-def>
+    <type-def>
+      <name>Violation</name>
+      <definition format="latex">(rule: Rule, location: Location, message: String)</definition>
+    </type-def>
+    <type-def>
+      <name>Level</name>
+      <definition format="latex">Error | Warning | Info</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P11.1">
+      <name>Completeness</name>
+      <formal-spec format="latex">All rules are checked for all applicable data</formal-spec>
+    </property>
+    <property id="P.P11.2">
+      <name>Correctness</name>
+      <formal-spec format="latex">report contains only actual violations (no false positives)</formal-spec>
+    </property>
+    <property id="P.P11.3">
+      <name>Actionability</name>
+      <formal-spec format="latex">Each violation includes location and fix suggestion</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Validate</name>
+      <signature>validate(data: Data) → Report</signature>
+      <formal-definition format="latex">```
+   validate(data: Data) → Report
+   = violations := []
+     for rule in rules:
+       violations := violations ++ rule.check(data)
+     return Report(violations, sort_by_severity)</formal-definition>
+    </operation>
+    <operation>
+      <name>Add Rule</name>
+      <signature>add_rule(rule: Rule, level: Level) → Effect</signature>
+      <formal-definition format="latex">```
+   add_rule(rule: Rule, level: Level) → Effect
+   = rules := rules ∪ {rule}
+     severity[rule] := level</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Proof checkers</name>
+      <description>Lean, Coq</description>
+    </manifestation>
+    <manifestation>
+      <name>Type checkers</name>
+    </manifestation>
+    <manifestation>
+      <name>Constraint validators</name>
+    </manifestation>
+    <manifestation>
+      <name>Linters</name>
+    </manifestation>
+  </manifestations>
+</pattern>

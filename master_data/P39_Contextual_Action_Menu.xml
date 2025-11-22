@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P39" version="1.1">
+  <metadata>
+    <name>Contextual Action Menu</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$M = (T, C, A, \pi_{39}, \sigma_{39}, \delta_{39})$</tuple-notation>
+    <components>
+      <component>
+        <name>\pi_{39}</name>
+        <type>A \times C → \{\text{visible}, \text{hidden}, \text{disabled}\}</type>
+        <notation>\pi_{39}</notation>
+        <description>**availability**</description>
+      </component>
+      <component>
+        <name>\sigma_{39}</name>
+        <type>M → \{\text{open}, \text{closed}\}</type>
+        <notation>\sigma_{39}</notation>
+        <description>**state**</description>
+      </component>
+      <component>
+        <name>\delta_{39}</name>
+        <type>M → \mathbb{R}^2</type>
+        <notation>\delta_{39}</notation>
+        <description>**positioning function**</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P39.1">
+      <name>Context Dependency</name>
+      <formal-spec format="latex">∀a ∈ A: π₃₉(a, C) determines visibility</formal-spec>
+    </property>
+    <property id="P.P39.2">
+      <name>Mutual Exclusivity</name>
+      <formal-spec format="latex">∀m₁, m₂ ∈ Menus: m₁ ≠ m₂ ⇒ ¬(σ₃₉(m₁) = open ∧ σ₃₉(m₂) = open)</formal-spec>
+    </property>
+    <property id="P.P39.3">
+      <name>Auto-Dismiss</name>
+      <formal-spec format="latex">σ₃₉(M) = open ∧ click(outside(M)) ⇒ σ₃₉(M) := closed</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Open Menu</name>
+      <signature>open(T: Element, C: Context) → Effect</signature>
+      <formal-definition format="latex">```
+   open(T: Element, C: Context) → Effect
+   = σ₃₉ := open
+     position := δ₃₉(T, viewport)
+     actions_visible := filter(A, λa: π₃₉(a, C) ≠ hidden)
+     render(M, position, actions_visible)</formal-definition>
+    </operation>
+    <operation>
+      <name>Execute Action</name>
+      <signature>execute(a: Action) → Effect</signature>
+      <formal-definition format="latex">```
+   execute(a: Action) → Effect
+   = if π₃₉(a, C) ≠ disabled:
+       perform(a, C)
+       σ₃₉ := closed</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Three-dot menu</name>
+    </manifestation>
+    <manifestation>
+      <name>Right-click context menu</name>
+    </manifestation>
+    <manifestation>
+      <name>Kebab menu</name>
+      <description>⋮</description>
+    </manifestation>
+    <manifestation>
+      <name>More actions dropdown</name>
+    </manifestation>
+  </manifestations>
+</pattern>

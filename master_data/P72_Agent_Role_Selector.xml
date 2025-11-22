@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P72" version="1.1">
+  <metadata>
+    <name>Agent Role Selector</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S_{role} = (R_{available}, T_{task}, M_{match}, A_{assign}) : \text{Task} \to \text{Agent} \times \text{Role}$</tuple-notation>
+    <components>
+      <component>
+        <name>R_{available}</name>
+        <type>Set⟨Role⟩</type>
+        <notation>R_{available}</notation>
+        <description>set of available agent roles</description>
+      </component>
+      <component>
+        <name>T_{task}</name>
+        <type>TaskSpec</type>
+        <notation>T_{task}</notation>
+        <description>task specification requiring role assignment</description>
+      </component>
+      <component>
+        <name>M_{match}</name>
+        <type>Role × Task → [0,1]</type>
+        <notation>M_{match}</notation>
+        <description>role-task matching score function</description>
+      </component>
+      <component>
+        <name>A_{assign}</name>
+        <type>(Role, Task) → Agent</type>
+        <notation>A_{assign}</notation>
+        <description>assignment function mapping role to agent</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Role</name>
+      <definition>$\text{Role} = (\text{name}, \text{capabilities}, \text{expertise}, \text{constraints})$</definition>
+    </type-def>
+    <type-def>
+      <name>TaskSpec</name>
+      <definition>$\text{TaskSpec} = (\text{description}, \text{requirements}, \text{priority}, \text{deadline})$</definition>
+    </type-def>
+    <type-def>
+      <name>Agent</name>
+      <definition>$\text{Agent} = (\text{id}, \text{model}, \text{role}, \text{state})$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P72.1">
+      <name>Optimal Role Selection</name>
+      <formal-spec format="latex">$\forall t \in \text{Tasks} : r^* = \arg\max_{r \in R_{available}} M_{match}(r, t)$ (best match)</formal-spec>
+    </property>
+    <property id="P.P72.2">
+      <name>Capability Coverage</name>
+      <formal-spec format="latex">$\forall t : t.\text{requirements} \subseteq r^*.\text{capabilities}$ where $r^*$ is selected role</formal-spec>
+    </property>
+    <property id="P.P72.3">
+      <name>Dynamic Re-assignment</name>
+      <formal-spec format="latex">$\forall a : \text{failing}(a) \implies \exists r' : A_{assign}(r', t) = a'$ (can reassign on failure)</formal-spec>
+    </property>
+    <property id="P.P72.4">
+      <name>Load Balancing</name>
+      <formal-spec format="latex">$\text{variance}(\{|\text{tasks}(a)| \mid a \in \text{Agents}\}) &lt; \theta$ (balanced workload)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Match Role</name>
+      <signature>match: Role × TaskSpec → ℝ</signature>
+      <formal-definition format="latex">$\text{match}(r, t) = w_1 \cdot \text{capability\_score}(r, t)$
+  $+ w_2 \cdot \text{expertise\_score}(r, t)$
+  $+ w_3 \cdot \text{availability}(r)$
+where $w_1 + w_2 + w_3 = 1$</formal-definition>
+    </operation>
+    <operation>
+      <name>Select Best Role</name>
+      <signature>select: TaskSpec → Role</signature>
+      <formal-definition format="latex">$\text{select}(t) = \arg\max_{r \in R_{available}} M_{match}(r, t)$
+subject to: $r.\text{state} = \text{available}$</formal-definition>
+    </operation>
+    <operation>
+      <name>Assign Agent</name>
+      <signature>assign: Role × TaskSpec → Agent</signature>
+      <formal-definition format="latex">$\text{assign}(r, t) = a$ where
+  $a = A_{assign}(r, t)$
+  $a.\text{role} \leftarrow r$
+  $a.\text{state} \leftarrow \text{assigned}(t)$</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P14</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P68</pattern-ref>
+      <pattern-ref>P71</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>CrewAI role assignment</name>
+      <description>assigns specialized roles to agents for tasks</description>
+    </manifestation>
+    <manifestation>
+      <name>MetaGPT role system</name>
+      <description>product manager, architect, engineer roles</description>
+    </manifestation>
+    <manifestation>
+      <name>AutoGen agent selection</name>
+      <description>selects appropriate agent based on task type</description>
+    </manifestation>
+    <manifestation>
+      <name>LangGraph conditional routing</name>
+      <description>routes to specialized agent nodes</description>
+    </manifestation>
+  </manifestations>
+</pattern>

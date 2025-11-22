@@ -1,0 +1,82 @@
+id: P3
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Hierarchical Navigator
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $N = (tree, selection, expansion, breadcrumb)$
+  description: ''
+  components:
+  - name: tree
+    type: Tree⟨Node⟩
+    notation: tree
+    description: hierarchy
+  - name: selection
+    type: Node | null
+    notation: selection
+    description: current selection
+  - name: expansion
+    type: Set⟨Node⟩
+    notation: expansion
+    description: expanded nodes
+  - name: breadcrumb
+    type: Sequence⟨Node⟩
+    notation: breadcrumb
+    description: path to selection
+type_definitions: []
+properties:
+- id: P.P3.1
+  name: Parent-Child Visibility
+  formal_spec: 'visible(n) ⇒ visible(parent(n))
+
+    Expanding parent makes children visible.'
+  description: ''
+  invariants: []
+- id: P.P3.2
+  name: Breadcrumb Consistency
+  formal_spec: breadcrumb = path_from_root(tree, selection)
+  description: ''
+  invariants: []
+- id: P.P3.3
+  name: Lazy Loading
+  formal_spec: expand(n) → load_children(n) only when n first expanded
+  description: ''
+  invariants: []
+operations:
+- name: Expand Node
+  signature: 'expand(n: Node) → Effect'
+  formal_definition: "```\n   expand(n: Node) → Effect\n   = if n ∉ expansion:\n       expansion := expansion\
+    \ ∪ {n}\n       load_children(n) if children(n) = unloaded\n       render(tree)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Select Node
+  signature: 'select(n: Node) → Effect'
+  formal_definition: "```\n   select(n: Node) → Effect\n   = selection := n\n     breadcrumb := compute_path(root,\
+    \ n)\n     notify_observers(n)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Navigate
+  signature: 'navigate(direction: Direction) → Effect'
+  formal_definition: "```\n   navigate(direction: Direction) → Effect\n   = case direction of\n      \
+    \ Down → select(next_visible(selection))\n       Up → select(prev_visible(selection))\n       Right\
+    \ → expand(selection) ; select(first_child(selection))\n       Left → collapse(selection) | select(parent(selection))"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: File explorer
+  description: OS file browser
+- name: Feature tree
+  description: CAD
+- name: Theorem library
+  description: Lean
+- name: Layer panel
+  description: Photoshop
+- name: Outline view
+  description: Word

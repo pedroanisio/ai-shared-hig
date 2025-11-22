@@ -1,0 +1,124 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P26" version="1.1">
+  <metadata>
+    <name>Status Bar/Indicator</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (indicators, messages, progress, position)$</tuple-notation>
+    <components>
+      <component>
+        <name>indicators</name>
+        <type>Map⟨String, Indicator⟩</type>
+        <notation>indicators</notation>
+        <description>status widgets</description>
+      </component>
+      <component>
+        <name>messages</name>
+        <type>Queue⟨Message⟩</type>
+        <notation>messages</notation>
+        <description>temporary messages</description>
+      </component>
+      <component>
+        <name>progress</name>
+        <type>Sequence⟨ProgressBar⟩</type>
+        <notation>progress</notation>
+        <description>show ongoing tasks</description>
+      </component>
+      <component>
+        <name>position</name>
+        <type>\{\text{top}, \text{bottom}, \text{left}, \text{right}\}</type>
+        <notation>position</notation>
+        <description>location</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Indicator</name>
+      <definition format="latex">(icon: Icon, text: String, status: Status, tooltip: String)</definition>
+    </type-def>
+    <type-def>
+      <name>Status</name>
+      <definition format="latex">Idle | Active | Success | Warning | Error</definition>
+    </type-def>
+    <type-def>
+      <name>Message</name>
+      <definition format="latex">(text: String, level: Level, timestamp: Time)</definition>
+    </type-def>
+    <type-def>
+      <name>Level</name>
+      <definition format="latex">Info | Warning | Error</definition>
+    </type-def>
+    <type-def>
+      <name>ProgressBar</name>
+      <definition format="latex">(label: String, current: ℕ, total: ℕ)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P26.1">
+      <name>Always Visible</name>
+      <formal-spec format="latex">Status bar persistently visible</formal-spec>
+    </property>
+    <property id="P.P26.2">
+      <name>Non-Intrusive</name>
+      <formal-spec format="latex">Doesn't block interaction with main content</formal-spec>
+    </property>
+    <property id="P.P26.3">
+      <name>Contextual Information</name>
+      <formal-spec format="latex">Shows relevant info for current state/selection</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Add Indicator</name>
+      <signature>add_indicator(id: String, indicator: Indicator) → Effect</signature>
+      <formal-definition format="latex">```
+   add_indicator(id: String, indicator: Indicator) → Effect
+   = indicators[id] := indicator
+     render(status_bar)</formal-definition>
+    </operation>
+    <operation>
+      <name>Show Message</name>
+      <signature>show_message(text: String, level: Level) → Effect</signature>
+      <formal-definition format="latex">```
+   show_message(text: String, level: Level) → Effect
+   = messages := enqueue(messages, Message(text, level, now()))
+     schedule(clear_message, 3000)  // Clear after 3s</formal-definition>
+    </operation>
+    <operation>
+      <name>Update Progress</name>
+      <signature>update_progress(id: String, current: ℕ, total: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   update_progress(id: String, current: ℕ, total: ℕ) → Effect
+   = progress[id].current := current
+     progress[id].total := total
+     render(progress_bar)
+```
+- Connection status: "🟢 Online" / "🔴 Offline"
+- Sync status: "✓ Synced" / "⏱ Syncing..."
+- Agent status: "🤖 AI: Ready" / "🤖 AI: Thinking..."
+- Selection info: "3 items selected"
+- Cursor position: "Ln 42, Col 18"</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>IDE status bar</name>
+      <description>VS Code</description>
+    </manifestation>
+    <manifestation>
+      <name>Browser status bar</name>
+    </manifestation>
+    <manifestation>
+      <name>Activity indicator</name>
+      <description>apps</description>
+    </manifestation>
+    <manifestation>
+      <name>Connection status</name>
+      <description>networks</description>
+    </manifestation>
+  </manifestations>
+</pattern>

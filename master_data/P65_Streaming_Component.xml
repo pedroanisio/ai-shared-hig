@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P65" version="1.1">
+  <metadata>
+    <name>Streaming Component</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (\tau_{stream}, buf, Q_{render}, sync) : \text{Token} \to \Delta \text{UI}$</tuple-notation>
+    <components>
+      <component>
+        <name>\tau_{stream}</name>
+        <type>Stream⟨Token⟩</type>
+        <notation>\tau_{stream}</notation>
+        <description>incoming token stream from LLM</description>
+      </component>
+      <component>
+        <name>buf</name>
+        <type>BoundedQueue⟨Token⟩</type>
+        <notation>buf</notation>
+        <description>buffer for token accumulation</description>
+      </component>
+      <component>
+        <name>Q_{render}</name>
+        <type>Queue⟨RenderTask⟩</type>
+        <notation>Q_{render}</notation>
+        <description>render task queue for async updates</description>
+      </component>
+      <component>
+        <name>sync</name>
+        <type>State → Effect</type>
+        <notation>sync</notation>
+        <description>synchronization mechanism for UI updates</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>Token</name>
+      <definition>$\text{Token} = \text{String}$ (atomic unit of LLM output)</definition>
+    </type-def>
+    <type-def>
+      <name>RenderTask</name>
+      <definition>$\text{RenderTask} = (\text{tokens}, \text{priority}, \text{callback})$</definition>
+    </type-def>
+    <type-def>
+      <name>BoundedQueue</name>
+      <definition>$\text{BoundedQueue}\langle T \rangle = \{q \mid |q| \leq \text{capacity}\}$</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P65.1">
+      <name>Token-by-Token Updates</name>
+      <formal-spec format="latex">$\forall t \in \tau_{stream} : \exists \Delta UI : t \to \Delta UI$ (progressive disclosure)</formal-spec>
+    </property>
+    <property id="P.P65.2">
+      <name>Buffer Boundedness</name>
+      <formal-spec format="latex">$\forall t : |buf(t)| \leq \text{capacity}$ (prevents memory overflow)</formal-spec>
+    </property>
+    <property id="P.P65.3">
+      <name>Render Order Preservation</name>
+      <formal-spec format="latex">$\forall i, j : i &lt; j \implies \text{order}(Q_{render}[i]) &lt; \text{order}(Q_{render}[j])$ (FIFO queue)</formal-spec>
+    </property>
+    <property id="P.P65.4">
+      <name>Sync Consistency</name>
+      <formal-spec format="latex">$\forall s \in \text{State} : sync(s) \implies \text{UI}_{rendered} = \text{UI}_{expected}(s)$</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Accumulate Tokens</name>
+      <signature>accumulate: Stream⟨Token⟩ → String</signature>
+      <formal-definition format="latex">$\text{accumulate}(S) = \text{fold}(\oplus, \text{""}, S)$ where
+  $\oplus$ is string concatenation</formal-definition>
+    </operation>
+    <operation>
+      <name>Enqueue Render</name>
+      <signature>enqueue: Token → Effect</signature>
+      <formal-definition format="latex">$\text{enqueue}(t) = Q_{render}' $ where
+  $buf' = buf \oplus [t]$
+  $Q_{render}' = Q_{render} \oplus [\text{task}(buf')]$ if ready</formal-definition>
+    </operation>
+    <operation>
+      <name>Flush Buffer</name>
+      <signature>flush: BoundedQueue → RenderTask</signature>
+      <formal-definition format="latex">$\text{flush}(buf) = task$ where
+  $task = (\text{accumulate}(buf), \text{HIGH}, \text{render})$
+  $buf' = \emptyset$ (clear buffer)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <requires>
+      <pattern-ref>P22</pattern-ref>
+      <pattern-ref>P114</pattern-ref>
+    </requires>
+    <uses>
+      <pattern-ref>P64</pattern-ref>
+      <pattern-ref>P115</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>ChatGPT streaming responses</name>
+      <description>token-by-token text rendering</description>
+    </manifestation>
+    <manifestation>
+      <name>Vercel AI SDK useChat</name>
+      <description>React hook for streaming LLM output</description>
+    </manifestation>
+    <manifestation>
+      <name>LangChain StreamingStdOutCallbackHandler</name>
+      <description>streaming callback for progressive output</description>
+    </manifestation>
+    <manifestation>
+      <name>Claude streaming API</name>
+      <description>SSE-based token streaming</description>
+    </manifestation>
+  </manifestations>
+</pattern>

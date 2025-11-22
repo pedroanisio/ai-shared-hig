@@ -1,0 +1,80 @@
+id: P34
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Strategy Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (interface, implementations, selector, current)$
+  description: ''
+  components:
+  - name: interface
+    type: Interface
+    notation: interface
+    description: defines algorithm contract
+  - name: implementations
+    type: Map⟨ID, Implementation⟩
+    notation: implementations
+    description: concrete strategies
+  - name: selector
+    type: Context → ID
+    notation: selector
+    description: chooses strategy
+  - name: current
+    type: Implementation
+    notation: current
+    description: active strategy
+type_definitions:
+- name: Interface
+  definition: Set⟨MethodSignature⟩
+  notation: Interface := Set⟨MethodSignature⟩
+- name: Implementation
+  definition: '(id: ID, methods: Map⟨String, Function⟩)'
+  notation: 'Implementation := (id: ID, methods: Map⟨String, Function⟩)'
+- name: Context
+  definition: Map⟨String, Value⟩  // Decision criteria
+  notation: Context := Map⟨String, Value⟩  // Decision criteria
+properties:
+- id: P.P34.1
+  name: Interface Compatibility
+  formal_spec: '∀impl ∈ implementations: implements(impl, interface)'
+  description: ''
+  invariants: []
+- id: P.P34.2
+  name: Hot-Swappable
+  formal_spec: Can change strategy at runtime without recompilation
+  description: ''
+  invariants: []
+operations:
+- name: Select Strategy
+  signature: 'select_strategy(context: Context) → Implementation'
+  formal_definition: "```\n   select_strategy(context: Context) → Implementation\n   = id := selector(context)\n\
+    \     return implementations[id]"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Execute
+  signature: 'execute(method: String, args: Sequence⟨Value⟩) → Value'
+  formal_definition: "```\n   execute(method: String, args: Sequence⟨Value⟩) → Value\n   = return current.methods[method](args)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Register Strategy
+  signature: 'register(impl: Implementation) → Effect'
+  formal_definition: "```\n   register(impl: Implementation) → Effect\n   = validate(impl, interface)\n\
+    \     implementations[impl.id] := impl"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: File format handlers
+  description: ''
+- name: Solver algorithms
+  description: ''
+- name: Rendering engines
+  description: ''
+- name: Compression algorithms
+  description: ''

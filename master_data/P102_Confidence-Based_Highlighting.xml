@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P102" version="1.1">
+  <metadata>
+    <name>Confidence-Based Highlighting</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$H_{conf} = (Text, Conf_{scores}, Colors, Thresholds) : (\text{Content}, \text{Confidence}) \to \text{Highlighted}$</tuple-notation>
+    <components>
+      <component>
+        <name>Text</name>
+        <type>Seq⟨TextSpan⟩</type>
+        <notation>Text</notation>
+        <description>sequence of text segments</description>
+      </component>
+      <component>
+        <name>Conf_{scores}</name>
+        <type>TextSpan → [0,1]</type>
+        <notation>Conf_{scores}</notation>
+        <description>confidence mapping for each span</description>
+      </component>
+      <component>
+        <name>Colors</name>
+        <type>[0,1] → RGB</type>
+        <notation>Colors</notation>
+        <description>color scale from low to high confidence</description>
+      </component>
+      <component>
+        <name>Thresholds</name>
+        <type>Seq⟨ℝ⟩</type>
+        <notation>Thresholds</notation>
+        <description>confidence thresholds for coloring tiers</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+      <type-def>
+        <name>TextSpan</name>
+        <definition>$\text{TextSpan} = (\text{start}, \text{end}, \text{content})$ where $\text{start}, \text{end} \in \mathbb{N}$</definition>
+      </type-def>
+      <type-def>
+        <name>RGB</name>
+        <definition>$\text{RGB} = [0, 255]^3 \subset \mathbb{N}^3$ (red, green, blue color components)</definition>
+      </type-def>
+      <type-def>
+        <name>ConfidenceLevel</name>
+        <definition>$\text{Level} = \{\text{high}, \text{medium}, \text{low}, \text{uncertain}\}$</definition>
+      </type-def>
+    </type-definitions>
+  <properties>
+    <property id="P.P102.1">
+      <name>Monotonic Color Mapping</name>
+      <formal-spec format="latex">$\forall c_1, c_2 \in [0,1] : c_1 > c_2 \implies \text{brightness}(Colors(c_1)) > \text{brightness}(Colors(c_2))$</formal-spec>
+    </property>
+    <property id="P.P102.2">
+      <name>Complete Coverage</name>
+      <formal-spec format="latex">$\forall span \in Text : \exists c \in [0,1] : Conf_{scores}(span) = c$ (every span has confidence)</formal-spec>
+    </property>
+    <property id="P.P102.3">
+      <name>Threshold Ordering</name>
+      <formal-spec format="latex">$\forall i, j : i &lt; j \implies Thresholds[i] &lt; Thresholds[j]$ (increasing sequence)</formal-spec>
+    </property>
+    <property id="P.P102.4">
+      <name>Visual Distinguishability</name>
+      <formal-spec format="latex">$\forall t_i, t_{i+1} \in Thresholds : \Delta E(Colors(t_i), Colors(t_{i+1})) > \tau$ (perceptually distinct)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Apply Highlighting</name>
+      <signature>applyHighlighting: Text × Conf_scores → StyledText</signature>
+      <formal-definition format="latex">$\text{applyHighlighting}(text, conf) = \text{styled}$ where
+  $\forall span \in text : \text{styled}[span].color = Colors(conf(span))$</formal-definition>
+    </operation>
+    <operation>
+      <name>Categorize Confidence</name>
+      <signature>categorize: ℝ → ConfidenceLevel</signature>
+      <formal-definition format="latex">$\text{categorize}(c) = \begin{cases}
+    \text{high} &amp; \text{if } c \geq t_3 \\
+    \text{medium} &amp; \text{if } t_2 \leq c &lt; t_3 \\
+    \text{low} &amp; \text{if } t_1 \leq c &lt; t_2 \\
+    \text{uncertain} &amp; \text{if } c &lt; t_1
+  \end{cases}$
+where $t_1, t_2, t_3 \in Thresholds$</formal-definition>
+    </operation>
+    <operation>
+      <name>Interpolate Color</name>
+      <signature>interpolate: [0,1] → RGB</signature>
+      <formal-definition format="latex">$\text{interpolate}(c) = (1-c) \cdot \text{color}_{low} + c \cdot \text{color}_{high}$ (linear gradient)</formal-definition>
+    </operation>
+  </operations>
+  <dependencies>
+    <uses>
+      <pattern-ref>P80</pattern-ref>
+      <pattern-ref>P89</pattern-ref>
+      <pattern-ref>P96</pattern-ref>
+      <pattern-ref>P100</pattern-ref>
+    </uses>
+  </dependencies>
+  <manifestations>
+    <manifestation>
+      <name>AI fact-checking highlights</name>
+      <description>color-coded confidence in generated claims</description>
+    </manifestation>
+    <manifestation>
+      <name>Spell-checker confidence</name>
+      <description>red/yellow/green underlines for spelling suggestions</description>
+    </manifestation>
+    <manifestation>
+      <name>LLM output confidence visualization</name>
+      <description>token-level confidence heatmaps</description>
+    </manifestation>
+    <manifestation>
+      <name>Citation confidence display</name>
+      <description>highlight strength based on source reliability</description>
+    </manifestation>
+  </manifestations>
+</pattern>

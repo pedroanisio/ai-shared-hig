@@ -1,0 +1,59 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P38" version="1.1">
+  <metadata>
+    <name>Badge/Indicator Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$B = (H, v, \rho_{38}, \sigma_{38}, \tau_{38})$</tuple-notation>
+    <components>
+      <component>
+        <name>\rho_{38}</name>
+        <type>H → \mathbb{R}^2</type>
+        <notation>\rho_{38}</notation>
+        <description>**position function**</description>
+      </component>
+      <component>
+        <name>\sigma_{38}</name>
+        <type>v → Style</type>
+        <notation>\sigma_{38}</notation>
+        <description>**styling function**</description>
+      </component>
+    </components>
+  </definition>
+  <properties/>
+  <operations>
+    <operation>
+      <name>Update Value</name>
+      <signature>update(v_new: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   update(v_new: ℕ) → Effect
+   = v := v_new
+     animate(scale, τ₃₈)
+     apply_style(σ₃₈(v))</formal-definition>
+    </operation>
+    <operation>
+      <name>Increment</name>
+      <signature>increment(Δ: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   increment(Δ: ℕ) → Effect
+   = update(v + Δ)</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Unread count</name>
+    </manifestation>
+    <manifestation>
+      <name>"Recent 2" badge</name>
+    </manifestation>
+    <manifestation>
+      <name>Warning count</name>
+    </manifestation>
+    <manifestation>
+      <name>Online status dot</name>
+    </manifestation>
+  </manifestations>
+</pattern>

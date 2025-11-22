@@ -1,0 +1,89 @@
+id: ''
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: ''
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $I = (graph, cache, invalidate, recompute)$
+  description: ''
+  components:
+  - name: graph
+    type: DAG⟨Node, Dependency⟩
+    notation: graph
+    description: computation dependency graph
+  - name: cache
+    type: Map⟨Node, Value⟩
+    notation: cache
+    description: stores computed values
+  - name: invalidate
+    type: Node → Set⟨Node⟩
+    notation: invalidate
+    description: marks affected nodes
+  - name: recompute
+    type: Node → Value
+    notation: recompute
+    description: recomputes a single node
+type_definitions:
+- name: Node
+  definition: '(id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)'
+  notation: 'Node := (id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)'
+- name: Dependency
+  definition: '(source: Node, target: Node)'
+  notation: 'Dependency := (source: Node, target: Node)'
+properties:
+- id: P.F2.3.1
+  name: Minimal Recomputation
+  formal_spec: '∀n ∈ graph: recompute(n) ⇔ (invalidated(n) ∨ ∃d ∈ dependencies(n): invalidated(d))
+
+    Only recompute what changed'
+  description: ''
+  invariants: []
+- id: P.F2.3.2
+  name: Topological Order
+  formal_spec: '∀n₁, n₂: dependency(n₁, n₂) ⇒ compute_order(n₁) < compute_order(n₂)'
+  description: ''
+  invariants: []
+- id: P.F2.3.3
+  name: Cache Consistency
+  formal_spec: '∀n ∈ graph: cache[n] = last_computed_value(n) ∨ cache[n] = ⊥'
+  description: ''
+  invariants: []
+operations:
+- name: Update
+  signature: 'update(changed: Set⟨Node⟩) → Effect'
+  formal_definition: "```\n   update(changed: Set⟨Node⟩) → Effect\n   = affected := transitive_dependencies(changed)\n\
+    \     invalidate(affected)\n     sorted := topological_sort(affected)\n     for node in sorted:\n\
+    \       cache[node] := recompute(node)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Invalidate
+  signature: 'invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩'
+  formal_definition: "```\n   invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩\n   = invalidated := nodes\n  \
+    \   for node in nodes:\n       for dependent in dependents(node):\n         invalidated := invalidated\
+    \ ∪ invalidate({dependent})\n     return invalidated"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Recompute
+  signature: 'recompute(node: Node) → Value'
+  formal_definition: "```\n   recompute(node: Node) → Value\n   = inputs := {cache[d] : d ∈ dependencies(node)}\n\
+    \     return node.compute(inputs)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Spreadsheet recalculation
+  description: ''
+- name: Build systems
+  description: Make, Bazel
+- name: Reactive frameworks
+  description: React, Vue
+- name: Query optimization
+  description: ''
+- name: Dataflow programming
+  description: ''

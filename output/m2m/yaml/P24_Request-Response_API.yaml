@@ -1,0 +1,106 @@
+id: P24
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Request-Response API
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $A = (endpoints, handlers, middleware, responses)$
+  description: ''
+  components:
+  - name: endpoints
+    type: Set⟨Endpoint⟩
+    notation: endpoints
+    description: API routes
+  - name: handlers
+    type: Map⟨Endpoint, Handler⟩
+    notation: handlers
+    description: process requests
+  - name: middleware
+    type: Sequence⟨Middleware⟩
+    notation: middleware
+    description: request interceptors
+  - name: responses
+    type: Request → Response
+    notation: responses
+    description: generates responses
+type_definitions:
+- name: Endpoint
+  definition: '(method: Method, path: Path)'
+  notation: 'Endpoint := (method: Method, path: Path)'
+- name: Method
+  definition: GET | POST | PUT | DELETE | PATCH
+  notation: Method := GET | POST | PUT | DELETE | PATCH
+- name: Handler
+  definition: Request → Response
+  notation: Handler := Request → Response
+- name: Middleware
+  definition: (Request, Next) → Response
+  notation: Middleware := (Request, Next) → Response
+- name: Request
+  definition: '(method: Method, path: Path, headers: Map, body: Value)'
+  notation: 'Request := (method: Method, path: Path, headers: Map, body: Value)'
+- name: Response
+  definition: '(status: ℕ, headers: Map, body: Value)'
+  notation: 'Response := (status: ℕ, headers: Map, body: Value)'
+properties:
+- id: P.P24.1
+  name: Stateless
+  formal_spec: 'Each request independent
+
+    No server-side session required (often)'
+  description: ''
+  invariants: []
+- id: P.P24.2
+  name: Idempotency
+  formal_spec: 'GET, PUT, DELETE are idempotent
+
+    Multiple identical requests = same result as single request'
+  description: ''
+  invariants: []
+- id: P.P24.3
+  name: Status Codes
+  formal_spec: '2xx: Success
+
+    3xx: Redirection
+
+    4xx: Client error
+
+    5xx: Server error'
+  description: ''
+  invariants: []
+operations:
+- name: Handle Request
+  signature: 'handle(request: Request) → Response'
+  formal_definition: "```\n   handle(request: Request) → Response\n   = for mw in middleware:\n      \
+    \ request := mw(request, next)\n     handler := handlers[request.endpoint]\n     return handler(request)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Register Endpoint
+  signature: 'register(endpoint: Endpoint, handler: Handler) → Effect'
+  formal_definition: "```\n   register(endpoint: Endpoint, handler: Handler) → Effect\n   = handlers[endpoint]\
+    \ := handler"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Add Middleware
+  signature: 'add_middleware(mw: Middleware) → Effect'
+  formal_definition: "```\n   add_middleware(mw: Middleware) → Effect\n   = middleware := middleware ++\
+    \ [mw]\n```\n- Authentication: Verify credentials\n- Logging: Log request/response\n- Rate limiting:\
+    \ Throttle requests\n- CORS: Handle cross-origin requests\n- Compression: Gzip responses"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: REST API
+  description: ''
+- name: RPC
+  description: gRPC
+- name: GraphQL
+  description: ''
+- name: Internal service APIs
+  description: ''

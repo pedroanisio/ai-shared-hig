@@ -1,0 +1,222 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P60" version="1.1">
+  <metadata>
+    <name>Input Sanitization Pattern</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$S = (validators, sanitizers, encoders, rules)$</tuple-notation>
+    <components>
+      <component>
+        <name>validators</name>
+        <type>Map⟨InputType, Validator⟩</type>
+        <notation>validators</notation>
+        <description>check input validity</description>
+      </component>
+      <component>
+        <name>sanitizers</name>
+        <type>Map⟨InputType, Sanitizer⟩</type>
+        <notation>sanitizers</notation>
+        <description>clean input</description>
+      </component>
+      <component>
+        <name>encoders</name>
+        <type>Map⟨Context, Encoder⟩</type>
+        <notation>encoders</notation>
+        <description>encode for safe output</description>
+      </component>
+      <component>
+        <name>rules</name>
+        <type>Set⟨SecurityRule⟩</type>
+        <notation>rules</notation>
+        <description>define security constraints</description>
+      </component>
+    </components>
+  </definition>
+  <type-definitions>
+    <type-def>
+      <name>InputType</name>
+      <definition format="latex">Text | HTML | SQL | URL | Email | ...</definition>
+    </type-def>
+    <type-def>
+      <name>Validator</name>
+      <definition format="latex">Input → ValidationResult</definition>
+    </type-def>
+    <type-def>
+      <name>Sanitizer</name>
+      <definition format="latex">Input → SanitizedInput</definition>
+    </type-def>
+    <type-def>
+      <name>Encoder</name>
+      <definition format="latex">Input → EncodedOutput</definition>
+    </type-def>
+    <type-def>
+      <name>SecurityRule</name>
+      <definition format="latex">(pattern: Regex, action: Block | Sanitize | Warn)</definition>
+    </type-def>
+  </type-definitions>
+  <properties>
+    <property id="P.P60.1">
+      <name>Defense in Depth</name>
+      <formal-spec format="latex">Multiple layers: validate → sanitize → encode</formal-spec>
+    </property>
+    <property id="P.P60.2">
+      <name>Whitelist Over Blacklist</name>
+      <formal-spec format="latex">Allow known-good patterns rather than blocking known-bad</formal-spec>
+    </property>
+    <property id="P.P60.3">
+      <name>Context-Appropriate Encoding</name>
+      <formal-spec format="latex">HTML context → HTML encode
+SQL context → Parameterized queries
+URL context → URL encode</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Validate Input</name>
+      <signature>validate(input: Input, type: InputType) → ValidationResult</signature>
+      <formal-definition format="latex">```
+   validate(input: Input, type: InputType) → ValidationResult
+   = validator := validators[type]
+     result := validator(input)
+     if result = Invalid:
+       log_security_event("Invalid input", input, type)
+     return result</formal-definition>
+    </operation>
+    <operation>
+      <name>Sanitize Input</name>
+      <signature>sanitize(input: Input, type: InputType) → Input</signature>
+      <formal-definition format="latex">```
+   sanitize(input: Input, type: InputType) → Input
+   = sanitizer := sanitizers[type]
+     return sanitizer(input)</formal-definition>
+    </operation>
+    <operation>
+      <name>Encode Output</name>
+      <signature>encode(input: Input, context: Context) → String</signature>
+      <formal-definition format="latex">```
+   encode(input: Input, context: Context) → String
+   = encoder := encoders[context]
+     return encoder(input)</formal-definition>
+    </operation>
+    <operation>
+      <name>XSS (Cross-Site Scripting)</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Vulnerability: &lt;script&gt;alert('xss')&lt;/script&gt;
+   Defense:
+     - Validate: Allow only expected characters
+     - Sanitize: Remove script tags
+     - Encode: &amp;lt;script&amp;gt; in HTML context
+   
+   encode_html(text: String) → String
+   = replace(text, [
+       ("&lt;", "&amp;lt;"),
+       ("&gt;", "&amp;gt;"),
+       ("&amp;", "&amp;amp;"),
+       ("\"", "&amp;quot;"),
+       ("'", "&amp;#x27;")
+     ])</formal-definition>
+    </operation>
+    <operation>
+      <name>SQL Injection</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Vulnerability: '; DROP TABLE users; --
+   Defense:
+     - Use parameterized queries (prepared statements)
+     - Never concatenate user input into SQL
+     - Validate input type
+   
+   Safe:
+     query = "SELECT * FROM users WHERE id = ?"
+     execute(query, [user_input])
+   
+   Unsafe:
+     query = "SELECT * FROM users WHERE id = " + user_input</formal-definition>
+    </operation>
+    <operation>
+      <name>Path Traversal</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Vulnerability: ../../etc/passwd
+   Defense:
+     - Validate: Only allow alphanumeric + safe chars
+     - Sanitize: Remove .. and /
+     - Use whitelist of allowed paths
+   
+   sanitize_path(path: String) → String
+   = normalized := normalize(path)
+     if contains(normalized, "..") ∨ starts_with(normalized, "/"):
+       throw SecurityException("Invalid path")
+     return join(base_dir, normalized)</formal-definition>
+    </operation>
+    <operation>
+      <name>Command Injection</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Vulnerability: ; rm -rf /
+   Defense:
+     - Never pass user input to shell
+     - Use language APIs instead of shell commands
+     - Validate against whitelist
+   
+   Safe:
+     delete_file(filename)  // Use API
+   
+   Unsafe:
+     exec("rm " + filename)  // Shell command</formal-definition>
+    </operation>
+    <operation>
+      <name>LDAP Injection</name>
+      <signature/>
+      <formal-definition format="latex">```
+   Vulnerability: *)(uid=*))(|(uid=*
+   Defense:
+     - Escape special characters: * ( ) \ / NUL
+     - Use parameterized LDAP queries
+   
+   escape_ldap(input: String) → String
+   = replace(input, [
+       ("*", "\\2a"),
+       ("(", "\\28"),
+       (")", "\\29"),
+       ("\\", "\\5c"),
+       ("/", "\\2f")
+     ])
+```
+Email:
+  pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$
+
+URL:
+  pattern: ^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$
+  validate_protocol: must be http or https
+
+Username:
+  pattern: ^[a-zA-Z0-9_-]{3,20}$
+  length: 3-20 characters
+  chars: alphanumeric, underscore, hyphen
+
+Phone:
+  pattern: ^\+?[1-9]\d{1,14}$
+  format: E.164 international format</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Form input validation</name>
+    </manifestation>
+    <manifestation>
+      <name>API input sanitization</name>
+    </manifestation>
+    <manifestation>
+      <name>Template rendering</name>
+      <description>auto-escaping</description>
+    </manifestation>
+    <manifestation>
+      <name>Database query builders</name>
+    </manifestation>
+  </manifestations>
+</pattern>

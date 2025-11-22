@@ -1,0 +1,90 @@
+id: P36
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Selection-Driven Panel
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $S = (selection, content, \phi_{36}, observers)$
+  description: ''
+  components:
+  - name: selection
+    type: Element | null
+    notation: selection
+    description: currently selected object
+  - name: content
+    type: Component
+    notation: content
+    description: displayed content
+  - name: \phi_{36}
+    type: Element → Component
+    notation: \phi_{36}
+    description: maps selection to content
+  - name: observers
+    type: Set⟨Observer⟩
+    notation: observers
+    description: watch selection changes
+type_definitions:
+- name: Element
+  definition: Any selectable entity
+  notation: Element := Any selectable entity
+- name: Component
+  definition: Rendered UI content
+  notation: Component := Rendered UI content
+- name: SelectionEvent
+  definition: '(previous: Element | null, current: Element | null)'
+  notation: 'SelectionEvent := (previous: Element | null, current: Element | null)'
+properties:
+- id: P.P36.1
+  name: Selection-Driven Content
+  formal_spec: 'selection changes → content := φ₃₆(selection)
+
+    ∀s ∈ Element: content = φ₃₆(s) when selection = s'
+  description: ''
+  invariants: []
+- id: P.P36.2
+  name: Reactive Update
+  formal_spec: 'selection := new_selection ⇒ notify_observers(SelectionEvent)
+
+    All observers automatically receive update'
+  description: ''
+  invariants: []
+- id: P.P36.3
+  name: Null Selection State
+  formal_spec: 'selection = null ⇒ content = empty_state | default_content
+
+    Panel handles empty selection gracefully'
+  description: ''
+  invariants: []
+operations:
+- name: Update Selection
+  signature: 'update_selection(element: Element | null) → Effect'
+  formal_definition: "```\n   update_selection(element: Element | null) → Effect\n   = previous := selection\n\
+    \     selection := element\n     content := φ₃₆(selection)\n     notify_observers((previous, selection))"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Render Content
+  signature: render() → Component
+  formal_definition: "```\n   render() → Component\n   = if selection = null:\n       return render_empty_state()\n\
+    \     else:\n       return φ₃₆(selection)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Subscribe to Selection
+  signature: 'subscribe(observer: Observer) → Effect'
+  formal_definition: "```\n   subscribe(observer: Observer) → Effect\n   = observers := observers ∪ {observer}\n\
+    \     observer.update(selection)  // Initial notification"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Clear Selection
+  signature: clear() → Effect
+  formal_definition: "```\n   clear() → Effect\n   = update_selection(null)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations: []

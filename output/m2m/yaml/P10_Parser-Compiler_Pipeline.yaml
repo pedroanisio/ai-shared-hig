@@ -1,0 +1,79 @@
+id: P10
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Parser/Compiler Pipeline
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $C = (stages, ir, errors, optimize)$
+  description: ''
+  components:
+  - name: stages
+    type: Sequence⟨Stage⟩
+    notation: stages
+    description: transformation stages
+  - name: ir
+    type: Sequence⟨IR⟩
+    notation: ir
+    description: intermediate representations
+  - name: errors
+    type: Sequence⟨Error⟩
+    notation: errors
+    description: accumulate errors
+  - name: optimize
+    type: IR → IR
+    notation: optimize
+    description: optimization pass
+type_definitions:
+- name: Stage
+  definition: '(name: String, transform: Input → Output | Error)'
+  notation: 'Stage := (name: String, transform: Input → Output | Error)'
+- name: IR
+  definition: intermediate representation (AST, bytecode, etc.)
+  notation: IR := intermediate representation (AST, bytecode, etc.)
+properties:
+- id: P.P10.1
+  name: Pipeline Flow
+  formal_spec: 'source → lex → tokens → parse → AST → analyze → typed_AST →
+
+    codegen → target'
+  description: ''
+  invariants: []
+- id: P.P10.2
+  name: Error Propagation
+  formal_spec: error in stage_i ⇒ abort or continue with partial result
+  description: ''
+  invariants: []
+- id: P.P10.3
+  name: Symbol Table Maintenance
+  formal_spec: '∀stage: symbol_table updated and passed forward'
+  description: ''
+  invariants: []
+operations:
+- name: Execute Pipeline
+  signature: 'compile(source: String) → Target | Error'
+  formal_definition: "```\n   compile(source: String) → Target | Error\n   = result := source\n     for\
+    \ stage in stages:\n       result := stage.transform(result)\n       if is_error(result):\n      \
+    \   return result\n     return result"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Add Stage
+  signature: 'add_stage(stage: Stage, position: ℕ) → Effect'
+  formal_definition: "```\n   add_stage(stage: Stage, position: ℕ) → Effect\n   = stages := insert(stages,\
+    \ stage, position)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Code compilers
+  description: C++, Rust
+- name: LaTeX renderers
+  description: ''
+- name: Formula parsers
+  description: ''
+- name: Constraint compilers
+  description: ''

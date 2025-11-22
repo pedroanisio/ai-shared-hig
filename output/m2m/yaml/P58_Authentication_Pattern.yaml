@@ -1,0 +1,150 @@
+id: P58
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Authentication Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $A = (users, credentials, sessions, verify, tokens)$
+  description: ''
+  components:
+  - name: users
+    type: Map⟨UserID, User⟩
+    notation: users
+    description: registered users
+  - name: credentials
+    type: Map⟨UserID, HashedPassword⟩
+    notation: credentials
+    description: store credentials
+  - name: sessions
+    type: Map⟨SessionID, Session⟩
+    notation: sessions
+    description: track active sessions
+  - name: verify
+    type: (UserID, Password) → 𝔹
+    notation: verify
+    description: validates credentials
+  - name: tokens
+    type: Map⟨Token, UserID⟩
+    notation: tokens
+    description: map tokens to users
+type_definitions:
+- name: User
+  definition: '(id: UserID, username: String, email: String, roles: Set⟨Role⟩)'
+  notation: 'User := (id: UserID, username: String, email: String, roles: Set⟨Role⟩)'
+- name: HashedPassword
+  definition: String  // bcrypt, argon2, etc.
+  notation: HashedPassword := String  // bcrypt, argon2, etc.
+- name: Session
+  definition: '(id: SessionID, user: UserID, created: Time, expires: Time, data: Map⟨String,Value⟩)'
+  notation: 'Session := (id: SessionID, user: UserID, created: Time, expires: Time, data: Map⟨String,Value⟩)'
+- name: Token
+  definition: String  // JWT, opaque token, etc.
+  notation: Token := String  // JWT, opaque token, etc.
+properties:
+- id: P.P58.1
+  name: Secure Storage
+  formal_spec: Passwords stored as secure hashes, never plaintext
+  description: ''
+  invariants: []
+- id: P.P58.2
+  name: Session Expiration
+  formal_spec: '∀session ∈ sessions: now() > session.expires ⇒ invalid(session)'
+  description: ''
+  invariants: []
+- id: P.P58.3
+  name: Token Security
+  formal_spec: Tokens cryptographically signed and time-limited
+  description: ''
+  invariants: []
+operations:
+- name: Register User
+  signature: 'register(username: String, password: String, email: String) → UserID'
+  formal_definition: "```\n   register(username: String, password: String, email: String) → UserID\n \
+    \  = user_id := generate_id()\n     hashed := hash_password(password)\n     users[user_id] := User(user_id,\
+    \ username, email, {})\n     credentials[user_id] := hashed\n     return user_id"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Authenticate
+  signature: 'authenticate(username: String, password: String) → Session | null'
+  formal_definition: "```\n   authenticate(username: String, password: String) → Session | null\n   =\
+    \ user := find_user_by_username(username)\n     if user = null:\n       return null\n     \n     if\
+    \ verify_password(password, credentials[user.id]):\n       session := create_session(user.id)\n  \
+    \     sessions[session.id] := session\n       return session\n     else:\n       return null"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Verify Password
+  signature: 'verify_password(plain: String, hashed: HashedPassword) → 𝔹'
+  formal_definition: "```\n   verify_password(plain: String, hashed: HashedPassword) → \U0001D539\n  \
+    \ = return hash_function(plain) = hashed"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Create Session
+  signature: 'create_session(user_id: UserID) → Session'
+  formal_definition: "```\n   create_session(user_id: UserID) → Session\n   = session_id := generate_session_id()\n\
+    \     expires := now() + session_duration\n     return Session(session_id, user_id, now(), expires,\
+    \ {})"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Validate Session
+  signature: 'validate_session(session_id: SessionID) → 𝔹'
+  formal_definition: "```\n   validate_session(session_id: SessionID) → \U0001D539\n   = if session_id\
+    \ ∉ sessions:\n       return false\n     session := sessions[session_id]\n     if now() > session.expires:\n\
+    \       delete sessions[session_id]\n       return false\n     return true"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Generate Token (JWT)
+  signature: 'generate_token(user_id: UserID) → Token'
+  formal_definition: "```\n   generate_token(user_id: UserID) → Token\n   = payload := {\n       user_id:\
+    \ user_id,\n       issued_at: now(),\n       expires_at: now() + token_ttl\n     }\n     token :=\
+    \ sign(payload, secret_key)\n     tokens[token] := user_id\n     return token"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Session-Based
+  signature: Login → Create session → Store session ID in cookie
+  formal_definition: "```\n   Login → Create session → Store session ID in cookie\n   Subsequent requests\
+    \ send session ID\n   Server validates session"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Token-Based (JWT)
+  signature: Login → Generate JWT → Send to client
+  formal_definition: "```\n   Login → Generate JWT → Send to client\n   Client includes JWT in Authorization\
+    \ header\n   Server validates JWT signature"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: OAuth 2.0
+  signature: Redirect to OAuth provider → User authorizes
+  formal_definition: "```\n   Redirect to OAuth provider → User authorizes\n   Provider returns authorization\
+    \ code\n   Exchange code for access token\n   Use token for API requests"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Multi-Factor (MFA)
+  signature: ''
+  formal_definition: "```\n   Password (something you know)\n   + TOTP/SMS code (something you have)\n\
+    \   + Biometric (something you are)\n```\n- Use bcrypt/argon2 for password hashing\n- Implement rate\
+    \ limiting on login attempts\n- Use HTTPS for all authentication traffic\n- Rotate tokens/sessions\
+    \ regularly\n- Implement CSRF protection\n- Use secure cookie flags (HttpOnly, Secure, SameSite)"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: User login systems
+  description: ''
+- name: API authentication
+  description: ''
+- name: SSO
+  description: Single Sign-On
+- name: Multi-factor authentication
+  description: ''

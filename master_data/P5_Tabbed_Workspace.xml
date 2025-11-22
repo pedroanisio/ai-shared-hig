@@ -1,0 +1,107 @@
+<?xml version="1.0" ?>
+<pattern xmlns="http://universal-corpus.org/schema/v1" id="P5" version="1.1">
+  <metadata>
+    <name>Tabbed Workspace</name>
+    <category>pattern</category>
+    <status>stable</status>
+    <complexity>medium</complexity>
+  </metadata>
+  <definition>
+    <tuple-notation format="latex">$W = (tabs, active, buffers, state)$</tuple-notation>
+    <components>
+      <component>
+        <name>tabs</name>
+        <type>Sequence⟨Tab⟩</type>
+        <notation>tabs</notation>
+        <description>open tabs</description>
+      </component>
+      <component>
+        <name>active</name>
+        <type>ℕ</type>
+        <notation>active</notation>
+        <description>active tab index</description>
+      </component>
+      <component>
+        <name>buffers</name>
+        <type>Map⟨Tab, Content⟩</type>
+        <notation>buffers</notation>
+        <description>stores tab contents</description>
+      </component>
+      <component>
+        <name>state</name>
+        <type>Map⟨Tab, State⟩</type>
+        <notation>state</notation>
+        <description>stores tab states (dirty, saved)</description>
+      </component>
+    </components>
+  </definition>
+  <properties>
+    <property id="P.P5.1">
+      <name>Single Active Tab</name>
+      <formal-spec format="latex">∀t: active(t) = (t = tabs[active])</formal-spec>
+    </property>
+    <property id="P.P5.2">
+      <name>Unsaved Warning</name>
+      <formal-spec format="latex">close(tab) ∧ dirty(tab) → confirm("Unsaved changes. Close anyway?")</formal-spec>
+    </property>
+    <property id="P.P5.3">
+      <name>Tab Persistence</name>
+      <formal-spec format="latex">Application restart → restore(tabs, active)</formal-spec>
+    </property>
+  </properties>
+  <operations>
+    <operation>
+      <name>Open Tab</name>
+      <signature>open(item: Item) → Effect</signature>
+      <formal-definition format="latex">```
+   open(item: Item) → Effect
+   = if ∃tab: tab.item = item:
+       activate(tab)
+     else:
+       tabs := tabs ++ [Tab(item)]
+       buffers[tab] := load(item)
+       activate(tab)</formal-definition>
+    </operation>
+    <operation>
+      <name>Switch Tab</name>
+      <signature>switch(index: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   switch(index: ℕ) → Effect
+   = save_state(tabs[active])
+     active := index
+     restore_state(tabs[index])
+     focus(tabs[index])</formal-definition>
+    </operation>
+    <operation>
+      <name>Close Tab</name>
+      <signature>close(index: ℕ) → Effect</signature>
+      <formal-definition format="latex">```
+   close(index: ℕ) → Effect
+   = if dirty(tabs[index]):
+       if confirm_close():
+         remove(tabs, index)
+         activate(max(0, index - 1))
+     else:
+       remove(tabs, index)
+       activate(max(0, index - 1))</formal-definition>
+    </operation>
+  </operations>
+  <manifestations>
+    <manifestation>
+      <name>Editor tabs</name>
+      <description>VS Code</description>
+    </manifestation>
+    <manifestation>
+      <name>Document tabs</name>
+      <description>browsers</description>
+    </manifestation>
+    <manifestation>
+      <name>Multi-file editing</name>
+      <description>IDEs</description>
+    </manifestation>
+    <manifestation>
+      <name>Chat tabs</name>
+      <description>messaging apps</description>
+    </manifestation>
+  </manifestations>
+</pattern>

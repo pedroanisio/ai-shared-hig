@@ -1,0 +1,122 @@
+id: P53
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Filtering Pattern
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $F = (data, filters, active, result, facets)$
+  description: ''
+  components:
+  - name: data
+    type: Set⟨Item⟩
+    notation: data
+    description: full dataset
+  - name: filters
+    type: Map⟨String, Filter⟩
+    notation: filters
+    description: available filters
+  - name: active
+    type: Map⟨String, FilterValue⟩
+    notation: active
+    description: active filters
+  - name: result
+    type: Set⟨Item⟩
+    notation: result
+    description: filtered result
+  - name: facets
+    type: Map⟨String, Facet⟩
+    notation: facets
+    description: shows filter counts
+type_definitions:
+- name: Filter
+  definition: (
+  notation: Filter := (
+- name: FilterType
+  definition: Range | Select | MultiSelect | Search | Boolean
+  notation: FilterType := Range | Select | MultiSelect | Search | Boolean
+- name: FilterValue
+  definition: Value | Range(min, max) | Set⟨Value⟩
+  notation: FilterValue := Value | Range(min, max) | Set⟨Value⟩
+- name: Facet
+  definition: Map⟨Value, ℕ⟩  // value → count
+  notation: Facet := Map⟨Value, ℕ⟩  // value → count
+properties:
+- id: P.P53.1
+  name: Result Computation
+  formal_spec: 'result = {item ∈ data : ∀(k, v) ∈ active: filters[k].apply(item, v)}'
+  description: ''
+  invariants: []
+- id: P.P53.2
+  name: Facet Accuracy
+  formal_spec: 'facets[filter_k][value_v] = |{item ∈ result : item[k] = value_v}|'
+  description: ''
+  invariants: []
+- id: P.P53.3
+  name: Filter Composition
+  formal_spec: 'Multiple filters combined with AND (intersection)
+
+    Multi-select within filter combined with OR (union)'
+  description: ''
+  invariants: []
+operations:
+- name: Apply Filter
+  signature: 'apply_filter(filter_name: String, value: FilterValue) → Effect'
+  formal_definition: "```\n   apply_filter(filter_name: String, value: FilterValue) → Effect\n   = active[filter_name]\
+    \ := value\n     result := compute_result(data, active)\n     facets := compute_facets(result, filters)\n\
+    \     notify_observers(result)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Compute Result
+  signature: 'compute_result(data: Set⟨Item⟩, active: Map⟨String, FilterValue⟩) → Set⟨Item⟩'
+  formal_definition: "```\n   compute_result(data: Set⟨Item⟩, active: Map⟨String, FilterValue⟩) → Set⟨Item⟩\n\
+    \   = filter(data, λitem:\n       ∀(k, v) ∈ active: filters[k].apply(item, v)\n     )"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Compute Facets
+  signature: 'compute_facets(result: Set⟨Item⟩, filters: Map⟨String, Filter⟩) → Map⟨String, Facet⟩'
+  formal_definition: "```\n   compute_facets(result: Set⟨Item⟩, filters: Map⟨String, Filter⟩) → Map⟨String,\
+    \ Facet⟩\n   = {\n       (filter_name, {\n         (value, count(result, λitem: item[filter_name]\
+    \ = value))\n         for value in possible_values(filter_name)\n       })\n       for filter_name\
+    \ in keys(filters)\n     }"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Clear Filters
+  signature: clear() → Effect
+  formal_definition: "```\n   clear() → Effect\n   = active := {}\n     result := data\n     facets :=\
+    \ compute_facets(result, filters)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Range Filter
+  signature: ''
+  formal_definition: "```\n   Price: $0 - $1000\n   apply(item, (min, max)) = min ≤ item.price ≤ max\n\
+    6. **Multi-Select Filter:\n```\n   Colors: [✓ Red] [✓ Blue] [ ] Green\n   apply(item, selected) =\
+    \ item.color ∈ selected\n7. Search Filter:**\n```\n   Search: \"laptop\"\n   apply(item, query) =\
+    \ contains(item.name, query, case_insensitive)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Boolean Filter
+  signature: ''
+  formal_definition: "```\n   [✓] In Stock Only\n   apply(item, true) = item.in_stock"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: E-commerce product filters
+  description: ''
+- name: Search result filters
+  description: ''
+- name: Data table column filters
+  description: ''
+- name: Email filters
+  description: ''
+- name: Log viewers
+  description: ''

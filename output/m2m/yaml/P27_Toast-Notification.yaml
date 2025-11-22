@@ -1,0 +1,85 @@
+id: P27
+version: '1.1'
+schema_version: '1.0'
+metadata:
+  name: Toast/Notification
+  category: pattern
+  status: stable
+  complexity: medium
+  domains: []
+definition:
+  tuple_notation: $T = (message, duration, dismiss, stack, position)$
+  description: ''
+  components:
+  - name: message
+    type: String
+    notation: message
+    description: notification text
+  - name: duration
+    type: Duration
+    notation: duration
+    description: auto-dismiss time
+  - name: dismiss
+    type: () → Effect
+    notation: dismiss
+    description: manually dismisses
+  - name: stack
+    type: Sequence⟨Toast⟩
+    notation: stack
+    description: manages multiple toasts
+  - name: position
+    type: Position
+    notation: position
+    description: determines screen location
+type_definitions:
+- name: Duration
+  definition: ℕ | Infinity  // milliseconds or persistent
+  notation: Duration := ℕ | Infinity  // milliseconds or persistent
+- name: Position
+  definition: TopLeft | TopCenter | TopRight | BottomLeft | BottomCenter | BottomRight
+  notation: Position := TopLeft | TopCenter | TopRight | BottomLeft | BottomCenter | BottomRight
+properties:
+- id: P.P27.1
+  name: Time-Limited
+  formal_spec: toast appears → auto-dismiss after duration (unless duration = ∞)
+  description: ''
+  invariants: []
+- id: P.P27.2
+  name: Stackable
+  formal_spec: 'Multiple toasts stack vertically
+
+    New toasts push old toasts'
+  description: ''
+  invariants: []
+- id: P.P27.3
+  name: Non-Modal
+  formal_spec: User can interact with app while toast visible
+  description: ''
+  invariants: []
+operations:
+- name: Show Toast
+  signature: 'show(message: String, level: Level, duration: Duration) → Effect'
+  formal_definition: "```\n   show(message: String, level: Level, duration: Duration) → Effect\n   = toast\
+    \ := Toast(message, level, duration, now())\n     stack := stack ++ [toast]\n     render(stack)\n\
+    \     if duration ≠ ∞:\n       schedule(dismiss(toast), duration)"
+  preconditions: []
+  postconditions: []
+  effects: []
+- name: Dismiss
+  signature: 'dismiss(toast: Toast) → Effect'
+  formal_definition: "```\n   dismiss(toast: Toast) → Effect\n   = stack := stack ∖ {toast}\n     animate_out(toast)\n\
+    \     render(stack)\n```\nInfo:    Neutral message (blue)\nSuccess: Operation succeeded (green)\n\
+    Warning: Caution needed (yellow)\nError:   Operation failed (red)\n```\nInfo:    3-5 seconds\nSuccess:\
+    \ 2-3 seconds\nWarning: 5-7 seconds\nError:   7-10 seconds or manual dismiss"
+  preconditions: []
+  postconditions: []
+  effects: []
+manifestations:
+- name: Success messages
+  description: '"✓ Saved"'
+- name: Error alerts
+  description: '"❌ Failed to save"'
+- name: Info notifications
+  description: '"File exported"'
+- name: Action confirmations
+  description: ''
