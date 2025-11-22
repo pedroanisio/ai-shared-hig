@@ -965,11 +965,14 @@ class CorpusManager:
         """
         Export dependency relationships to CSV with one row per relationship.
         Useful for graph analysis and dependency visualization.
+        
+        IMPROVED: Added target_name, validation for valid pattern IDs, better error handling.
         """
         with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
             fieldnames = [
-                'source_id', 'source_name', 'target_id',
-                'relationship_type', 'is_circular'
+                'source_id', 'source_name', 'source_type',
+                'target_id', 'target_name', 'target_type',
+                'relationship_type', 'is_circular', 'is_valid'
             ]
             
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -982,44 +985,91 @@ class CorpusManager:
                 for i in range(len(cycle) - 1):
                     circular_pairs.add((cycle[i], cycle[i + 1]))
             
+            def get_pattern_type(pid: str) -> str:
+                if pid and pid[0] == 'C':
+                    return 'concept'
+                elif pid and pid[0] == 'F':
+                    return 'flow'
+                elif pid and pid[0] == 'P':
+                    return 'pattern'
+                return 'unknown'
+            
             for pattern_id in sorted(self.patterns.keys(), key=self._extract_sort_number):
                 pattern = self.patterns[pattern_id]
+                source_type = get_pattern_type(pattern.id)
                 
                 # Export each dependency relationship
                 for target in pattern.dependencies.requires:
+                    # Validate target exists
+                    target_pattern = self.patterns.get(target)
+                    is_valid = target_pattern is not None
+                    target_name = target_pattern.name if target_pattern else ''
+                    target_type = get_pattern_type(target) if is_valid else 'unknown'
+                    
                     writer.writerow({
                         'source_id': pattern.id,
                         'source_name': pattern.name,
+                        'source_type': source_type,
                         'target_id': target,
+                        'target_name': target_name,
+                        'target_type': target_type,
                         'relationship_type': 'requires',
-                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no',
+                        'is_valid': 'yes' if is_valid else 'no'
                     })
                 
                 for target in pattern.dependencies.uses:
+                    target_pattern = self.patterns.get(target)
+                    is_valid = target_pattern is not None
+                    target_name = target_pattern.name if target_pattern else ''
+                    target_type = get_pattern_type(target) if is_valid else 'unknown'
+                    
                     writer.writerow({
                         'source_id': pattern.id,
                         'source_name': pattern.name,
+                        'source_type': source_type,
                         'target_id': target,
+                        'target_name': target_name,
+                        'target_type': target_type,
                         'relationship_type': 'uses',
-                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no',
+                        'is_valid': 'yes' if is_valid else 'no'
                     })
                 
                 for target in pattern.dependencies.specializes:
+                    target_pattern = self.patterns.get(target)
+                    is_valid = target_pattern is not None
+                    target_name = target_pattern.name if target_pattern else ''
+                    target_type = get_pattern_type(target) if is_valid else 'unknown'
+                    
                     writer.writerow({
                         'source_id': pattern.id,
                         'source_name': pattern.name,
+                        'source_type': source_type,
                         'target_id': target,
+                        'target_name': target_name,
+                        'target_type': target_type,
                         'relationship_type': 'specializes',
-                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no',
+                        'is_valid': 'yes' if is_valid else 'no'
                     })
                 
                 for target in pattern.dependencies.specialized_by:
+                    target_pattern = self.patterns.get(target)
+                    is_valid = target_pattern is not None
+                    target_name = target_pattern.name if target_pattern else ''
+                    target_type = get_pattern_type(target) if is_valid else 'unknown'
+                    
                     writer.writerow({
                         'source_id': pattern.id,
                         'source_name': pattern.name,
+                        'source_type': source_type,
                         'target_id': target,
+                        'target_name': target_name,
+                        'target_type': target_type,
                         'relationship_type': 'specialized_by',
-                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no'
+                        'is_circular': 'yes' if (pattern.id, target) in circular_pairs else 'no',
+                        'is_valid': 'yes' if is_valid else 'no'
                     })
     
     def export_all_csv(self, output_dir: Path) -> Dict[str, Path]:

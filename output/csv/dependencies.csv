@@ -1,121 +1,121 @@
-source_id,source_name,target_id,relationship_type,is_circular
-P28,Progress Indicator,P26,uses,no
-P28,Progress Indicator,P27,uses,no
-P64,Generative UI,P65,uses,yes
-P64,Generative UI,P112,uses,no
-P64,Generative UI,P115,uses,no
-P65,Streaming Component,P22,requires,no
-P65,Streaming Component,P114,requires,no
-P65,Streaming Component,P64,uses,yes
-P65,Streaming Component,P115,uses,no
-P66,Context-Adaptive Interface,P64,uses,no
-P66,Context-Adaptive Interface,P67,uses,yes
-P66,Context-Adaptive Interface,P136,uses,no
-P66,Context-Adaptive Interface,P137,uses,no
-P67,Progressive Disclosure by AI,P3,uses,no
-P67,Progressive Disclosure by AI,P37,uses,no
-P67,Progressive Disclosure by AI,P66,uses,yes
-P68,Agent Team Visualization,P14,requires,no
-P68,Agent Team Visualization,P69,uses,yes
-P68,Agent Team Visualization,P71,uses,yes
-P68,Agent Team Visualization,P93,uses,no
-P69,Agent Activity Timeline,P22,requires,no
-P69,Agent Activity Timeline,P68,uses,yes
-P69,Agent Activity Timeline,P112,uses,yes
-P69,Agent Activity Timeline,P124,uses,no
-P70,Agent Handoff,P14,requires,no
-P70,Agent Handoff,P68,uses,no
-P70,Agent Handoff,P69,uses,no
-P70,Agent Handoff,P91,uses,no
-P71,Orchestration Dashboard,F2.2,requires,no
-P71,Orchestration Dashboard,P14,requires,no
-P71,Orchestration Dashboard,P68,uses,yes
-P71,Orchestration Dashboard,P69,uses,yes
-P71,Orchestration Dashboard,P129,uses,no
-P72,Agent Role Selector,P14,requires,no
-P72,Agent Role Selector,P68,uses,no
-P72,Agent Role Selector,P71,uses,no
-P73,Composite Action,P30,requires,no
-P73,Composite Action,P14,uses,no
-P73,Composite Action,P92,uses,no
-P75,Proactive Intervention,P74,uses,no
-P75,Proactive Intervention,P76,uses,no
-P75,Proactive Intervention,P77,uses,no
-P75,Proactive Intervention,P79,uses,no
-P80,Voice Conversation,P2,uses,no
-P80,Voice Conversation,P82,uses,no
-P80,Voice Conversation,P85,uses,no
-P100,Source Citation,P9,uses,no
-P100,Source Citation,P101,uses,yes
-P100,Source Citation,P102,uses,yes
-P100,Source Citation,P103,uses,yes
-P101,Retrieval Path Visualization,P19,requires,no
-P101,Retrieval Path Visualization,P99,requires,no
-P101,Retrieval Path Visualization,P100,uses,yes
-P101,Retrieval Path Visualization,P104,uses,yes
-P102,Confidence-Based Highlighting,P80,uses,no
-P102,Confidence-Based Highlighting,P89,uses,no
-P102,Confidence-Based Highlighting,P96,uses,no
-P102,Confidence-Based Highlighting,P100,uses,yes
-P103,Multi-Source Reconciliation,P100,requires,yes
-P103,Multi-Source Reconciliation,P102,uses,yes
-P103,Multi-Source Reconciliation,P108,uses,yes
-P104,Graph Query Builder,P19,requires,no
-P104,Graph Query Builder,P99,uses,no
-P104,Graph Query Builder,P101,uses,yes
-P104,Graph Query Builder,P117,uses,yes
-P105,Semantic Similarity Visualizer,P99,uses,no
-P105,Semantic Similarity Visualizer,P101,uses,yes
-P105,Semantic Similarity Visualizer,P108,uses,yes
-P107,Suggested Edits,P47,uses,no
-P107,Suggested Edits,P102,uses,yes
-P107,Suggested Edits,P109,uses,yes
-P108,Cross-Document Linking,P9,requires,no
-P108,Cross-Document Linking,P99,uses,no
-P108,Cross-Document Linking,P103,uses,yes
-P108,Cross-Document Linking,P105,uses,yes
-P109,Outdated Content Detection,P100,uses,yes
-P109,Outdated Content Detection,P106,uses,no
-P109,Outdated Content Detection,P107,uses,yes
-P109,Outdated Content Detection,P111,uses,yes
-P110,Collaborative Document Intelligence,P14,requires,no
-P110,Collaborative Document Intelligence,F5,uses,no
-P110,Collaborative Document Intelligence,P68,uses,no
-P110,Collaborative Document Intelligence,P107,uses,no
-P110,Collaborative Document Intelligence,P135,uses,no
-P111,Document Evolution Timeline,C5,requires,no
-P111,Document Evolution Timeline,P109,uses,yes
-P111,Document Evolution Timeline,P112,uses,yes
-P111,Document Evolution Timeline,P113,uses,yes
-P112,Event Stream Visualization,P22,requires,no
-P112,Event Stream Visualization,P111,uses,yes
-P112,Event Stream Visualization,P114,uses,yes
-P112,Event Stream Visualization,P115,uses,yes
-P112,Event Stream Visualization,P117,uses,yes
-P113,Event Replay Control,P22,requires,no
-P113,Event Replay Control,P30,uses,no
-P113,Event Replay Control,P111,uses,yes
-P113,Event Replay Control,P115,uses,yes
-P114,Stream Backpressure,P22,requires,no
-P114,Stream Backpressure,P112,uses,yes
-P114,Stream Backpressure,P116,uses,yes
-P115,Event-Driven State Updates,P22,requires,no
-P115,Event-Driven State Updates,P29,requires,no
-P115,Event-Driven State Updates,P30,uses,no
-P115,Event-Driven State Updates,P31,uses,no
-P115,Event-Driven State Updates,P112,uses,yes
-P115,Event-Driven State Updates,P113,uses,yes
-P115,Event-Driven State Updates,P116,uses,yes
-P116,Multi-Stream Coordination UI,P22,requires,no
-P116,Multi-Stream Coordination UI,P68,uses,yes
-P116,Multi-Stream Coordination UI,P114,uses,yes
-P116,Multi-Stream Coordination UI,P115,uses,yes
-P116,Multi-Stream Coordination UI,P117,uses,yes
-P117,Event Filter & Query,P22,requires,no
-P117,Event Filter & Query,P53,uses,no
-P117,Event Filter & Query,P104,uses,yes
-P117,Event Filter & Query,P112,uses,yes
-P117,Event Filter & Query,P116,uses,yes
-P119,Cross-Domain Integration View,P118,uses,no
-P119,Cross-Domain Integration View,P120,uses,no
-P119,Cross-Domain Integration View,P122,uses,no
+source_id,source_name,source_type,target_id,target_name,target_type,relationship_type,is_circular,is_valid
+P28,Progress Indicator,pattern,P26,Status Bar/Indicator,pattern,uses,no,yes
+P28,Progress Indicator,pattern,P27,Toast/Notification,pattern,uses,no,yes
+P64,Generative UI,pattern,P65,Streaming Component,pattern,uses,yes,yes
+P64,Generative UI,pattern,P112,Event Stream Visualization,pattern,uses,no,yes
+P64,Generative UI,pattern,P115,Event-Driven State Updates,pattern,uses,no,yes
+P65,Streaming Component,pattern,P22,Event Bus,pattern,requires,no,yes
+P65,Streaming Component,pattern,P114,Stream Backpressure,pattern,requires,no,yes
+P65,Streaming Component,pattern,P64,Generative UI,pattern,uses,yes,yes
+P65,Streaming Component,pattern,P115,Event-Driven State Updates,pattern,uses,no,yes
+P66,Context-Adaptive Interface,pattern,P64,Generative UI,pattern,uses,no,yes
+P66,Context-Adaptive Interface,pattern,P67,Progressive Disclosure by AI,pattern,uses,yes,yes
+P66,Context-Adaptive Interface,pattern,P136,User Preference Learning,pattern,uses,no,yes
+P66,Context-Adaptive Interface,pattern,P137,Adaptive Interface,pattern,uses,no,yes
+P67,Progressive Disclosure by AI,pattern,P3,Hierarchical Navigator,pattern,uses,no,yes
+P67,Progressive Disclosure by AI,pattern,P37,Empty State Pattern,pattern,uses,no,yes
+P67,Progressive Disclosure by AI,pattern,P66,Context-Adaptive Interface,pattern,uses,yes,yes
+P68,Agent Team Visualization,pattern,P14,Agent Swarm,pattern,requires,no,yes
+P68,Agent Team Visualization,pattern,P69,Agent Activity Timeline,pattern,uses,yes,yes
+P68,Agent Team Visualization,pattern,P71,Orchestration Dashboard,pattern,uses,yes,yes
+P68,Agent Team Visualization,pattern,P93,Agent Thinking Indicator,pattern,uses,no,yes
+P69,Agent Activity Timeline,pattern,P22,Event Bus,pattern,requires,no,yes
+P69,Agent Activity Timeline,pattern,P68,Agent Team Visualization,pattern,uses,yes,yes
+P69,Agent Activity Timeline,pattern,P112,Event Stream Visualization,pattern,uses,yes,yes
+P69,Agent Activity Timeline,pattern,P124,Agent Trace Viewer,pattern,uses,no,yes
+P70,Agent Handoff,pattern,P14,Agent Swarm,pattern,requires,no,yes
+P70,Agent Handoff,pattern,P68,Agent Team Visualization,pattern,uses,no,yes
+P70,Agent Handoff,pattern,P69,Agent Activity Timeline,pattern,uses,no,yes
+P70,Agent Handoff,pattern,P91,Intervention Request,pattern,uses,no,yes
+P71,Orchestration Dashboard,pattern,F2.2,,unknown,requires,no,no
+P71,Orchestration Dashboard,pattern,P14,Agent Swarm,pattern,requires,no,yes
+P71,Orchestration Dashboard,pattern,P68,Agent Team Visualization,pattern,uses,yes,yes
+P71,Orchestration Dashboard,pattern,P69,Agent Activity Timeline,pattern,uses,yes,yes
+P71,Orchestration Dashboard,pattern,P129,Performance Metrics Dashboard,pattern,uses,no,yes
+P72,Agent Role Selector,pattern,P14,Agent Swarm,pattern,requires,no,yes
+P72,Agent Role Selector,pattern,P68,Agent Team Visualization,pattern,uses,no,yes
+P72,Agent Role Selector,pattern,P71,Orchestration Dashboard,pattern,uses,no,yes
+P73,Composite Action,pattern,P30,Command Pattern,pattern,requires,no,yes
+P73,Composite Action,pattern,P14,Agent Swarm,pattern,uses,no,yes
+P73,Composite Action,pattern,P92,Contextual Undo/Rollback,pattern,uses,no,yes
+P75,Proactive Intervention,pattern,P74,,unknown,uses,no,no
+P75,Proactive Intervention,pattern,P76,Ambient AI,pattern,uses,no,yes
+P75,Proactive Intervention,pattern,P77,Intelligent Interruption,pattern,uses,no,yes
+P75,Proactive Intervention,pattern,P79,Anticipatory Action,pattern,uses,no,yes
+P80,Voice Conversation,pattern,P2,Command Interface,pattern,uses,no,yes
+P80,Voice Conversation,pattern,P82,Multimodal Input Fusion,pattern,uses,no,yes
+P80,Voice Conversation,pattern,P85,Voice Disambiguation,pattern,uses,no,yes
+P100,Source Citation,pattern,P9,Backlinks/References,pattern,uses,no,yes
+P100,Source Citation,pattern,P101,Retrieval Path Visualization,pattern,uses,yes,yes
+P100,Source Citation,pattern,P102,Confidence-Based Highlighting,pattern,uses,yes,yes
+P100,Source Citation,pattern,P103,Multi-Source Reconciliation,pattern,uses,yes,yes
+P101,Retrieval Path Visualization,pattern,P19,Graph Database,pattern,requires,no,yes
+P101,Retrieval Path Visualization,pattern,P99,Knowledge Graph Explorer,pattern,requires,no,yes
+P101,Retrieval Path Visualization,pattern,P100,Source Citation,pattern,uses,yes,yes
+P101,Retrieval Path Visualization,pattern,P104,Graph Query Builder,pattern,uses,yes,yes
+P102,Confidence-Based Highlighting,pattern,P80,Voice Conversation,pattern,uses,no,yes
+P102,Confidence-Based Highlighting,pattern,P89,Confidence Indicator,pattern,uses,no,yes
+P102,Confidence-Based Highlighting,pattern,P96,Real-Time Confidence Display,pattern,uses,no,yes
+P102,Confidence-Based Highlighting,pattern,P100,Source Citation,pattern,uses,yes,yes
+P103,Multi-Source Reconciliation,pattern,P100,Source Citation,pattern,requires,yes,yes
+P103,Multi-Source Reconciliation,pattern,P102,Confidence-Based Highlighting,pattern,uses,yes,yes
+P103,Multi-Source Reconciliation,pattern,P108,Cross-Document Linking,pattern,uses,yes,yes
+P104,Graph Query Builder,pattern,P19,Graph Database,pattern,requires,no,yes
+P104,Graph Query Builder,pattern,P99,Knowledge Graph Explorer,pattern,uses,no,yes
+P104,Graph Query Builder,pattern,P101,Retrieval Path Visualization,pattern,uses,yes,yes
+P104,Graph Query Builder,pattern,P117,Event Filter & Query,pattern,uses,yes,yes
+P105,Semantic Similarity Visualizer,pattern,P99,Knowledge Graph Explorer,pattern,uses,no,yes
+P105,Semantic Similarity Visualizer,pattern,P101,Retrieval Path Visualization,pattern,uses,yes,yes
+P105,Semantic Similarity Visualizer,pattern,P108,Cross-Document Linking,pattern,uses,yes,yes
+P107,Suggested Edits,pattern,P47,Inline Editing Pattern,pattern,uses,no,yes
+P107,Suggested Edits,pattern,P102,Confidence-Based Highlighting,pattern,uses,yes,yes
+P107,Suggested Edits,pattern,P109,Outdated Content Detection,pattern,uses,yes,yes
+P108,Cross-Document Linking,pattern,P9,Backlinks/References,pattern,requires,no,yes
+P108,Cross-Document Linking,pattern,P99,Knowledge Graph Explorer,pattern,uses,no,yes
+P108,Cross-Document Linking,pattern,P103,Multi-Source Reconciliation,pattern,uses,yes,yes
+P108,Cross-Document Linking,pattern,P105,Semantic Similarity Visualizer,pattern,uses,yes,yes
+P109,Outdated Content Detection,pattern,P100,Source Citation,pattern,uses,yes,yes
+P109,Outdated Content Detection,pattern,P106,Auto-Updating Content,pattern,uses,no,yes
+P109,Outdated Content Detection,pattern,P107,Suggested Edits,pattern,uses,yes,yes
+P109,Outdated Content Detection,pattern,P111,Document Evolution Timeline,pattern,uses,yes,yes
+P110,Collaborative Document Intelligence,pattern,P14,Agent Swarm,pattern,requires,no,yes
+P110,Collaborative Document Intelligence,pattern,F5,Collaborative Editing Flow,flow,uses,no,yes
+P110,Collaborative Document Intelligence,pattern,P68,Agent Team Visualization,pattern,uses,no,yes
+P110,Collaborative Document Intelligence,pattern,P107,Suggested Edits,pattern,uses,no,yes
+P110,Collaborative Document Intelligence,pattern,P135,Conflict Resolution Interface,pattern,uses,no,yes
+P111,Document Evolution Timeline,pattern,C5,Version History,concept,requires,no,yes
+P111,Document Evolution Timeline,pattern,P109,Outdated Content Detection,pattern,uses,yes,yes
+P111,Document Evolution Timeline,pattern,P112,Event Stream Visualization,pattern,uses,yes,yes
+P111,Document Evolution Timeline,pattern,P113,Event Replay Control,pattern,uses,yes,yes
+P112,Event Stream Visualization,pattern,P22,Event Bus,pattern,requires,no,yes
+P112,Event Stream Visualization,pattern,P111,Document Evolution Timeline,pattern,uses,yes,yes
+P112,Event Stream Visualization,pattern,P114,Stream Backpressure,pattern,uses,yes,yes
+P112,Event Stream Visualization,pattern,P115,Event-Driven State Updates,pattern,uses,yes,yes
+P112,Event Stream Visualization,pattern,P117,Event Filter & Query,pattern,uses,yes,yes
+P113,Event Replay Control,pattern,P22,Event Bus,pattern,requires,no,yes
+P113,Event Replay Control,pattern,P30,Command Pattern,pattern,uses,no,yes
+P113,Event Replay Control,pattern,P111,Document Evolution Timeline,pattern,uses,yes,yes
+P113,Event Replay Control,pattern,P115,Event-Driven State Updates,pattern,uses,yes,yes
+P114,Stream Backpressure,pattern,P22,Event Bus,pattern,requires,no,yes
+P114,Stream Backpressure,pattern,P112,Event Stream Visualization,pattern,uses,yes,yes
+P114,Stream Backpressure,pattern,P116,Multi-Stream Coordination UI,pattern,uses,yes,yes
+P115,Event-Driven State Updates,pattern,P22,Event Bus,pattern,requires,no,yes
+P115,Event-Driven State Updates,pattern,P29,Centralized State Store,pattern,requires,no,yes
+P115,Event-Driven State Updates,pattern,P30,Command Pattern,pattern,uses,no,yes
+P115,Event-Driven State Updates,pattern,P31,Observer Pattern,pattern,uses,no,yes
+P115,Event-Driven State Updates,pattern,P112,Event Stream Visualization,pattern,uses,yes,yes
+P115,Event-Driven State Updates,pattern,P113,Event Replay Control,pattern,uses,yes,yes
+P115,Event-Driven State Updates,pattern,P116,Multi-Stream Coordination UI,pattern,uses,yes,yes
+P116,Multi-Stream Coordination UI,pattern,P22,Event Bus,pattern,requires,no,yes
+P116,Multi-Stream Coordination UI,pattern,P68,Agent Team Visualization,pattern,uses,yes,yes
+P116,Multi-Stream Coordination UI,pattern,P114,Stream Backpressure,pattern,uses,yes,yes
+P116,Multi-Stream Coordination UI,pattern,P115,Event-Driven State Updates,pattern,uses,yes,yes
+P116,Multi-Stream Coordination UI,pattern,P117,Event Filter & Query,pattern,uses,yes,yes
+P117,Event Filter & Query,pattern,P22,Event Bus,pattern,requires,no,yes
+P117,Event Filter & Query,pattern,P53,Filtering Pattern,pattern,uses,no,yes
+P117,Event Filter & Query,pattern,P104,Graph Query Builder,pattern,uses,yes,yes
+P117,Event Filter & Query,pattern,P112,Event Stream Visualization,pattern,uses,yes,yes
+P117,Event Filter & Query,pattern,P116,Multi-Stream Coordination UI,pattern,uses,yes,yes
+P119,Cross-Domain Integration View,pattern,P118,Domain Context Switcher,pattern,uses,no,yes
+P119,Cross-Domain Integration View,pattern,P120,Domain-Specific Agent Activation,pattern,uses,no,yes
+P119,Cross-Domain Integration View,pattern,P122,Multi-Domain Dashboard,pattern,uses,no,yes

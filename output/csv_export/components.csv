@@ -1,703 +1,637 @@
-pattern_id,pattern_name,component_name,component_type,notation,description
-C1,Graph Structure,input,Input,input,input to graph structure
-C1,Graph Structure,process,Input → Output,process,processing function
-C1,Graph Structure,output,Output,output,output from graph structure
-C1,Graph Structure,display,Output → Visual,display,display function
-P1,Direct Manipulation Canvas,input,Input,input,input to direct manipulation canvas
-P1,Direct Manipulation Canvas,process,Input → Output,process,processing function
-P1,Direct Manipulation Canvas,output,Output,output,output from direct manipulation canvas
-P1,Direct Manipulation Canvas,display,Output → Visual,display,display function
-F1.1,1 Capture Flow,source,Input,source,external input source
-F1.1,1 Capture Flow,validator,Input → Valid | Invalid,validator,checks input validity
-F1.1,1 Capture Flow,normalizer,Valid → Internal,normalizer,converts to internal format
-F1.1,1 Capture Flow,store,Internal → Effect,store,persists in system
-F1.2,2 Import Flow,source,ExternalFormat,source,external data source
-F1.2,2 Import Flow,parser,ExternalFormat → ParsedData,parser,parses external format
-F1.2,2 Import Flow,transformer,ParsedData → InternalData,transformer,transforms to internal schema
-F1.2,2 Import Flow,integrator,InternalData → Effect,integrator,integrates into system
-F1.3,3 Live Stream Flow,stream,Stream⟨Event⟩,stream,continuous event stream
-F1.3,3 Live Stream Flow,buffer,Queue⟨Event⟩,buffer,temporarily holds events
-F1.3,3 Live Stream Flow,processor,Event → ProcessedEvent,processor,processes each event
-F1.3,3 Live Stream Flow,emitter,ProcessedEvent → Effect,emitter,emits to subscribers
-C2,Document/Artifact,input,Input,input,input to document/artifact
-C2,Document/Artifact,process,Input → Output,process,processing function
-C2,Document/Artifact,output,Output,output,output from document/artifact
-C2,Document/Artifact,display,Output → Visual,display,display function
-P2,Command Interface,input,Input,input,input to command interface
-P2,Command Interface,process,Input → Output,process,processing function
-P2,Command Interface,output,Output,output,output from command interface
-P2,Command Interface,display,Output → Visual,display,display function
-F2.1,1 Pipeline Flow,stages,Sequence⟨Stage⟩,stages,transformation stages
-F2.1,1 Pipeline Flow,ir,Sequence⟨IR⟩,ir,intermediate representations
-F2.1,1 Pipeline Flow,error\_handler,Error → Recovery,error\_handler,handles stage failures
-F2.1,1 Pipeline Flow,compose,Sequence⟨Stage⟩ → (Input → Output),compose,composes stages
-F2.2,2 Agent Orchestration Flow,agents,Set⟨Agent⟩,agents,available agents
-F2.2,2 Agent Orchestration Flow,coordinator,Task → Agent,coordinator,assigns tasks to agents
-F2.2,2 Agent Orchestration Flow,tasks,Queue⟨Task⟩,tasks,pending tasks
-F2.2,2 Agent Orchestration Flow,results,"Map⟨Task, Result⟩",results,store task results
-F2.3,3 Incremental Computation Flow,graph,"DAG⟨Node, Dependency⟩",graph,computation dependency graph
-F2.3,3 Incremental Computation Flow,cache,"Map⟨Node, Value⟩",cache,stores computed values
-F2.3,3 Incremental Computation Flow,invalidate,Node → Set⟨Node⟩,invalidate,marks affected nodes
-F2.3,3 Incremental Computation Flow,recompute,Node → Value,recompute,recomputes a single node
-F2.4,4 Enrichment Flow,base,BaseData,base,input data to enrich
-F2.4,4 Enrichment Flow,enrichers,Set⟨Enricher⟩,enrichers,enrichment sources
-F2.4,4 Enrichment Flow,combine,BaseData × Set⟨Enrichment⟩ → EnrichedData,combine,merges enrichments
-F2.4,4 Enrichment Flow,output,EnrichedData,output,enriched result
-C3,Symbolic Expression,input,Input,input,input to symbolic expression
-C3,Symbolic Expression,process,Input → Output,process,processing function
-C3,Symbolic Expression,output,Output,output,output from symbolic expression
-C3,Symbolic Expression,display,Output → Visual,display,display function
-P3,Hierarchical Navigator,input,Input,input,input to hierarchical navigator
-P3,Hierarchical Navigator,process,Input → Output,process,processing function
-P3,Hierarchical Navigator,output,Output,output,output from hierarchical navigator
-P3,Hierarchical Navigator,display,Output → Visual,display,display function
-F3.1,1 Learning Loop,observe,Environment → Observations,observe,collects data
-F3.1,1 Learning Loop,learn,Observations → Model,learn,trains or updates model
-F3.1,1 Learning Loop,update,Model → Policy,update,updates decision policy
-F3.1,1 Learning Loop,apply,Policy → Actions,apply,applies learned policy
-F3.2,2 Validation Loop,validate,Data → Set⟨Violation⟩,validate,checks constraints
-F3.2,2 Validation Loop,report,Violation → Notification,report,reports issues
-F3.2,2 Validation Loop,correct,Violation → Correction,correct,attempts fixes
-F3.2,2 Validation Loop,verify,Correction → 𝔹,verify,confirms fix
-F3.3,3 Adaptation Loop,monitor,System → Metrics,monitor,observes system behavior
-F3.3,3 Adaptation Loop,detect,Metrics → Anomalies,detect,identifies issues
-F3.3,3 Adaptation Loop,adjust,Anomalies → Adjustments,adjust,modifies system
-F3.3,3 Adaptation Loop,measure,Adjustments → Performance,measure,evaluates changes
-F3.4,4 User Preference Loop,track,UserAction → Event,track,records user behavior
-F3.4,4 User Preference Loop,infer,Sequence⟨Event⟩ → Preferences,infer,learns preferences
-F3.4,4 User Preference Loop,personalize,Preferences → Configuration,personalize,customizes experience
-F3.4,4 User Preference Loop,apply,Configuration → Effect,apply,applies personalization
-C4,Metadata Schema,input,Input,input,input to metadata schema
-C4,Metadata Schema,process,Input → Output,process,processing function
-C4,Metadata Schema,output,Output,output,output from metadata schema
-C4,Metadata Schema,display,Output → Visual,display,display function
-P4,Property Inspector,input,Input,input,input to property inspector
-P4,Property Inspector,process,Input → Output,process,processing function
-P4,Property Inspector,output,Output,output,output from property inspector
-P4,Property Inspector,display,Output → Visual,display,display function
-F4.1,1 Reactive Render Flow,state,State,state,current application state
-F4.1,1 Reactive Render Flow,render,State → VirtualDOM,render,creates virtual representation
-F4.1,1 Reactive Render Flow,diff,VirtualDOM × VirtualDOM → Patch,diff,computes changes
-F4.1,1 Reactive Render Flow,patch,Patch → Effect,patch,applies changes to actual DOM
-F4.2,2 Notification Flow,trigger,Event → Notification,trigger,creates notification from event
-F4.2,2 Notification Flow,route,Notification → Set⟨Channel⟩,route,selects delivery channels
-F4.2,2 Notification Flow,format,"(Notification, Channel) → Message",format,formats for channel
-F4.2,2 Notification Flow,deliver,"(Message, Channel) → Effect",deliver,sends notification
-F4.3,3 Export-Publish Flow,source,InternalData,source,internal data to export
-F4.3,3 Export-Publish Flow,transform,InternalData → ExternalFormat,transform,converts to external format
-F4.3,3 Export-Publish Flow,validate,ExternalFormat → Valid | Invalid,validate,checks output validity
-F4.3,3 Export-Publish Flow,publish,Valid → Destination,publish,delivers to target
-F4.4,4 Materialized View Flow,query,Query,query,defines the view computation
-F4.4,4 Materialized View Flow,compute,Data → Result,compute,executes the query
-F4.4,4 Materialized View Flow,cache,Result,cache,stores computed result
-F4.4,4 Materialized View Flow,refresh,Trigger → Effect,refresh,updates materialized view
-C5,Version History,input,Input,input,input to version history
-C5,Version History,process,Input → Output,process,processing function
-C5,Version History,output,Output,output,output from version history
-C5,Version History,display,Output → Visual,display,display function
-F5,Collaborative Editing Flow,steps,Seq⟨Step⟩,steps,sequence of steps
-F5,Collaborative Editing Flow,current,Step,current,current step
-F5,Collaborative Editing Flow,transition,"(Step, Step) → Effect",transition,transition function
-F5,Collaborative Editing Flow,complete,Step → Boolean,complete,completion check
-P5,Tabbed Workspace,input,Input,input,input to tabbed workspace
-P5,Tabbed Workspace,process,Input → Output,process,processing function
-P5,Tabbed Workspace,output,Output,output,output from tabbed workspace
-P5,Tabbed Workspace,display,Output → Visual,display,display function
-F6,Error Recovery Flow,steps,Seq⟨Step⟩,steps,sequence of steps
-F6,Error Recovery Flow,current,Step,current,current step
-F6,Error Recovery Flow,transition,"(Step, Step) → Effect",transition,transition function
-F6,Error Recovery Flow,complete,Step → Boolean,complete,completion check
-P6,Palette/Toolbar,input,Input,input,input to palette/toolbar
-P6,Palette/Toolbar,process,Input → Output,process,processing function
-P6,Palette/Toolbar,output,Output,output,output from palette/toolbar
-P6,Palette/Toolbar,display,Output → Visual,display,display function
-P7,Breadcrumb Trail,input,Input,input,input to breadcrumb trail
-P7,Breadcrumb Trail,process,Input → Output,process,processing function
-P7,Breadcrumb Trail,output,Output,output,output from breadcrumb trail
-P7,Breadcrumb Trail,display,Output → Visual,display,display function
-P8,Search-Based Navigation,input,Input,input,input to search-based navigation
-P8,Search-Based Navigation,process,Input → Output,process,processing function
-P8,Search-Based Navigation,output,Output,output,output from search-based navigation
-P8,Search-Based Navigation,display,Output → Visual,display,display function
-P9,Backlinks/References,input,Input,input,input to backlinks/references
-P9,Backlinks/References,process,Input → Output,process,processing function
-P9,Backlinks/References,output,Output,output,output from backlinks/references
-P9,Backlinks/References,display,Output → Visual,display,display function
-P10,Parser/Compiler Pipeline,input,Input,input,input to parser/compiler pipeline
-P10,Parser/Compiler Pipeline,process,Input → Output,process,processing function
-P10,Parser/Compiler Pipeline,output,Output,output,output from parser/compiler pipeline
-P10,Parser/Compiler Pipeline,display,Output → Visual,display,display function
-P11,Validator/Checker,input,Input,input,input to validator/checker
-P11,Validator/Checker,process,Input → Output,process,processing function
-P11,Validator/Checker,output,Output,output,output from validator/checker
-P11,Validator/Checker,display,Output → Visual,display,display function
-P12,Solver/Optimizer,input,Input,input,input to solver/optimizer
-P12,Solver/Optimizer,process,Input → Output,process,processing function
-P12,Solver/Optimizer,output,Output,output,output from solver/optimizer
-P12,Solver/Optimizer,display,Output → Visual,display,display function
-P13,Indexer/Query Engine,input,Input,input,input to indexer/query engine
-P13,Indexer/Query Engine,process,Input → Output,process,processing function
-P13,Indexer/Query Engine,output,Output,output,output from indexer/query engine
-P13,Indexer/Query Engine,display,Output → Visual,display,display function
-P14,Agent Swarm,agent,Agent,agent,the agent being managed
-P14,Agent Swarm,state,AgentState,state,agent state
-P14,Agent Swarm,action,Action,action,agent action
-P14,Agent Swarm,monitor,Agent → Status,monitor,monitoring function
-P15,Reasoning Chain,input,Input,input,input to reasoning chain
-P15,Reasoning Chain,process,Input → Output,process,processing function
-P15,Reasoning Chain,output,Output,output,output from reasoning chain
-P15,Reasoning Chain,display,Output → Visual,display,display function
-P16,Suggestion/Recommendation System,input,Input,input,input to suggestion/recommendation system
-P16,Suggestion/Recommendation System,process,Input → Output,process,processing function
-P16,Suggestion/Recommendation System,output,Output,output,output from suggestion/recommendation system
-P16,Suggestion/Recommendation System,display,Output → Visual,display,display function
-P17,Key-Value Store,input,Input,input,input to key-value store
-P17,Key-Value Store,process,Input → Output,process,processing function
-P17,Key-Value Store,output,Output,output,output from key-value store
-P17,Key-Value Store,display,Output → Visual,display,display function
-P18,Relational Database,input,Input,input,input to relational database
-P18,Relational Database,process,Input → Output,process,processing function
-P18,Relational Database,output,Output,output,output from relational database
-P18,Relational Database,display,Output → Visual,display,display function
-P19,Graph Database,input,Input,input,input to graph database
-P19,Graph Database,process,Input → Output,process,processing function
-P19,Graph Database,output,Output,output,output from graph database
-P19,Graph Database,display,Output → Visual,display,display function
-P20,Document Store,input,Input,input,input to document store
-P20,Document Store,process,Input → Output,process,processing function
-P20,Document Store,output,Output,output,output from document store
-P20,Document Store,display,Output → Visual,display,display function
-P21,Time-Series Store,input,Input,input,input to time-series store
-P21,Time-Series Store,process,Input → Output,process,processing function
-P21,Time-Series Store,output,Output,output,output from time-series store
-P21,Time-Series Store,display,Output → Visual,display,display function
-P22,Event Bus,input,Input,input,input to event bus
-P22,Event Bus,process,Input → Output,process,processing function
-P22,Event Bus,output,Output,output,output from event bus
-P22,Event Bus,display,Output → Visual,display,display function
-P23,Real-Time Sync,input,Input,input,input to real-time sync
-P23,Real-Time Sync,process,Input → Output,process,processing function
-P23,Real-Time Sync,output,Output,output,output from real-time sync
-P23,Real-Time Sync,display,Output → Visual,display,display function
-P24,Request-Response API,input,Input,input,input to request-response api
-P24,Request-Response API,process,Input → Output,process,processing function
-P24,Request-Response API,output,Output,output,output from request-response api
-P24,Request-Response API,display,Output → Visual,display,display function
-P25,Streaming Protocol,input,Input,input,input to streaming protocol
-P25,Streaming Protocol,process,Input → Output,process,processing function
-P25,Streaming Protocol,output,Output,output,output from streaming protocol
-P25,Streaming Protocol,display,Output → Visual,display,display function
-P26,Status Bar/Indicator,state,State,state,current status bar/indicator state
-P26,Status Bar/Indicator,measure,State → Metric,measure,measurement function
-P26,Status Bar/Indicator,visualize,Metric → Visual,visualize,visualization function
-P26,Status Bar/Indicator,update,Visual → Effect,update,display update function
-P27,Toast/Notification,input,Input,input,input to toast/notification
-P27,Toast/Notification,process,Input → Output,process,processing function
-P27,Toast/Notification,output,Output,output,output from toast/notification
-P27,Toast/Notification,display,Output → Visual,display,display function
-P28,Progress Indicator,current,ℕ,current,completed work
-P28,Progress Indicator,total,ℕ,total,total work
-P28,Progress Indicator,label,String,label,describes the task
-P28,Progress Indicator,eta,Time,eta,estimated completion time
-P28,Progress Indicator,state,"\{\text{running}, \text{paused}, \text{complete}, \text{error}\}",state,status
-P29,Centralized State Store,input,Input,input,input to centralized state store
-P29,Centralized State Store,process,Input → Output,process,processing function
-P29,Centralized State Store,output,Output,output,output from centralized state store
-P29,Centralized State Store,display,Output → Visual,display,display function
-P30,Command Pattern,input,Input,input,input to command pattern
-P30,Command Pattern,process,Input → Output,process,processing function
-P30,Command Pattern,output,Output,output,output from command pattern
-P30,Command Pattern,display,Output → Visual,display,display function
-P31,Observer Pattern,input,Input,input,input to observer pattern
-P31,Observer Pattern,process,Input → Output,process,processing function
-P31,Observer Pattern,output,Output,output,output from observer pattern
-P31,Observer Pattern,display,Output → Visual,display,display function
-P32,Plugin Architecture,input,Input,input,input to plugin architecture
-P32,Plugin Architecture,process,Input → Output,process,processing function
-P32,Plugin Architecture,output,Output,output,output from plugin architecture
-P32,Plugin Architecture,display,Output → Visual,display,display function
-P33,Hook System,input,Input,input,input to hook system
-P33,Hook System,process,Input → Output,process,processing function
-P33,Hook System,output,Output,output,output from hook system
-P33,Hook System,display,Output → Visual,display,display function
-P34,Strategy Pattern,input,Input,input,input to strategy pattern
-P34,Strategy Pattern,process,Input → Output,process,processing function
-P34,Strategy Pattern,output,Output,output,output from strategy pattern
-P34,Strategy Pattern,display,Output → Visual,display,display function
-P35,Split-Pane Layout,input,Input,input,input to split-pane layout
-P35,Split-Pane Layout,process,Input → Output,process,processing function
-P35,Split-Pane Layout,output,Output,output,output from split-pane layout
-P35,Split-Pane Layout,display,Output → Visual,display,display function
-P36,Selection-Driven Panel,input,Input,input,input to selection-driven panel
-P36,Selection-Driven Panel,process,Input → Output,process,processing function
-P36,Selection-Driven Panel,output,Output,output,output from selection-driven panel
-P36,Selection-Driven Panel,display,Output → Visual,display,display function
-P37,Empty State Pattern,input,Input,input,input to empty state pattern
-P37,Empty State Pattern,process,Input → Output,process,processing function
-P37,Empty State Pattern,output,Output,output,output from empty state pattern
-P37,Empty State Pattern,display,Output → Visual,display,display function
-P38,Badge/Indicator Pattern,state,State,state,current badge/indicator pattern state
-P38,Badge/Indicator Pattern,measure,State → Metric,measure,measurement function
-P38,Badge/Indicator Pattern,visualize,Metric → Visual,visualize,visualization function
-P38,Badge/Indicator Pattern,update,Visual → Effect,update,display update function
-P39,Contextual Action Menu,input,Input,input,input to contextual action menu
-P39,Contextual Action Menu,process,Input → Output,process,processing function
-P39,Contextual Action Menu,output,Output,output,output from contextual action menu
-P39,Contextual Action Menu,display,Output → Visual,display,display function
-P40,Mode Toggle System,input,Input,input,input to mode toggle system
-P40,Mode Toggle System,process,Input → Output,process,processing function
-P40,Mode Toggle System,output,Output,output,output from mode toggle system
-P40,Mode Toggle System,display,Output → Visual,display,display function
-P41,Inline Status Chip,input,Input,input,input to inline status chip
-P41,Inline Status Chip,process,Input → Output,process,processing function
-P41,Inline Status Chip,output,Output,output,output from inline status chip
-P41,Inline Status Chip,display,Output → Visual,display,display function
-P42,Tooltip/Hint System,input,Input,input,input to tooltip/hint system
-P42,Tooltip/Hint System,process,Input → Output,process,processing function
-P42,Tooltip/Hint System,output,Output,output,output from tooltip/hint system
-P42,Tooltip/Hint System,display,Output → Visual,display,display function
-P43,Application Navigation Drawer,input,Input,input,input to application navigation drawer
-P43,Application Navigation Drawer,process,Input → Output,process,processing function
-P43,Application Navigation Drawer,output,Output,output,output from application navigation drawer
-P43,Application Navigation Drawer,display,Output → Visual,display,display function
-P44,Keyboard Shortcut System,input,Input,input,input to keyboard shortcut system
-P44,Keyboard Shortcut System,process,Input → Output,process,processing function
-P44,Keyboard Shortcut System,output,Output,output,output from keyboard shortcut system
-P44,Keyboard Shortcut System,display,Output → Visual,display,display function
-P45,Drag and Drop Interaction,input,Input,input,input to drag and drop interaction
-P45,Drag and Drop Interaction,process,Input → Output,process,processing function
-P45,Drag and Drop Interaction,output,Output,output,output from drag and drop interaction
-P45,Drag and Drop Interaction,display,Output → Visual,display,display function
-P46,Focus Management System,input,Input,input,input to focus management system
-P46,Focus Management System,process,Input → Output,process,processing function
-P46,Focus Management System,output,Output,output,output from focus management system
-P46,Focus Management System,display,Output → Visual,display,display function
-P47,Inline Editing Pattern,input,Input,input,input to inline editing pattern
-P47,Inline Editing Pattern,process,Input → Output,process,processing function
-P47,Inline Editing Pattern,output,Output,output,output from inline editing pattern
-P47,Inline Editing Pattern,display,Output → Visual,display,display function
-P48,Form Validation Pattern,input,Input,input,input to form validation pattern
-P48,Form Validation Pattern,process,Input → Output,process,processing function
-P48,Form Validation Pattern,output,Output,output,output from form validation pattern
-P48,Form Validation Pattern,display,Output → Visual,display,display function
-P49,Multi-Step Form (Wizard) Pattern,input,Input,input,input to multi-step form (wizard) pattern
-P49,Multi-Step Form (Wizard) Pattern,process,Input → Output,process,processing function
-P49,Multi-Step Form (Wizard) Pattern,output,Output,output,output from multi-step form (wizard) pattern
-P49,Multi-Step Form (Wizard) Pattern,display,Output → Visual,display,display function
-P50,Form Dependency Pattern,input,Input,input,input to form dependency pattern
-P50,Form Dependency Pattern,process,Input → Output,process,processing function
-P50,Form Dependency Pattern,output,Output,output,output from form dependency pattern
-P50,Form Dependency Pattern,display,Output → Visual,display,display function
-P51,Responsive Layout Pattern (NEW),input,Input,input,input to responsive layout pattern (new)
-P51,Responsive Layout Pattern (NEW),process,Input → Output,process,processing function
-P51,Responsive Layout Pattern (NEW),output,Output,output,output from responsive layout pattern (new)
-P51,Responsive Layout Pattern (NEW),display,Output → Visual,display,display function
-P52,Pagination Pattern,input,Input,input,input to pagination pattern
-P52,Pagination Pattern,process,Input → Output,process,processing function
-P52,Pagination Pattern,output,Output,output,output from pagination pattern
-P52,Pagination Pattern,display,Output → Visual,display,display function
-P53,Filtering Pattern,input,Input,input,input to filtering pattern
-P53,Filtering Pattern,process,Input → Output,process,processing function
-P53,Filtering Pattern,output,Output,output,output from filtering pattern
-P53,Filtering Pattern,display,Output → Visual,display,display function
-P54,Sorting Pattern,input,Input,input,input to sorting pattern
-P54,Sorting Pattern,process,Input → Output,process,processing function
-P54,Sorting Pattern,output,Output,output,output from sorting pattern
-P54,Sorting Pattern,display,Output → Visual,display,display function
-P55,Virtualization Pattern,input,Input,input,input to virtualization pattern
-P55,Virtualization Pattern,process,Input → Output,process,processing function
-P55,Virtualization Pattern,output,Output,output,output from virtualization pattern
-P55,Virtualization Pattern,display,Output → Visual,display,display function
-P56,Cache Strategy Pattern,input,Input,input,input to cache strategy pattern
-P56,Cache Strategy Pattern,process,Input → Output,process,processing function
-P56,Cache Strategy Pattern,output,Output,output,output from cache strategy pattern
-P56,Cache Strategy Pattern,display,Output → Visual,display,display function
-P57,Data Migration Pattern,input,Input,input,input to data migration pattern
-P57,Data Migration Pattern,process,Input → Output,process,processing function
-P57,Data Migration Pattern,output,Output,output,output from data migration pattern
-P57,Data Migration Pattern,display,Output → Visual,display,display function
-P58,Authentication Pattern,input,Input,input,input to authentication pattern
-P58,Authentication Pattern,process,Input → Output,process,processing function
-P58,Authentication Pattern,output,Output,output,output from authentication pattern
-P58,Authentication Pattern,display,Output → Visual,display,display function
-P59,Authorization Pattern,input,Input,input,input to authorization pattern
-P59,Authorization Pattern,process,Input → Output,process,processing function
-P59,Authorization Pattern,output,Output,output,output from authorization pattern
-P59,Authorization Pattern,display,Output → Visual,display,display function
-P60,Input Sanitization Pattern,input,Input,input,input to input sanitization pattern
-P60,Input Sanitization Pattern,process,Input → Output,process,processing function
-P60,Input Sanitization Pattern,output,Output,output,output from input sanitization pattern
-P60,Input Sanitization Pattern,display,Output → Visual,display,display function
-P61,Unit Test Pattern,input,Input,input,input to unit test pattern
-P61,Unit Test Pattern,process,Input → Output,process,processing function
-P61,Unit Test Pattern,output,Output,output,output from unit test pattern
-P61,Unit Test Pattern,display,Output → Visual,display,display function
-P62,Integration Test Pattern,input,Input,input,input to integration test pattern
-P62,Integration Test Pattern,process,Input → Output,process,processing function
-P62,Integration Test Pattern,output,Output,output,output from integration test pattern
-P62,Integration Test Pattern,display,Output → Visual,display,display function
-P63,End-to-End Test Pattern,input,Input,input,input to end-to-end test pattern
-P63,End-to-End Test Pattern,process,Input → Output,process,processing function
-P63,End-to-End Test Pattern,output,Output,output,output from end-to-end test pattern
-P63,End-to-End Test Pattern,display,Output → Visual,display,display function
-P64,Generative UI,T_{lib},Set⟨ComponentTemplate⟩,T_{lib},library of UI component templates
-P64,Generative UI,ctx,Context,ctx,current application context and state
-P64,Generative UI,gen,Context → ComponentSpec,gen,AI generator function that selects/configures components
-P64,Generative UI,render,ComponentSpec → UIElement,render,rendering function that creates UI from spec
-P64,Generative UI,stream,Stream⟨Token⟩,stream,token stream from LLM for progressive generation
-P65,Streaming Component,\tau_{stream},Stream⟨Token⟩,\tau_{stream},incoming token stream from LLM
-P65,Streaming Component,buf,BoundedQueue⟨Token⟩,buf,buffer for token accumulation
-P65,Streaming Component,Q_{render},Queue⟨RenderTask⟩,Q_{render},render task queue for async updates
-P65,Streaming Component,sync,State → Effect,sync,synchronization mechanism for UI updates
-P66,Context-Adaptive Interface,U_{state},ApplicationState,U_{state},current application state
-P66,Context-Adaptive Interface,T_{ctx},Context → ContextVector,T_{ctx},context extraction and encoding function
-P66,Context-Adaptive Interface,T_{ui},Set⟨UIVariant⟩,T_{ui},set of UI variants for different contexts
-P66,Context-Adaptive Interface,R_{adapt},ContextVector → UIVariant,R_{adapt},adaptation function mapping context to UI
-P67,Progressive Disclosure by AI,H_{info},Hierarchy⟨InfoNode⟩,H_{info},hierarchical structure of information to disclose
-P67,Progressive Disclosure by AI,score_{rel},"InfoNode → [0,1]",score_{rel},relevance scoring function for each node
-P67,Progressive Disclosure by AI,\sigma_{disc},DisclosureStrategy,\sigma_{disc},strategy for progressive information revelation
-P68,Agent Team Visualization,A_{roster},Set⟨Agent⟩,A_{roster},current team of active agents
-P68,Agent Team Visualization,R_{roles},Agent → Role,R_{roles},role assignment mapping for each agent
-P68,Agent Team Visualization,S_{status},Agent → Status,S_{status},current status of each agent
-P68,Agent Team Visualization,C_{coord},Set⟨Coordination⟩,C_{coord},coordination relationships between agents
-P69,Agent Activity Timeline,Events,Seq⟨Event⟩,Events,chronological sequence of agent events
-P69,Agent Activity Timeline,Timeline,Time → Set⟨Event⟩,Timeline,temporal mapping of events
-P69,Agent Activity Timeline,Agents,Set⟨Agent⟩,Agents,set of agents being tracked
-P69,Agent Activity Timeline,Actions,Event → ActionType,Actions,classification of event types
-P70,Agent Handoff,A_{from},Agent,A_{from},source agent initiating handoff
-P70,Agent Handoff,A_{to},Agent,A_{to},target agent receiving handoff
-P70,Agent Handoff,\Sigma_{state},State,\Sigma_{state},state being transferred between agents
-P70,Agent Handoff,T_{transfer},TransferProtocol,T_{transfer},protocol for state transfer
-P70,Agent Handoff,V_{verify},State → Boolean,V_{verify},verification function for transfer integrity
-P71,Orchestration Dashboard,W_{flow},WorkflowGraph,W_{flow},DAG representing orchestration workflow
-P71,Orchestration Dashboard,A_{agents},Set⟨Agent⟩,A_{agents},set of orchestrated agents
-P71,Orchestration Dashboard,M_{metrics},Metrics,M_{metrics},real-time performance metrics
-P71,Orchestration Dashboard,C_{control},Set⟨Control⟩,C_{control},user controls for orchestration
-P72,Agent Role Selector,R_{available},Set⟨Role⟩,R_{available},set of available agent roles
-P72,Agent Role Selector,T_{task},TaskSpec,T_{task},task specification requiring role assignment
-P72,Agent Role Selector,M_{match},"Role × Task → [0,1]",M_{match},role-task matching score function
-P72,Agent Role Selector,A_{assign},"(Role, Task) → Agent",A_{assign},assignment function mapping role to agent
-P73,Composite Action,A_{atomic},Set⟨AtomicAction⟩,A_{atomic},set of atomic actions to compose
-P73,Composite Action,compose,Seq⟨Action⟩ → CompositeAction,compose,composition function creating compound action
-P73,Composite Action,exec,CompositeAction → Result,exec,execution function for composite action
-P73,Composite Action,rollback,CompositeAction → Effect,rollback,rollback function for failed composites
-P74,Continuous AI Monitoring,S_{stream},Stream⟨State⟩,S_{stream},continuous stream of system state
-P74,Continuous AI Monitoring,D_{detect},State → Set⟨Anomaly⟩,D_{detect},anomaly detection function
-P74,Continuous AI Monitoring,T_{threshold},"Map⟨Metric, ℝ⟩",T_{threshold},threshold values for each monitored metric
-P74,Continuous AI Monitoring,A_{alert},Anomaly → Alert,A_{alert},alert generation function
-P75,Proactive Intervention,P_{predict},Context → Prediction,P_{predict},prediction function for user needs
-P75,Proactive Intervention,T_{timing},Prediction → Time,T_{timing},optimal timing function for intervention
-P75,Proactive Intervention,A_{action},Prediction → Action,A_{action},action selection function
-P75,Proactive Intervention,U_{user},UserState,U_{user},current user state and cognitive load
-P76,Ambient AI,C_{context},Context,C_{context},continuously gathered environmental context
-P76,Ambient AI,M_{monitor},Context → Stream⟨Event⟩,M_{monitor},background monitoring function
-P76,Ambient AI,A_{act},Event → Action,A_{act},autonomous action function
-P76,Ambient AI,V_{visibility},Action → VisibilityLevel,V_{visibility},controls how visible AI actions are to user
-P77,Intelligent Interruption,L_{load},User → CognitiveLoad,L_{load},cognitive load estimation function
-P77,Intelligent Interruption,M_{moment},Stream⟨Moment⟩,M_{moment},stream of potential interruption moments
-P77,Intelligent Interruption,P_{priority},Message → Priority,P_{priority},message priority classification
-P77,Intelligent Interruption,D_{deliver},"(Message, Moment) → Effect",D_{deliver},delivery function with optimal timing
-P78,Background Task Management,Q_{tasks},PriorityQueue⟨Task⟩,Q_{tasks},queue of background tasks
-P78,Background Task Management,S_{scheduler},Task → Time,S_{scheduler},scheduling function for optimal execution time
-P78,Background Task Management,M_{monitor},Task → Status,M_{monitor},monitoring function for task progress
-P78,Background Task Management,N_{notify},"(Task, Status) → Effect",N_{notify},notification function for completion/errors
-P79,Anticipatory Action,P_{predict},Context → Prediction,P_{predict},prediction function for likely next actions
-P79,Anticipatory Action,A_{prepare},Prediction → PreparedState,A_{prepare},preparation function to pre-execute expensive operations
-P79,Anticipatory Action,T_{trigger},Event → Boolean,T_{trigger},trigger detection function
-P79,Anticipatory Action,E_{execute},PreparedState → Result,E_{execute},execution function using prepared state
-P80,Voice Conversation,I_{speech},AudioStream,I_{speech},continuous audio input stream from user
-P80,Voice Conversation,R_{intent},Intent \times Confidence,R_{intent},recognized intent with confidence score
-P80,Voice Conversation,M_{dialog},List⟨Turn⟩,M_{dialog},conversation history and dialog state
-P80,Voice Conversation,O_{speech},AudioStream,O_{speech},synthesized speech output to user
-P80,Voice Conversation,H_{int},"\{\text{listening}, \text{processing}, \text{speaking}, \text{idle}\}",H_{int},current interaction state
-P81,Voice Command with Visual Feedback,I_{voice},AudioStream,I_{voice},voice input audio stream
-P81,Voice Command with Visual Feedback,D_{trans},AudioStream → Text,D_{trans},speech-to-text transcription function
-P81,Voice Command with Visual Feedback,V_{intent},Text → Intent,V_{intent},intent extraction from transcribed text
-P81,Voice Command with Visual Feedback,UI_{confirm},Intent → Visualization,UI_{confirm},visual confirmation UI for detected intent
-P82,Multimodal Input Fusion,I_{voice},Stream⟨VoiceInput⟩,I_{voice},voice input stream
-P82,Multimodal Input Fusion,I_{gesture},Stream⟨Gesture⟩,I_{gesture},gesture/touch input stream
-P82,Multimodal Input Fusion,I_{screen},Stream⟨ScreenEvent⟩,I_{screen},screen interaction stream
-P82,Multimodal Input Fusion,E_{fusion},Set⟨Input⟩ → Intent,E_{fusion},fusion engine combining multiple input modalities
-P82,Multimodal Input Fusion,Intent_{unified},Intent,Intent_{unified},unified intent from fused inputs
-P83,Voice-First Navigation,C_{voice},VoiceCommand,C_{voice},voice command input for navigation
-P83,Voice-First Navigation,G_{nav},NavigationGraph,G_{nav},application navigation graph
-P83,Voice-First Navigation,S_{shortcuts},"Map⟨Phrase, Target⟩",S_{shortcuts},voice shortcut mappings to destinations
-P83,Voice-First Navigation,M_{confirm},Target → Confirmation,M_{confirm},confirmation mechanism for navigation actions
-P84,Continuous Dictation,A_{stream},Stream⟨Audio⟩,A_{stream},continuous audio input stream
-P84,Continuous Dictation,T_{transcribe},Audio → Text,T_{transcribe},real-time transcription function
-P84,Continuous Dictation,P_{punctuate},Text → Text,P_{punctuate},automatic punctuation insertion
-P84,Continuous Dictation,C_{correct},Text → Text,C_{correct},auto-correction and formatting
-P85,Voice Disambiguation,I_{ambig},VoiceInput,I_{ambig},potentially ambiguous voice input
-P85,Voice Disambiguation,C_{candidates},VoiceInput → Set⟨Intent⟩,C_{candidates},candidate intent generation function
-P85,Voice Disambiguation,R_{rank},Set⟨Intent⟩ → Seq⟨Intent⟩,R_{rank},ranking function for candidate intents
-P85,Voice Disambiguation,U_{clarify},Seq⟨Intent⟩ → Intent,U_{clarify},user clarification mechanism
-P86,Approval Checkpoint,A_{agent},Agent,A_{agent},agent proposing action
-P86,Approval Checkpoint,R_{risk},Action → RiskScore,R_{risk},risk assessment function
-P86,Approval Checkpoint,P_{pause},Action → Boolean,P_{pause},pause predicate for high-risk actions
-P86,Approval Checkpoint,U_{approve},"(Action, Explanation) → Decision",U_{approve},user approval mechanism
-P87,Agency Slider,\alpha,"[0,1]",\alpha,"agency level parameter (0=full human control, 1=full automation)"
-P87,Agency Slider,A_{agent},Set⟨Capability⟩,A_{agent},agent capabilities
-P87,Agency Slider,H_{human},Set⟨Capability⟩,H_{human},human-retained capabilities
-P87,Agency Slider,R_{balance},"[0,1] → (Set⟨Capability⟩, Set⟨Capability⟩)",R_{balance},rebalancing function based on slider value
-P88,Collaboration Mode Switcher,modes,Set⟨Mode⟩,modes,available collaboration modes
-P89,Confidence Indicator,score,"Prediction → [0\,1]",score,confidence scoring function
-P90,Explanation on Demand,action,Action,action,action requiring explanation
-P90,Explanation on Demand,explain,Action → Explanation,explain,explanation generation function
-P90,Explanation on Demand,detail,DetailLevel,detail,level of explanation detail
-P90,Explanation on Demand,present,Explanation → UI,present,presentation function
-P91,Intervention Request,input,Input,input,input to intervention request
-P91,Intervention Request,process,Input → Output,process,processing function
-P91,Intervention Request,output,Output,output,output from intervention request
-P91,Intervention Request,display,Output → Visual,display,display function
-P92,Contextual Undo/Rollback,input,Input,input,input to contextual undo/rollback
-P92,Contextual Undo/Rollback,process,Input → Output,process,processing function
-P92,Contextual Undo/Rollback,output,Output,output,output from contextual undo/rollback
-P92,Contextual Undo/Rollback,display,Output → Visual,display,display function
-P93,Agent Thinking Indicator,state,State,state,current agent thinking indicator state
-P93,Agent Thinking Indicator,measure,State → Metric,measure,measurement function
-P93,Agent Thinking Indicator,visualize,Metric → Visual,visualize,visualization function
-P93,Agent Thinking Indicator,update,Visual → Effect,update,display update function
-P94,Tool Execution Visualization,input,Input,input,input to tool execution visualization
-P94,Tool Execution Visualization,process,Input → Output,process,processing function
-P94,Tool Execution Visualization,output,Output,output,output from tool execution visualization
-P94,Tool Execution Visualization,display,Output → Visual,display,display function
-P95,Multi-Step Progress,input,Input,input,input to multi-step progress
-P95,Multi-Step Progress,process,Input → Output,process,processing function
-P95,Multi-Step Progress,output,Output,output,output from multi-step progress
-P95,Multi-Step Progress,display,Output → Visual,display,display function
-P96,Real-Time Confidence Display,state,State,state,current real-time confidence display state
-P96,Real-Time Confidence Display,measure,State → Metric,measure,measurement function
-P96,Real-Time Confidence Display,visualize,Metric → Visual,visualize,visualization function
-P96,Real-Time Confidence Display,update,Visual → Effect,update,display update function
-P97,Resource Usage Indicator,state,State,state,current resource usage indicator state
-P97,Resource Usage Indicator,measure,State → Metric,measure,measurement function
-P97,Resource Usage Indicator,visualize,Metric → Visual,visualize,visualization function
-P97,Resource Usage Indicator,update,Visual → Effect,update,display update function
-P98,Agent State Timeline,agent,Agent,agent,the agent being managed
-P98,Agent State Timeline,state,AgentState,state,agent state
-P98,Agent State Timeline,action,Action,action,agent action
-P98,Agent State Timeline,monitor,Agent → Status,monitor,monitoring function
-P99,Knowledge Graph Explorer,input,Input,input,input to knowledge graph explorer
-P99,Knowledge Graph Explorer,process,Input → Output,process,processing function
-P99,Knowledge Graph Explorer,output,Output,output,output from knowledge graph explorer
-P99,Knowledge Graph Explorer,display,Output → Visual,display,display function
-P100,Source Citation,Sources,Set⟨Source⟩,Sources,set of source documents with metadata
-P100,Source Citation,Inline_{refs},"Map⟨TextSpan, SourceId⟩",Inline_{refs},mapping from content spans to sources
-P100,Source Citation,Links,Set⟨URI⟩,Links,hyperlinks to original sources
-P100,Source Citation,Verification,SourceId → Boolean,Verification,verifies source accessibility and validity
-P101,Retrieval Path Visualization,Query,String × Embedding,Query,user query with vector embedding
-P101,Retrieval Path Visualization,Path_{retrieval},Seq⟨Node × Edge⟩,Path_{retrieval},sequence of nodes and edges traversed in graph
-P101,Retrieval Path Visualization,Nodes_{visited},Set⟨Node⟩,Nodes_{visited},all nodes explored during retrieval
-P101,Retrieval Path Visualization,Score_{relevance},"Node → [0,1]",Score_{relevance},relevance score for each node
-P102,Confidence-Based Highlighting,Text,Seq⟨TextSpan⟩,Text,sequence of text segments
-P102,Confidence-Based Highlighting,Conf_{scores},"TextSpan → [0,1]",Conf_{scores},confidence mapping for each span
-P102,Confidence-Based Highlighting,Colors,"[0,1] → RGB",Colors,color scale from low to high confidence
-P102,Confidence-Based Highlighting,Thresholds,Seq⟨ℝ⟩,Thresholds,confidence thresholds for coloring tiers
-P103,Multi-Source Reconciliation,Sources,Set⟨Source × Claim⟩,Sources,multiple sources making potentially conflicting claims
-P103,Multi-Source Reconciliation,Conflicts,Set⟨Claim × Claim × ConflictType⟩,Conflicts,detected contradictions between sources
-P103,Multi-Source Reconciliation,Resolution,Conflict → ResolvedClaim,Resolution,strategy for resolving conflicts
-P103,Multi-Source Reconciliation,Display,ResolvedClaim → Visualization,Display,how to present reconciled information
-P104,Graph Query Builder,G,"Graph⟨V, E⟩",G,underlying knowledge graph
-P104,Graph Query Builder,Q_{visual},VisualQuery,Q_{visual},visual pattern representation
-P104,Graph Query Builder,Cypher,String,Cypher,generated query language text
-P104,Graph Query Builder,Execute,Cypher → ResultSet,Execute,query execution function
-P105,Semantic Similarity Visualizer,Concepts,Set⟨Concept⟩,Concepts,set of semantic concepts to compare
-P105,Semantic Similarity Visualizer,Sim_{matrix},"Concept × Concept → [0,1]",Sim_{matrix},pairwise similarity scores
-P105,Semantic Similarity Visualizer,Layout,Concept → ℝ²,Layout,2D spatial positioning of concepts
-P105,Semantic Similarity Visualizer,Threshold,"ℝ ∈ [0,1]",Threshold,minimum similarity to display connection
-P106,Auto-Updating Content,input,Input,input,input to auto-updating content
-P106,Auto-Updating Content,process,Input → Output,process,processing function
-P106,Auto-Updating Content,output,Output,output,output from auto-updating content
-P106,Auto-Updating Content,display,Output → Visual,display,display function
-P107,Suggested Edits,Content,Document,Content,original document content to be improved
-P107,Suggested Edits,Improvements,Set⟨Edit⟩,Improvements,set of AI-suggested edits with rationale
-P107,Suggested Edits,Confidence,"Edit → [0,1]",Confidence,confidence score for each suggested edit
-P107,Suggested Edits,Approval,"Edit → \{\text{pending}, \text{accepted}, \text{rejected}\}",Approval,approval state for each edit
-P108,Cross-Document Linking,Docs,Set⟨Document⟩,Docs,collection of interrelated documents
-P108,Cross-Document Linking,Relationships,Set⟨Link⟩,Relationships,semantic relationships between documents
-P108,Cross-Document Linking,Auto_{link},"(Document × Document) → [0,1]",Auto_{link},AI-computed relevance score for linking
-P108,Cross-Document Linking,Display,Link → Visualization,Display,how links are rendered in UI
-P109,Outdated Content Detection,Content,Document,Content,document content to be checked for staleness
-P109,Outdated Content Detection,Sources,Set⟨Source × Timestamp⟩,Sources,external sources with last-checked timestamps
-P109,Outdated Content Detection,Freshness,ContentSpan → ℝ,Freshness,freshness score per content segment (higher = fresher)
-P109,Outdated Content Detection,Alerts,Set⟨Alert⟩,Alerts,detected outdated content notifications
-P110,Collaborative Document Intelligence,Agents,Set⟨Agent⟩,Agents,multiple AI agents collaborating on document
-P110,Collaborative Document Intelligence,Document,SharedDocument,Document,shared document state with version control
-P110,Collaborative Document Intelligence,Contributions,Seq⟨Contribution⟩,Contributions,ordered sequence of agent contributions
-P110,Collaborative Document Intelligence,Coordination,Agent × Agent → Protocol,Coordination,coordination mechanism between agents
-P111,Document Evolution Timeline,Versions,Seq⟨Version⟩,Versions,chronologically ordered document versions
-P111,Document Evolution Timeline,Changes,Version × Version → Delta,Changes,computed diff between consecutive versions
-P111,Document Evolution Timeline,Contributors,Version → Set⟨Actor⟩,Contributors,humans and AI agents that modified each version
-P111,Document Evolution Timeline,Timestamps,Version → Time,Timestamps,temporal mapping of versions
-P112,Event Stream Visualization,Events,Stream⟨Event⟩,Events,real-time stream of events
-P112,Event Stream Visualization,Timeline,Time → Set⟨Event⟩,Timeline,temporal index of events
-P112,Event Stream Visualization,Filter,Event → Boolean,Filter,predicate to filter events
-P112,Event Stream Visualization,Aggregation,Seq⟨Event⟩ → Aggregate,Aggregation,grouping and summarization of events
-P113,Event Replay Control,History,Seq⟨Event⟩,History,recorded sequence of past events
-P113,Event Replay Control,Selector,(Event → Boolean) × TimeRange,Selector,predicate and time range for replay selection
-P113,Event Replay Control,Playback,PlaybackControl,Playback,"controls for playback speed, pause, step"
-P113,Event Replay Control,State_{restore},Seq⟨Event⟩ → State,State_{restore},reconstructs system state from event sequence
-P114,Stream Backpressure,Stream,Stream⟨Event⟩,Stream,incoming event stream with variable rate
-P114,Stream Backpressure,Buffer,BoundedQueue⟨Event⟩,Buffer,bounded buffer for temporary storage
-P114,Stream Backpressure,Rate_{control},ℕ × Time,Rate_{control},maximum events per time unit
-P114,Stream Backpressure,Drop_{strategy},Strategy,Drop_{strategy},policy for dropping events when overwhelmed
-P115,Event-Driven State Updates,State,ApplicationState,State,current application state
-P115,Event-Driven State Updates,Event_{stream},Stream⟨Event⟩,Event_{stream},incoming event stream triggering updates
-P115,Event-Driven State Updates,Reducer,State × Event → State,Reducer,pure function computing state transitions
-P115,Event-Driven State Updates,UI_{sync},State → Effect,UI_{sync},synchronizes UI with state changes
-P116,Multi-Stream Coordination UI,Streams,Set⟨Stream⟨Event⟩⟩,Streams,multiple independent event streams
-P116,Multi-Stream Coordination UI,Sync,SyncStrategy,Sync,time synchronization strategy for streams
-P116,Multi-Stream Coordination UI,Merge,Set⟨Stream⟩ → Stream,Merge,combines multiple streams into unified stream
-P116,Multi-Stream Coordination UI,Display,Stream → Visualization,Display,visualization of merged stream
-P117,Event Filter & Query,Stream,Stream⟨Event⟩,Stream,event stream to be queried
-P117,Event Filter & Query,Filters,Set⟨Predicate⟩,Filters,collection of filter predicates
-P117,Event Filter & Query,Query_{language},QueryLanguage,Query_{language},domain-specific query language for events
-P117,Event Filter & Query,Results,Stream⟨Event⟩,Results,filtered/queried result stream
-P118,Domain Context Switcher,input,Input,input,input to domain context switcher
-P118,Domain Context Switcher,process,Input → Output,process,processing function
-P118,Domain Context Switcher,output,Output,output,output from domain context switcher
-P118,Domain Context Switcher,display,Output → Visual,display,display function
-P119,Cross-Domain Integration View,Domains,Set⟨Domain⟩,Domains,collection of distinct business/data domains
-P119,Cross-Domain Integration View,Data_{integrated},Domain → DataSet,Data_{integrated},integrated data from each domain
-P119,Cross-Domain Integration View,Relationships,Set⟨CrossDomainLink⟩,Relationships,relationships spanning domain boundaries
-P119,Cross-Domain Integration View,Unified_{display},Visualization,Unified_{display},unified view integrating all domains
-P120,Domain-Specific Agent Activation,agent,Agent,agent,the agent being managed
-P120,Domain-Specific Agent Activation,state,AgentState,state,agent state
-P120,Domain-Specific Agent Activation,action,Action,action,agent action
-P120,Domain-Specific Agent Activation,monitor,Agent → Status,monitor,monitoring function
-P121,Context Preservation Across Domains,input,Input,input,input to context preservation across domains
-P121,Context Preservation Across Domains,process,Input → Output,process,processing function
-P121,Context Preservation Across Domains,output,Output,output,output from context preservation across domains
-P121,Context Preservation Across Domains,display,Output → Visual,display,display function
-P122,Multi-Domain Dashboard,input,Input,input,input to multi-domain dashboard
-P122,Multi-Domain Dashboard,process,Input → Output,process,processing function
-P122,Multi-Domain Dashboard,output,Output,output,output from multi-domain dashboard
-P122,Multi-Domain Dashboard,display,Output → Visual,display,display function
-P123,Domain Boundary Indicator,state,State,state,current domain boundary indicator state
-P123,Domain Boundary Indicator,measure,State → Metric,measure,measurement function
-P123,Domain Boundary Indicator,visualize,Metric → Visual,visualize,visualization function
-P123,Domain Boundary Indicator,update,Visual → Effect,update,display update function
-P124,Agent Trace Viewer,agent,Agent,agent,the agent being managed
-P124,Agent Trace Viewer,state,AgentState,state,agent state
-P124,Agent Trace Viewer,action,Action,action,agent action
-P124,Agent Trace Viewer,monitor,Agent → Status,monitor,monitoring function
-P125,Decision Explanation,input,Input,input,input to decision explanation
-P125,Decision Explanation,process,Input → Output,process,processing function
-P125,Decision Explanation,output,Output,output,output from decision explanation
-P125,Decision Explanation,display,Output → Visual,display,display function
-P126,Token Usage Display,state,State,state,current token usage display state
-P126,Token Usage Display,measure,State → Metric,measure,measurement function
-P126,Token Usage Display,visualize,Metric → Visual,visualize,visualization function
-P126,Token Usage Display,update,Visual → Effect,update,display update function
-P127,Error Debug Interface,input,Input,input,input to error debug interface
-P127,Error Debug Interface,process,Input → Output,process,processing function
-P127,Error Debug Interface,output,Output,output,output from error debug interface
-P127,Error Debug Interface,display,Output → Visual,display,display function
-P128,A/B Test Results,input,Input,input,input to a/b test results
-P128,A/B Test Results,process,Input → Output,process,processing function
-P128,A/B Test Results,output,Output,output,output from a/b test results
-P128,A/B Test Results,display,Output → Visual,display,display function
-P129,Performance Metrics Dashboard,input,Input,input,input to performance metrics dashboard
-P129,Performance Metrics Dashboard,process,Input → Output,process,processing function
-P129,Performance Metrics Dashboard,output,Output,output,output from performance metrics dashboard
-P129,Performance Metrics Dashboard,display,Output → Visual,display,display function
-P130,AI Agent Presence Indicator,state,State,state,current ai agent presence indicator state
-P130,AI Agent Presence Indicator,measure,State → Metric,measure,measurement function
-P130,AI Agent Presence Indicator,visualize,Metric → Visual,visualize,visualization function
-P130,AI Agent Presence Indicator,update,Visual → Effect,update,display update function
-P131,Multi-User + AI Avatar,input,Input,input,input to multi-user + ai avatar
-P131,Multi-User + AI Avatar,process,Input → Output,process,processing function
-P131,Multi-User + AI Avatar,output,Output,output,output from multi-user + ai avatar
-P131,Multi-User + AI Avatar,display,Output → Visual,display,display function
-P132,AI Cursor Sharing,input,Input,input,input to ai cursor sharing
-P132,AI Cursor Sharing,process,Input → Output,process,processing function
-P132,AI Cursor Sharing,output,Output,output,output from ai cursor sharing
-P132,AI Cursor Sharing,display,Output → Visual,display,display function
-P133,Activity Feed,input,Input,input,input to activity feed
-P133,Activity Feed,process,Input → Output,process,processing function
-P133,Activity Feed,output,Output,output,output from activity feed
-P133,Activity Feed,display,Output → Visual,display,display function
-P134,Collaboration Session,input,Input,input,input to collaboration session
-P134,Collaboration Session,process,Input → Output,process,processing function
-P134,Collaboration Session,output,Output,output,output from collaboration session
-P134,Collaboration Session,display,Output → Visual,display,display function
-P135,Conflict Resolution Interface,input,Input,input,input to conflict resolution interface
-P135,Conflict Resolution Interface,process,Input → Output,process,processing function
-P135,Conflict Resolution Interface,output,Output,output,output from conflict resolution interface
-P135,Conflict Resolution Interface,display,Output → Visual,display,display function
-P136,User Preference Learning,input,Input,input,input to user preference learning
-P136,User Preference Learning,process,Input → Output,process,processing function
-P136,User Preference Learning,output,Output,output,output from user preference learning
-P136,User Preference Learning,display,Output → Visual,display,display function
-P137,Adaptive Interface,input,Input,input,input to adaptive interface
-P137,Adaptive Interface,process,Input → Output,process,processing function
-P137,Adaptive Interface,output,Output,output,output from adaptive interface
-P137,Adaptive Interface,display,Output → Visual,display,display function
-P138,Personalized Agent Configuration,agent,Agent,agent,the agent being managed
-P138,Personalized Agent Configuration,state,AgentState,state,agent state
-P138,Personalized Agent Configuration,action,Action,action,agent action
-P138,Personalized Agent Configuration,monitor,Agent → Status,monitor,monitoring function
-P139,Learning Progress Indicator,state,State,state,current learning progress indicator state
-P139,Learning Progress Indicator,measure,State → Metric,measure,measurement function
-P139,Learning Progress Indicator,visualize,Metric → Visual,visualize,visualization function
-P139,Learning Progress Indicator,update,Visual → Effect,update,display update function
-P140,Reset/Retrain Controls,input,Input,input,input to reset/retrain controls
-P140,Reset/Retrain Controls,process,Input → Output,process,processing function
-P140,Reset/Retrain Controls,output,Output,output,output from reset/retrain controls
-P140,Reset/Retrain Controls,display,Output → Visual,display,display function
-P141,Workflow Template Gallery,steps,Seq⟨Step⟩,steps,sequence of steps
-P141,Workflow Template Gallery,current,Step,current,current step
-P141,Workflow Template Gallery,transition,"(Step, Step) → Effect",transition,transition function
-P141,Workflow Template Gallery,complete,Step → Boolean,complete,completion check
-P142,Automation Builder,input,Input,input,input to automation builder
-P142,Automation Builder,process,Input → Output,process,processing function
-P142,Automation Builder,output,Output,output,output from automation builder
-P142,Automation Builder,display,Output → Visual,display,display function
-P143,Scheduled Agent,agent,Agent,agent,the agent being managed
-P143,Scheduled Agent,state,AgentState,state,agent state
-P143,Scheduled Agent,action,Action,action,agent action
-P143,Scheduled Agent,monitor,Agent → Status,monitor,monitoring function
-P144,Trigger-Action,input,Input,input,input to trigger-action
-P144,Trigger-Action,process,Input → Output,process,processing function
-P144,Trigger-Action,output,Output,output,output from trigger-action
-P144,Trigger-Action,display,Output → Visual,display,display function
-P145,Workflow Monitoring Dashboard,steps,Seq⟨Step⟩,steps,sequence of steps
-P145,Workflow Monitoring Dashboard,current,Step,current,current step
-P145,Workflow Monitoring Dashboard,transition,"(Step, Step) → Effect",transition,transition function
-P145,Workflow Monitoring Dashboard,complete,Step → Boolean,complete,completion check
-P146,Token Budget Indicator,state,State,state,current token budget indicator state
-P146,Token Budget Indicator,measure,State → Metric,measure,measurement function
-P146,Token Budget Indicator,visualize,Metric → Visual,visualize,visualization function
-P146,Token Budget Indicator,update,Visual → Effect,update,display update function
-P147,Cost Estimation Preview,input,Input,input,input to cost estimation preview
-P147,Cost Estimation Preview,process,Input → Output,process,processing function
-P147,Cost Estimation Preview,output,Output,output,output from cost estimation preview
-P147,Cost Estimation Preview,display,Output → Visual,display,display function
-P148,Resource Limit Controls,input,Input,input,input to resource limit controls
-P148,Resource Limit Controls,process,Input → Output,process,processing function
-P148,Resource Limit Controls,output,Output,output,output from resource limit controls
-P148,Resource Limit Controls,display,Output → Visual,display,display function
-P149,Usage Analytics Dashboard,input,Input,input,input to usage analytics dashboard
-P149,Usage Analytics Dashboard,process,Input → Output,process,processing function
-P149,Usage Analytics Dashboard,output,Output,output,output from usage analytics dashboard
-P149,Usage Analytics Dashboard,display,Output → Visual,display,display function
-P150,Rate Limit Warning,input,Input,input,input to rate limit warning
-P150,Rate Limit Warning,process,Input → Output,process,processing function
-P150,Rate Limit Warning,output,Output,output,output from rate limit warning
-P150,Rate Limit Warning,display,Output → Visual,display,display function
-P152,Audit Trail Viewer,input,Input,input,input to audit trail viewer
-P152,Audit Trail Viewer,process,Input → Output,process,processing function
-P152,Audit Trail Viewer,output,Output,output,output from audit trail viewer
-P152,Audit Trail Viewer,display,Output → Visual,display,display function
-P153,Data Access Transparency,input,Input,input,input to data access transparency
-P153,Data Access Transparency,process,Input → Output,process,processing function
-P153,Data Access Transparency,output,Output,output,output from data access transparency
-P153,Data Access Transparency,display,Output → Visual,display,display function
-P154,Secure Credential Management,input,Input,input,input to secure credential management
-P154,Secure Credential Management,process,Input → Output,process,processing function
-P154,Secure Credential Management,output,Output,output,output from secure credential management
-P154,Secure Credential Management,display,Output → Visual,display,display function
-P155,Trust Score Indicator,state,State,state,current trust score indicator state
-P155,Trust Score Indicator,measure,State → Metric,measure,measurement function
-P155,Trust Score Indicator,visualize,Metric → Visual,visualize,visualization function
-P155,Trust Score Indicator,update,Visual → Effect,update,display update function
+pattern_id,pattern_name,pattern_type,component_name,component_type,notation,description
+,,unknown,query,Query,query,defines the view computation
+,,unknown,compute,Data → Result,compute,executes the query
+,,unknown,cache,Result,cache,stores computed result
+,,unknown,refresh,Trigger → Effect,refresh,updates materialized view
+C1,Graph Structure,concept,\lambda_n,N → Label_n,\lambda_n,**node labeling function**
+C1,Graph Structure,concept,\lambda_e,E → Label_e,\lambda_e,**edge labeling function**
+P1,Direct Manipulation Canvas,pattern,viewport,Rectangle,viewport,visible area
+P1,Direct Manipulation Canvas,pattern,objects,Set⟨Element⟩,objects,manipulable objects
+P1,Direct Manipulation Canvas,pattern,cursor,Point,cursor,current cursor position
+P1,Direct Manipulation Canvas,pattern,tools,Set⟨Tool⟩,tools,available interaction tools
+P1,Direct Manipulation Canvas,pattern,state,"σ_1 ∈ \{\text{idle}, \text{dragging},",state,\text{selecting}\}$
+C2,Document/Artifact,concept,input,Input,input,input to document/artifact
+C2,Document/Artifact,concept,process,Input → Output,process,processing function
+C2,Document/Artifact,concept,output,Output,output,output from document/artifact
+C2,Document/Artifact,concept,display,Output → Visual,display,display function
+P2,Command Interface,pattern,input,String,input,command text
+P2,Command Interface,pattern,parser,String → Command | ParseError,parser,parses input
+P2,Command Interface,pattern,executor,Command → Result,executor,executes commands
+P2,Command Interface,pattern,history,Sequence⟨String⟩,history,command history
+C3,Symbolic Expression,concept,root,Symbol,root,root node (operator or value)
+C3,Symbolic Expression,concept,children,Sequence⟨Tree⟩,children,child expressions
+P3,Hierarchical Navigator,pattern,tree,Tree⟨Node⟩,tree,hierarchy
+P3,Hierarchical Navigator,pattern,selection,Node | null,selection,current selection
+P3,Hierarchical Navigator,pattern,expansion,Set⟨Node⟩,expansion,expanded nodes
+P3,Hierarchical Navigator,pattern,breadcrumb,Sequence⟨Node⟩,breadcrumb,path to selection
+C4,Metadata Schema,concept,schema,"Map⟨String, Type⟩",schema,defines field types
+C4,Metadata Schema,concept,data,"Map⟨String, Value⟩",data,actual metadata
+C4,Metadata Schema,concept,validators,"Map⟨String, Predicate⟩",validators,validation rules
+P4,Property Inspector,pattern,selection,Element | null,selection,inspected object
+P4,Property Inspector,pattern,fields,"Map⟨String, Field⟩",fields,editable properties
+P4,Property Inspector,pattern,validators,"Map⟨String, Validator⟩",validators,validate changes
+P4,Property Inspector,pattern,commit,"(String, Value) → Effect",commit,applies changes
+C5,Version History,concept,states,Sequence⟨State⟩,states,sequence of states
+C5,Version History,concept,deltas,Sequence⟨Delta⟩,deltas,sequence of changes
+C5,Version History,concept,branches,Tree⟨State⟩,branches,represents branch structure
+F5,Collaborative Editing Flow,flow,T,O \times O → O,T,**transformation function**
+F5,Collaborative Editing Flow,flow,M,U → Cursor,M,tracks **user presence**
+P5,Tabbed Workspace,pattern,tabs,Sequence⟨Tab⟩,tabs,open tabs
+P5,Tabbed Workspace,pattern,active,ℕ,active,active tab index
+P5,Tabbed Workspace,pattern,buffers,"Map⟨Tab, Content⟩",buffers,stores tab contents
+P5,Tabbed Workspace,pattern,state,"Map⟨Tab, State⟩",state,"stores tab states (dirty, saved)"
+F6,Error Recovery Flow,flow,detect,Operation → Error | Success,detect,catches errors
+F6,Error Recovery Flow,flow,classify,Error → ErrorType,classify,determines error category
+F6,Error Recovery Flow,flow,strategy,ErrorType → RecoveryStrategy,strategy,selects recovery approach
+F6,Error Recovery Flow,flow,recover,"(Error, RecoveryStrategy) → Effect",recover,executes recovery
+P6,Palette/Toolbar,pattern,input,Input,input,input to palette/toolbar
+P6,Palette/Toolbar,pattern,process,Input → Output,process,processing function
+P6,Palette/Toolbar,pattern,output,Output,output,output from palette/toolbar
+P6,Palette/Toolbar,pattern,display,Output → Visual,display,display function
+P7,Breadcrumb Trail,pattern,path,Sequence⟨Node⟩,path,current location path
+P7,Breadcrumb Trail,pattern,separators,String,separators,"visual separators (e.g., "" / "")"
+P7,Breadcrumb Trail,pattern,actions,Node → Effect,actions,defines click behavior
+P8,Search-Based Navigation,pattern,query,String,query,search query
+P8,Search-Based Navigation,pattern,index,Index⟨Item⟩,index,searchable index
+P8,Search-Based Navigation,pattern,results,Sequence⟨Item⟩,results,ranked results
+P8,Search-Based Navigation,pattern,ranker,"(Item, String) → ℝ",ranker,scores relevance
+P9,Backlinks/References,pattern,input,Input,input,input to backlinks/references
+P9,Backlinks/References,pattern,process,Input → Output,process,processing function
+P9,Backlinks/References,pattern,output,Output,output,output from backlinks/references
+P9,Backlinks/References,pattern,display,Output → Visual,display,display function
+P10,Parser/Compiler Pipeline,pattern,input,Input,input,input to parser/compiler pipeline
+P10,Parser/Compiler Pipeline,pattern,process,Input → Output,process,processing function
+P10,Parser/Compiler Pipeline,pattern,output,Output,output,output from parser/compiler pipeline
+P10,Parser/Compiler Pipeline,pattern,display,Output → Visual,display,display function
+P11,Validator/Checker,pattern,input,Input,input,input to validator/checker
+P11,Validator/Checker,pattern,process,Input → Output,process,processing function
+P11,Validator/Checker,pattern,output,Output,output,output from validator/checker
+P11,Validator/Checker,pattern,display,Output → Visual,display,display function
+P12,Solver/Optimizer,pattern,input,Input,input,input to solver/optimizer
+P12,Solver/Optimizer,pattern,process,Input → Output,process,processing function
+P12,Solver/Optimizer,pattern,output,Output,output,output from solver/optimizer
+P12,Solver/Optimizer,pattern,display,Output → Visual,display,display function
+P13,Indexer/Query Engine,pattern,input,Input,input,input to indexer/query engine
+P13,Indexer/Query Engine,pattern,process,Input → Output,process,processing function
+P13,Indexer/Query Engine,pattern,output,Output,output,output from indexer/query engine
+P13,Indexer/Query Engine,pattern,display,Output → Visual,display,display function
+P14,Agent Swarm,pattern,agents,Set⟨Agent⟩,agents,autonomous workers
+P14,Agent Swarm,pattern,tasks,Queue⟨Task⟩,tasks,pending tasks
+P14,Agent Swarm,pattern,coord,Coordinator,coord,manages task distribution
+P14,Agent Swarm,pattern,results,"Map⟨Task, Result⟩",results,stores completed results
+P15,Reasoning Chain,pattern,steps,Sequence⟨Step⟩,steps,reasoning steps
+P15,Reasoning Chain,pattern,state,"Map⟨ℕ, State⟩",state,tracks state at each step
+P15,Reasoning Chain,pattern,deps,"Map⟨ℕ, Set⟨ℕ⟩⟩",deps,defines step dependencies
+P15,Reasoning Chain,pattern,result,Result,result,final conclusion
+P16,Suggestion/Recommendation System,pattern,input,Input,input,input to suggestion/recommendation system
+P16,Suggestion/Recommendation System,pattern,process,Input → Output,process,processing function
+P16,Suggestion/Recommendation System,pattern,output,Output,output,output from suggestion/recommendation system
+P16,Suggestion/Recommendation System,pattern,display,Output → Visual,display,display function
+P17,Key-Value Store,pattern,store,"Map⟨Key, Value⟩",store,storage
+P17,Key-Value Store,pattern,get,Key → Value | null,get,retrieves values
+P17,Key-Value Store,pattern,set,Key × Value → Effect,set,stores values
+P17,Key-Value Store,pattern,delete,Key → Effect,delete,removes entries
+P18,Relational Database,pattern,tables,"Map⟨String, Table⟩",tables,data tables
+P18,Relational Database,pattern,schemas,"Map⟨String, Schema⟩",schemas,define table structures
+P18,Relational Database,pattern,constraints,Set⟨Constraint⟩,constraints,enforce integrity
+P18,Relational Database,pattern,indices,"Map⟨(Table, Column), Index⟩",indices,speed queries
+P19,Graph Database,pattern,nodes,Set⟨Node⟩,nodes,entities
+P19,Graph Database,pattern,edges,Set⟨Edge⟩,edges,relationships
+P19,Graph Database,pattern,props,"(Node | Edge) → Map⟨String, Value⟩",props,properties
+P19,Graph Database,pattern,traversal,Query → Sequence⟨Path⟩,traversal,executes graph queries
+P20,Document Store,pattern,collections,"Map⟨String, Set⟨Document⟩⟩",collections,group documents
+P20,Document Store,pattern,documents,Set⟨Document⟩,documents,schema-free documents
+P20,Document Store,pattern,queries,Query → Set⟨Document⟩,queries,find documents
+P20,Document Store,pattern,indices,"Map⟨Path, Index⟩",indices,speed queries
+P21,Time-Series Store,pattern,series,"Map⟨String, TimeSeries⟩",series,named series
+P21,Time-Series Store,pattern,timestamps,Sequence⟨Time⟩,timestamps,ordered timestamps
+P21,Time-Series Store,pattern,values,"Map⟨Time, Value⟩",values,data points
+P21,Time-Series Store,pattern,aggregations,"(Time, Time, Func) → Value",aggregations,compute aggregates
+P22,Event Bus,pattern,publishers,Set⟨Publisher⟩,publishers,emit events
+P22,Event Bus,pattern,subscribers,"Map⟨Topic, Set⟨Subscriber⟩⟩",subscribers,listen for events
+P22,Event Bus,pattern,topics,Set⟨Topic⟩,topics,event channels
+P22,Event Bus,pattern,broker,"(Topic, Event) → Effect",broker,routes events
+P23,Real-Time Sync,pattern,local,State,local,local state
+P23,Real-Time Sync,pattern,remote,State,remote,remote state
+P23,Real-Time Sync,pattern,diff,State × State → Delta,diff,computes differences
+P23,Real-Time Sync,pattern,merge,State × Delta → State,merge,applies changes
+P23,Real-Time Sync,pattern,conflicts,Sequence⟨Conflict⟩,conflicts,tracks unresolved conflicts
+P24,Request-Response API,pattern,endpoints,Set⟨Endpoint⟩,endpoints,API routes
+P24,Request-Response API,pattern,handlers,"Map⟨Endpoint, Handler⟩",handlers,process requests
+P24,Request-Response API,pattern,middleware,Sequence⟨Middleware⟩,middleware,request interceptors
+P24,Request-Response API,pattern,responses,Request → Response,responses,generates responses
+P25,Streaming Protocol,pattern,producer,Producer,producer,generates data
+P25,Streaming Protocol,pattern,consumer,Consumer,consumer,processes data
+P25,Streaming Protocol,pattern,buffer,Queue⟨Chunk⟩,buffer,buffers data
+P25,Streaming Protocol,pattern,backpressure,Signal,backpressure,controls flow rate
+P25,Streaming Protocol,pattern,state,"\{\text{flowing}, \text{paused}, \text{ended}, \text{error}\}",state,stream state
+P26,Status Bar/Indicator,pattern,state,State,state,current status bar/indicator state
+P26,Status Bar/Indicator,pattern,measure,State → Metric,measure,measurement function
+P26,Status Bar/Indicator,pattern,visualize,Metric → Visual,visualize,visualization function
+P26,Status Bar/Indicator,pattern,update,Visual → Effect,update,display update function
+P27,Toast/Notification,pattern,input,Input,input,input to toast/notification
+P27,Toast/Notification,pattern,process,Input → Output,process,processing function
+P27,Toast/Notification,pattern,output,Output,output,output from toast/notification
+P27,Toast/Notification,pattern,display,Output → Visual,display,display function
+P28,Progress Indicator,pattern,current,ℕ,current,completed work
+P28,Progress Indicator,pattern,total,ℕ,total,total work
+P28,Progress Indicator,pattern,label,String,label,describes the task
+P28,Progress Indicator,pattern,eta,Time,eta,estimated completion time
+P28,Progress Indicator,pattern,state,"\{\text{running}, \text{paused}, \text{complete}, \text{error}\}",state,status
+P29,Centralized State Store,pattern,store,State,store,application state (single source of truth)
+P29,Centralized State Store,pattern,reducers,"Map⟨Action, Reducer⟩",reducers,update state
+P29,Centralized State Store,pattern,selectors,"Map⟨String, Selector⟩",selectors,query state
+P29,Centralized State Store,pattern,subscriptions,Set⟨Subscriber⟩,subscriptions,listen for changes
+P30,Command Pattern,pattern,commands,Sequence⟨Command⟩,commands,executed commands
+P30,Command Pattern,pattern,executor,Command → Effect,executor,executes commands
+P30,Command Pattern,pattern,undo\_stack,Stack⟨Command⟩,undo\_stack,for undo
+P30,Command Pattern,pattern,redo\_stack,Stack⟨Command⟩,redo\_stack,for redo
+P31,Observer Pattern,pattern,subject,Subject,subject,observed object
+P31,Observer Pattern,pattern,observers,Set⟨Observer⟩,observers,listeners
+P31,Observer Pattern,pattern,notify,() → Effect,notify,notifies all observers
+P32,Plugin Architecture,pattern,interface,Interface,interface,defines plugin contract
+P32,Plugin Architecture,pattern,registry,"Map⟨ID, Plugin⟩",registry,stores loaded plugins
+P32,Plugin Architecture,pattern,loader,Path → Plugin,loader,loads plugins
+P32,Plugin Architecture,pattern,lifecycle,Plugin → Sequence⟨Phase⟩,lifecycle,manages plugin lifecycle
+P33,Hook System,pattern,hooks,Set⟨HookPoint⟩,hooks,extension points
+P33,Hook System,pattern,handlers,"Map⟨HookPoint, Sequence⟨Handler⟩⟩",handlers,registered handlers
+P33,Hook System,pattern,register,"(HookPoint, Handler) → Effect",register,registers handlers
+P33,Hook System,pattern,invoke,"(HookPoint, Context) → Effect",invoke,invokes handlers
+P34,Strategy Pattern,pattern,interface,Interface,interface,defines algorithm contract
+P34,Strategy Pattern,pattern,implementations,"Map⟨ID, Implementation⟩",implementations,concrete strategies
+P34,Strategy Pattern,pattern,selector,Context → ID,selector,chooses strategy
+P34,Strategy Pattern,pattern,current,Implementation,current,active strategy
+P35,Split-Pane Layout,pattern,R,"P → [0,1]",R,maps panes to **proportional sizes**
+P35,Split-Pane Layout,pattern,\delta_{35},"P \times P → \{\text{splitter}, \text{null}\}",\delta_{35},indicates splitters
+P35,Split-Pane Layout,pattern,\sigma_{35},"P → \{\text{visible}, \text{collapsed}\}",\sigma_{35},**state function**
+P36,Selection-Driven Panel,pattern,selection,Element | null,selection,currently selected object
+P36,Selection-Driven Panel,pattern,content,Component,content,displayed content
+P36,Selection-Driven Panel,pattern,\phi_{36},Element → Component,\phi_{36},maps selection to content
+P36,Selection-Driven Panel,pattern,observers,Set⟨Observer⟩,observers,watch selection changes
+P37,Empty State Pattern,pattern,\epsilon_{37},"C → \{\text{empty}, \text{populated}\}",\epsilon_{37},**emptiness predicate**
+P38,Badge/Indicator Pattern,pattern,state,State,state,current badge/indicator pattern state
+P38,Badge/Indicator Pattern,pattern,measure,State → Metric,measure,measurement function
+P38,Badge/Indicator Pattern,pattern,visualize,Metric → Visual,visualize,visualization function
+P38,Badge/Indicator Pattern,pattern,update,Visual → Effect,update,display update function
+P39,Contextual Action Menu,pattern,\pi_{39},"A \times C → \{\text{visible}, \text{hidden}, \text{disabled}\}",\pi_{39},**availability**
+P39,Contextual Action Menu,pattern,\sigma_{39},"M → \{\text{open}, \text{closed}\}",\sigma_{39},**state**
+P39,Contextual Action Menu,pattern,\delta_{39},M → \mathbb{R}^2,\delta_{39},**positioning function**
+P40,Mode Toggle System,pattern,\delta_{40},"M \times M → \{\text{allowed}, \text{forbidden}\}",\delta_{40},**transition function**
+P40,Mode Toggle System,pattern,\phi_{40},M → UIConfig,\phi_{40},maps mode to **UI configuration**
+P40,Mode Toggle System,pattern,\iota_{40},M → Indicator,\iota_{40},provides **visual indicators**
+P41,Inline Status Chip,pattern,\sigma_{41},States → Styles,\sigma_{41},**styling function**
+P41,Inline Status Chip,pattern,\alpha_{41},Chip → Action,\alpha_{41},optional **click action**
+P42,Tooltip/Hint System,pattern,input,Input,input,input to tooltip/hint system
+P42,Tooltip/Hint System,pattern,process,Input → Output,process,processing function
+P42,Tooltip/Hint System,pattern,output,Output,output,output from tooltip/hint system
+P42,Tooltip/Hint System,pattern,display,Output → Visual,display,display function
+P43,Application Navigation Drawer,pattern,O,S_{43} → \mathbb{B},O,determines **overlay visibility**
+P43,Application Navigation Drawer,pattern,\alpha_{43},S_{43} \times S_{43} → Animation,\alpha_{43},**transition animation**
+P43,Application Navigation Drawer,pattern,\pi_{43},C → Route,\pi_{43},maps items to **routes**
+P44,Keyboard Shortcut System,pattern,B,KeyCombo → Action,B,**binding map**
+P44,Keyboard Shortcut System,pattern,H,Action → String,H,**hint display function**
+P44,Keyboard Shortcut System,pattern,C,KeyCombo \times KeyCombo → \mathbb{B},C,**conflict detector**
+P44,Keyboard Shortcut System,pattern,P,Platform → KeyMapping,P,**platform mapping**
+P45,Drag and Drop Interaction,pattern,G,S → Ghost,G,**ghost element function**
+P45,Drag and Drop Interaction,pattern,F,"S \times T → \{\text{accept}, \text{reject}\}",F,**acceptance predicate**
+P45,Drag and Drop Interaction,pattern,\phi_{45},S \times T → Effect,\phi_{45},**drop handler**
+P46,Focus Management System,pattern,O,UI → Sequence⟨Element⟩,O,**focus order function**
+P46,Focus Management System,pattern,\tau_{46},"Element → \{\text{tabbable}, \text{not\_tabbable}\}",\tau_{46},**tabbability**
+P46,Focus Management System,pattern,R,Modal → Element,R,**focus restoration function**
+P46,Focus Management System,pattern,I,Element → VisualIndicator,I,**indicator rendering**
+P47,Inline Editing Pattern,pattern,\tau_{47},Event → M,\tau_{47},**trigger function**
+P47,Inline Editing Pattern,pattern,\phi_{47},Value \times Value → Effect,\phi_{47},**commit handler**
+P47,Inline Editing Pattern,pattern,\psi_{47},() → Effect,\psi_{47},**cancel handler**
+P48,Form Validation Pattern,pattern,fields,"Map⟨String, Field⟩",fields,form fields
+P48,Form Validation Pattern,pattern,rules,"Map⟨String, Validator⟩",rules,validation rules
+P48,Form Validation Pattern,pattern,state,"Map⟨String, ValidationState⟩",state,tracks validation status
+P48,Form Validation Pattern,pattern,errors,"Map⟨String, Sequence⟨String⟩⟩",errors,stores error messages
+P49,Multi-Step Form (Wizard) Pattern,pattern,steps,Sequence⟨Step⟩,steps,form steps
+P49,Multi-Step Form (Wizard) Pattern,pattern,current,ℕ,current,active step index
+P49,Multi-Step Form (Wizard) Pattern,pattern,data,"Map⟨String, Value⟩",data,accumulates form data
+P49,Multi-Step Form (Wizard) Pattern,pattern,nav,Navigation,nav,controls step transitions
+P49,Multi-Step Form (Wizard) Pattern,pattern,progress,ℕ/ℕ,progress,shows completion progress
+P50,Form Dependency Pattern,pattern,fields,"Map⟨String, Field⟩",fields,form fields
+P50,Form Dependency Pattern,pattern,deps,"Map⟨String, Set⟨String⟩⟩",deps,defines dependencies
+P50,Form Dependency Pattern,pattern,update,String × Value → Effect,update,propagates changes
+P50,Form Dependency Pattern,pattern,cascade,𝔹,cascade,enables cascading updates
+P51,Responsive Layout Pattern (NEW),pattern,breakpoints,"Sequence⟨(width: ℝ, name: String)⟩",breakpoints,define size thresholds
+P51,Responsive Layout Pattern (NEW),pattern,layouts,"Map⟨String, Layout⟩",layouts,map breakpoint names to layouts
+P51,Responsive Layout Pattern (NEW),pattern,current,String,current,active layout name
+P52,Pagination Pattern,pattern,data,Sequence⟨Item⟩,data,full dataset
+P52,Pagination Pattern,pattern,page,ℕ,page,current page number (1-indexed)
+P52,Pagination Pattern,pattern,size,ℕ,size,items per page
+P52,Pagination Pattern,pattern,total,ℕ,total,total item count
+P52,Pagination Pattern,pattern,nav,Navigation,nav,provides navigation controls
+P53,Filtering Pattern,pattern,data,Set⟨Item⟩,data,full dataset
+P53,Filtering Pattern,pattern,filters,"Map⟨String, Filter⟩",filters,available filters
+P53,Filtering Pattern,pattern,active,"Map⟨String, FilterValue⟩",active,active filters
+P53,Filtering Pattern,pattern,result,Set⟨Item⟩,result,filtered result
+P53,Filtering Pattern,pattern,facets,"Map⟨String, Facet⟩",facets,shows filter counts
+P54,Sorting Pattern,pattern,data,Sequence⟨Item⟩,data,dataset
+P54,Sorting Pattern,pattern,columns,Sequence⟨Column⟩,columns,sortable columns
+P54,Sorting Pattern,pattern,order,"Sequence⟨(Column, Direction)⟩",order,sort specification
+P54,Sorting Pattern,pattern,comparator,"Item × Item → \{-1, 0, 1\}",comparator,comparison function
+P55,Virtualization Pattern,pattern,data,Sequence⟨Item⟩,data,full dataset
+P55,Virtualization Pattern,pattern,viewport,Rectangle,viewport,visible area
+P55,Virtualization Pattern,pattern,item\_height,Item → ℝ,item\_height,calculates item height
+P55,Virtualization Pattern,pattern,buffer,ℕ,buffer,number of items to pre-render beyond viewport
+P55,Virtualization Pattern,pattern,visible,Sequence⟨Item⟩,visible,currently rendered items
+P56,Cache Strategy Pattern,pattern,storage,"Map⟨Key, (Value, Metadata)⟩",storage,cache store
+P56,Cache Strategy Pattern,pattern,policy,EvictionPolicy,policy,determines what to evict
+P56,Cache Strategy Pattern,pattern,ttl,Key → Duration,ttl,defines time-to-live
+P56,Cache Strategy Pattern,pattern,evict,() → Effect,evict,removes stale entries
+P57,Data Migration Pattern,pattern,versions,Sequence⟨Version⟩,versions,schema versions
+P57,Data Migration Pattern,pattern,migrations,"Map⟨(Version, Version), Migration⟩",migrations,define transitions
+P57,Data Migration Pattern,pattern,current,Version,current,active version
+P57,Data Migration Pattern,pattern,rollback,Migration → Migration,rollback,reverses migrations
+P58,Authentication Pattern,pattern,users,"Map⟨UserID, User⟩",users,registered users
+P58,Authentication Pattern,pattern,credentials,"Map⟨UserID, HashedPassword⟩",credentials,store credentials
+P58,Authentication Pattern,pattern,sessions,"Map⟨SessionID, Session⟩",sessions,track active sessions
+P58,Authentication Pattern,pattern,verify,"(UserID, Password) → 𝔹",verify,validates credentials
+P58,Authentication Pattern,pattern,tokens,"Map⟨Token, UserID⟩",tokens,map tokens to users
+P59,Authorization Pattern,pattern,subjects,Set⟨Subject⟩,subjects,"actors (users, services)"
+P59,Authorization Pattern,pattern,objects,Set⟨Object⟩,objects,resources
+P59,Authorization Pattern,pattern,permissions,Set⟨Permission⟩,permissions,allowed actions
+P59,Authorization Pattern,pattern,policies,Subject \times Object \times Action → \mathbb{B},policies,define rules
+P59,Authorization Pattern,pattern,check,"(Subject, Object, Action) → \mathbb{B}",check,evaluates access
+P60,Input Sanitization Pattern,pattern,validators,"Map⟨InputType, Validator⟩",validators,check input validity
+P60,Input Sanitization Pattern,pattern,sanitizers,"Map⟨InputType, Sanitizer⟩",sanitizers,clean input
+P60,Input Sanitization Pattern,pattern,encoders,"Map⟨Context, Encoder⟩",encoders,encode for safe output
+P60,Input Sanitization Pattern,pattern,rules,Set⟨SecurityRule⟩,rules,define security constraints
+P61,Unit Test Pattern,pattern,sut,System,sut,**system under test** (unit being tested)
+P61,Unit Test Pattern,pattern,arrange,() → Context,arrange,sets up test preconditions
+P61,Unit Test Pattern,pattern,act,Context → Result,act,exercises the unit
+P61,Unit Test Pattern,pattern,assert,Result → \mathbb{B},assert,verifies expectations
+P61,Unit Test Pattern,pattern,cleanup,Context → Effect,cleanup,tears down test state
+P62,Integration Test Pattern,pattern,components,Set⟨Component⟩,components,integrated components
+P62,Integration Test Pattern,pattern,interactions,Sequence⟨Interaction⟩,interactions,component communications
+P62,Integration Test Pattern,pattern,environment,Environment,environment,"test environment (DB, API, etc.)"
+P62,Integration Test Pattern,pattern,verify,() → \mathbb{B},verify,checks end-to-end behavior
+P63,End-to-End Test Pattern,pattern,scenario,UserStory,scenario,user scenario being tested
+P63,End-to-End Test Pattern,pattern,browser,Browser,browser,automated browser
+P63,End-to-End Test Pattern,pattern,pages,"Map⟨String, PageObject⟩",pages,represent UI pages
+P63,End-to-End Test Pattern,pattern,assertions,Sequence⟨Assertion⟩,assertions,verify expected outcomes
+P63,End-to-End Test Pattern,pattern,data,TestData,data,test data for the scenario
+P64,Generative UI,pattern,T_{lib},Set⟨ComponentTemplate⟩,T_{lib},library of UI component templates
+P64,Generative UI,pattern,ctx,Context,ctx,current application context and state
+P64,Generative UI,pattern,gen,Context → ComponentSpec,gen,AI generator function that selects/configures components
+P64,Generative UI,pattern,render,ComponentSpec → UIElement,render,rendering function that creates UI from spec
+P64,Generative UI,pattern,stream,Stream⟨Token⟩,stream,token stream from LLM for progressive generation
+P65,Streaming Component,pattern,\tau_{stream},Stream⟨Token⟩,\tau_{stream},incoming token stream from LLM
+P65,Streaming Component,pattern,buf,BoundedQueue⟨Token⟩,buf,buffer for token accumulation
+P65,Streaming Component,pattern,Q_{render},Queue⟨RenderTask⟩,Q_{render},render task queue for async updates
+P65,Streaming Component,pattern,sync,State → Effect,sync,synchronization mechanism for UI updates
+P66,Context-Adaptive Interface,pattern,U_{state},ApplicationState,U_{state},current application state
+P66,Context-Adaptive Interface,pattern,T_{ctx},Context → ContextVector,T_{ctx},context extraction and encoding function
+P66,Context-Adaptive Interface,pattern,T_{ui},Set⟨UIVariant⟩,T_{ui},set of UI variants for different contexts
+P66,Context-Adaptive Interface,pattern,R_{adapt},ContextVector → UIVariant,R_{adapt},adaptation function mapping context to UI
+P67,Progressive Disclosure by AI,pattern,H_{info},Hierarchy⟨InfoNode⟩,H_{info},hierarchical structure of information to disclose
+P67,Progressive Disclosure by AI,pattern,score_{rel},"InfoNode → [0,1]",score_{rel},relevance scoring function for each node
+P67,Progressive Disclosure by AI,pattern,\sigma_{disc},DisclosureStrategy,\sigma_{disc},strategy for progressive information revelation
+P68,Agent Team Visualization,pattern,A_{roster},Set⟨Agent⟩,A_{roster},current team of active agents
+P68,Agent Team Visualization,pattern,R_{roles},Agent → Role,R_{roles},role assignment mapping for each agent
+P68,Agent Team Visualization,pattern,S_{status},Agent → Status,S_{status},current status of each agent
+P68,Agent Team Visualization,pattern,C_{coord},Set⟨Coordination⟩,C_{coord},coordination relationships between agents
+P69,Agent Activity Timeline,pattern,Events,Seq⟨Event⟩,Events,chronological sequence of agent events
+P69,Agent Activity Timeline,pattern,Timeline,Time → Set⟨Event⟩,Timeline,temporal mapping of events
+P69,Agent Activity Timeline,pattern,Agents,Set⟨Agent⟩,Agents,set of agents being tracked
+P69,Agent Activity Timeline,pattern,Actions,Event → ActionType,Actions,classification of event types
+P70,Agent Handoff,pattern,A_{from},Agent,A_{from},source agent initiating handoff
+P70,Agent Handoff,pattern,A_{to},Agent,A_{to},target agent receiving handoff
+P70,Agent Handoff,pattern,\Sigma_{state},State,\Sigma_{state},state being transferred between agents
+P70,Agent Handoff,pattern,T_{transfer},TransferProtocol,T_{transfer},protocol for state transfer
+P70,Agent Handoff,pattern,V_{verify},State → Boolean,V_{verify},verification function for transfer integrity
+P71,Orchestration Dashboard,pattern,W_{flow},WorkflowGraph,W_{flow},DAG representing orchestration workflow
+P71,Orchestration Dashboard,pattern,A_{agents},Set⟨Agent⟩,A_{agents},set of orchestrated agents
+P71,Orchestration Dashboard,pattern,M_{metrics},Metrics,M_{metrics},real-time performance metrics
+P71,Orchestration Dashboard,pattern,C_{control},Set⟨Control⟩,C_{control},user controls for orchestration
+P72,Agent Role Selector,pattern,R_{available},Set⟨Role⟩,R_{available},set of available agent roles
+P72,Agent Role Selector,pattern,T_{task},TaskSpec,T_{task},task specification requiring role assignment
+P72,Agent Role Selector,pattern,M_{match},"Role × Task → [0,1]",M_{match},role-task matching score function
+P72,Agent Role Selector,pattern,A_{assign},"(Role, Task) → Agent",A_{assign},assignment function mapping role to agent
+P73,Composite Action,pattern,A_{atomic},Set⟨AtomicAction⟩,A_{atomic},set of atomic actions to compose
+P73,Composite Action,pattern,compose,Seq⟨Action⟩ → CompositeAction,compose,composition function creating compound action
+P73,Composite Action,pattern,exec,CompositeAction → Result,exec,execution function for composite action
+P73,Composite Action,pattern,rollback,CompositeAction → Effect,rollback,rollback function for failed composites
+P75,Proactive Intervention,pattern,P_{predict},Context → Prediction,P_{predict},prediction function for user needs
+P75,Proactive Intervention,pattern,T_{timing},Prediction → Time,T_{timing},optimal timing function for intervention
+P75,Proactive Intervention,pattern,A_{action},Prediction → Action,A_{action},action selection function
+P75,Proactive Intervention,pattern,U_{user},UserState,U_{user},current user state and cognitive load
+P76,Ambient AI,pattern,C_{aware},Component,C_{aware},Component C_{aware} from tuple definition
+P76,Ambient AI,pattern,P_{cont},Component,P_{cont},Component P_{cont} from tuple definition
+P76,Ambient AI,pattern,I_{subtle},Component,I_{subtle},Component I_{subtle} from tuple definition
+P76,Ambient AI,pattern,E_{bg},Component,E_{bg},Component E_{bg} from tuple definition
+P77,Intelligent Interruption,pattern,S_{load},Component,S_{load},Component S_{load} from tuple definition
+P77,Intelligent Interruption,pattern,D_{boundary},Component,D_{boundary},Component D_{boundary} from tuple definition
+P77,Intelligent Interruption,pattern,score_{urgency},Component,score_{urgency},Component score_{urgency} from tuple definition
+P77,Intelligent Interruption,pattern,Sched,Component,Sched,Component Sched from tuple definition
+P78,Background Task Management,pattern,Q_{tasks},Component,Q_{tasks},Component Q_{tasks} from tuple definition
+P78,Background Task Management,pattern,I_{progress},Component,I_{progress},Component I_{progress} from tuple definition
+P78,Background Task Management,pattern,N_{complete},Component,N_{complete},Component N_{complete} from tuple definition
+P78,Background Task Management,pattern,S_{results},Component,S_{results},Component S_{results} from tuple definition
+P79,Anticipatory Action,pattern,P_{intent},Component,P_{intent},Component P_{intent} from tuple definition
+P79,Anticipatory Action,pattern,Prep_{res},Component,Prep_{res},Component Prep_{res} from tuple definition
+P79,Anticipatory Action,pattern,E_{spec},Component,E_{spec},Component E_{spec} from tuple definition
+P79,Anticipatory Action,pattern,V_{gate},Component,V_{gate},Component V_{gate} from tuple definition
+P80,Voice Conversation,pattern,I_{speech},AudioStream,I_{speech},continuous audio input stream from user
+P80,Voice Conversation,pattern,R_{intent},Intent \times Confidence,R_{intent},recognized intent with confidence score
+P80,Voice Conversation,pattern,M_{dialog},List⟨Turn⟩,M_{dialog},conversation history and dialog state
+P80,Voice Conversation,pattern,O_{speech},AudioStream,O_{speech},synthesized speech output to user
+P80,Voice Conversation,pattern,H_{int},"\{\text{listening}, \text{processing}, \text{speaking}, \text{idle}\}",H_{int},current interaction state
+P81,Voice Command with Visual Feedback,pattern,I_{voice},Component,I_{voice},Component I_{voice} from tuple definition
+P81,Voice Command with Visual Feedback,pattern,D_{trans},Component,D_{trans},Component D_{trans} from tuple definition
+P81,Voice Command with Visual Feedback,pattern,V_{intent},Component,V_{intent},Component V_{intent} from tuple definition
+P81,Voice Command with Visual Feedback,pattern,UI_{confirm},Component,UI_{confirm},Component UI_{confirm} from tuple definition
+P82,Multimodal Input Fusion,pattern,I_{voice},Component,I_{voice},Component I_{voice} from tuple definition
+P82,Multimodal Input Fusion,pattern,I_{gesture},Component,I_{gesture},Component I_{gesture} from tuple definition
+P82,Multimodal Input Fusion,pattern,I_{screen},Component,I_{screen},Component I_{screen} from tuple definition
+P82,Multimodal Input Fusion,pattern,E_{fusion},Component,E_{fusion},Component E_{fusion} from tuple definition
+P82,Multimodal Input Fusion,pattern,Intent_{unified},Component,Intent_{unified},Component Intent_{unified} from tuple definition
+P83,Voice-First Navigation,pattern,C_{voice},Component,C_{voice},Component C_{voice} from tuple definition
+P83,Voice-First Navigation,pattern,G_{nav},Component,G_{nav},Component G_{nav} from tuple definition
+P83,Voice-First Navigation,pattern,S_{shortcuts},Component,S_{shortcuts},Component S_{shortcuts} from tuple definition
+P83,Voice-First Navigation,pattern,M_{confirm},Component,M_{confirm},Component M_{confirm} from tuple definition
+P84,Continuous Dictation,pattern,T_{stream},Component,T_{stream},Component T_{stream} from tuple definition
+P84,Continuous Dictation,pattern,D_{struct},Component,D_{struct},Component D_{struct} from tuple definition
+P84,Continuous Dictation,pattern,F_{auto},Component,F_{auto},Component F_{auto} from tuple definition
+P84,Continuous Dictation,pattern,M_{punct},Component,M_{punct},Component M_{punct} from tuple definition
+P85,Voice Disambiguation,pattern,D_{ambig},Component,D_{ambig},Component D_{ambig} from tuple definition
+P85,Voice Disambiguation,pattern,G_{clarify},Component,G_{clarify},Component G_{clarify} from tuple definition
+P85,Voice Disambiguation,pattern,P_{choices},Component,P_{choices},Component P_{choices} from tuple definition
+P85,Voice Disambiguation,pattern,R_{ctx},Component,R_{ctx},Component R_{ctx} from tuple definition
+P86,Approval Checkpoint,pattern,T_{checkpoint},Component,T_{checkpoint},Component T_{checkpoint} from tuple definition
+P86,Approval Checkpoint,pattern,G_{preview},Component,G_{preview},Component G_{preview} from tuple definition
+P86,Approval Checkpoint,pattern,UI_{approve},Component,UI_{approve},Component UI_{approve} from tuple definition
+P86,Approval Checkpoint,pattern,Gate_{exec},Component,Gate_{exec},Component Gate_{exec} from tuple definition
+P87,Agency Slider,pattern,Spectrum_{control},Component,Spectrum_{control},Component Spectrum_{control} from tuple definition
+P87,Agency Slider,pattern,Level_{current},Component,Level_{current},Component Level_{current} from tuple definition
+P87,Agency Slider,pattern,Sens_{ctx},Component,Sens_{ctx},Component Sens_{ctx} from tuple definition
+P87,Agency Slider,pattern,Adj_{dynamic},Component,Adj_{dynamic},Component Adj_{dynamic} from tuple definition
+P88,Collaboration Mode Switcher,pattern,Modes,Component,Modes,Component Modes from tuple definition
+P88,Collaboration Mode Switcher,pattern,T_{transition},Component,T_{transition},Component T_{transition} from tuple definition
+P88,Collaboration Mode Switcher,pattern,P_{state},Component,P_{state},Component P_{state} from tuple definition
+P88,Collaboration Mode Switcher,pattern,I_{mode},Component,I_{mode},Component I_{mode} from tuple definition
+P89,Confidence Indicator,pattern,Score_{conf},Component,Score_{conf},Component Score_{conf} from tuple definition
+P89,Confidence Indicator,pattern,V_{vis},Component,V_{vis},Component V_{vis} from tuple definition
+P89,Confidence Indicator,pattern,Alert_{threshold},Component,Alert_{threshold},Component Alert_{threshold} from tuple definition
+P89,Confidence Indicator,pattern,Link_{explain},Component,Link_{explain},Component Link_{explain} from tuple definition
+P90,Explanation on Demand,pattern,Trace_{reason},Component,Trace_{reason},Component Trace_{reason} from tuple definition
+P90,Explanation on Demand,pattern,G_{explain},Component,G_{explain},Component G_{explain} from tuple definition
+P90,Explanation on Demand,pattern,P_{present},Component,P_{present},Component P_{present} from tuple definition
+P90,Explanation on Demand,pattern,Levels_{detail},Component,Levels_{detail},Component Levels_{detail} from tuple definition
+P91,Intervention Request,pattern,D_{stuck},Component,D_{stuck},Component D_{stuck} from tuple definition
+P91,Intervention Request,pattern,R_{help},Component,R_{help},Component R_{help} from tuple definition
+P91,Intervention Request,pattern,Prov_{ctx},Component,Prov_{ctx},Component Prov_{ctx} from tuple definition
+P91,Intervention Request,pattern,Resp_{human},Component,Resp_{human},Component Resp_{human} from tuple definition
+P92,Contextual Undo/Rollback,pattern,H_{actions},Component,H_{actions},Component H_{actions} from tuple definition
+P92,Contextual Undo/Rollback,pattern,Snap_{state},Component,Snap_{state},Component Snap_{state} from tuple definition
+P92,Contextual Undo/Rollback,pattern,Track_{dep},Component,Track_{dep},Component Track_{dep} from tuple definition
+P92,Contextual Undo/Rollback,pattern,Prev_{undo},Component,Prev_{undo},Component Prev_{undo} from tuple definition
+P93,Agent Thinking Indicator,pattern,P_{reasoning},Component,P_{reasoning},Component P_{reasoning} from tuple definition
+P93,Agent Thinking Indicator,pattern,V_{display},Component,V_{display},Component V_{display} from tuple definition
+P93,Agent Thinking Indicator,pattern,Phase_{current},Component,Phase_{current},Component Phase_{current} from tuple definition
+P94,Tool Execution Visualization,pattern,T_{active},Component,T_{active},Component T_{active} from tuple definition
+P94,Tool Execution Visualization,pattern,P_{progress},Component,P_{progress},Component P_{progress} from tuple definition
+P94,Tool Execution Visualization,pattern,R_{results},Component,R_{results},Component R_{results} from tuple definition
+P94,Tool Execution Visualization,pattern,E_{errors},Component,E_{errors},Component E_{errors} from tuple definition
+P95,Multi-Step Progress,pattern,Steps,Component,Steps,Component Steps from tuple definition
+P95,Multi-Step Progress,pattern,Current,Component,Current,Component Current from tuple definition
+P95,Multi-Step Progress,pattern,Completed,Component,Completed,Component Completed from tuple definition
+P95,Multi-Step Progress,pattern,Remaining,Component,Remaining,Component Remaining from tuple definition
+P96,Real-Time Confidence Display,pattern,Conf_{stream},Component,Conf_{stream},Component Conf_{stream} from tuple definition
+P96,Real-Time Confidence Display,pattern,Update_{live},Component,Update_{live},Component Update_{live} from tuple definition
+P96,Real-Time Confidence Display,pattern,Threshold_{alert},Component,Threshold_{alert},Component Threshold_{alert} from tuple definition
+P97,Resource Usage Indicator,pattern,API_{calls},Component,API_{calls},Component API_{calls} from tuple definition
+P97,Resource Usage Indicator,pattern,Tokens_{used},Component,Tokens_{used},Component Tokens_{used} from tuple definition
+P97,Resource Usage Indicator,pattern,Cost_{current},Component,Cost_{current},Component Cost_{current} from tuple definition
+P97,Resource Usage Indicator,pattern,Limits,Component,Limits,Component Limits from tuple definition
+P98,Agent State Timeline,pattern,States,Component,States,Component States from tuple definition
+P98,Agent State Timeline,pattern,Decisions,Component,Decisions,Component Decisions from tuple definition
+P98,Agent State Timeline,pattern,Transitions,Component,Transitions,Component Transitions from tuple definition
+P98,Agent State Timeline,pattern,History,Component,History,Component History from tuple definition
+P99,Knowledge Graph Explorer,pattern,G,Component,G,Component G from tuple definition
+P99,Knowledge Graph Explorer,pattern,N_{focus},Component,N_{focus},Component N_{focus} from tuple definition
+P99,Knowledge Graph Explorer,pattern,Traverse,Component,Traverse,Component Traverse from tuple definition
+P99,Knowledge Graph Explorer,pattern,Filter,Component,Filter,Component Filter from tuple definition
+P99,Knowledge Graph Explorer,pattern,Layout,Component,Layout,Component Layout from tuple definition
+P100,Source Citation,pattern,Sources,Set⟨Source⟩,Sources,set of source documents with metadata
+P100,Source Citation,pattern,Inline_{refs},"Map⟨TextSpan, SourceId⟩",Inline_{refs},mapping from content spans to sources
+P100,Source Citation,pattern,Links,Set⟨URI⟩,Links,hyperlinks to original sources
+P100,Source Citation,pattern,Verification,SourceId → Boolean,Verification,verifies source accessibility and validity
+P101,Retrieval Path Visualization,pattern,Query,String × Embedding,Query,user query with vector embedding
+P101,Retrieval Path Visualization,pattern,Path_{retrieval},Seq⟨Node × Edge⟩,Path_{retrieval},sequence of nodes and edges traversed in graph
+P101,Retrieval Path Visualization,pattern,Nodes_{visited},Set⟨Node⟩,Nodes_{visited},all nodes explored during retrieval
+P101,Retrieval Path Visualization,pattern,Score_{relevance},"Node → [0,1]",Score_{relevance},relevance score for each node
+P102,Confidence-Based Highlighting,pattern,Text,Seq⟨TextSpan⟩,Text,sequence of text segments
+P102,Confidence-Based Highlighting,pattern,Conf_{scores},"TextSpan → [0,1]",Conf_{scores},confidence mapping for each span
+P102,Confidence-Based Highlighting,pattern,Colors,"[0,1] → RGB",Colors,color scale from low to high confidence
+P102,Confidence-Based Highlighting,pattern,Thresholds,Seq⟨ℝ⟩,Thresholds,confidence thresholds for coloring tiers
+P103,Multi-Source Reconciliation,pattern,Sources,Set⟨Source × Claim⟩,Sources,multiple sources making potentially conflicting claims
+P103,Multi-Source Reconciliation,pattern,Conflicts,Set⟨Claim × Claim × ConflictType⟩,Conflicts,detected contradictions between sources
+P103,Multi-Source Reconciliation,pattern,Resolution,Conflict → ResolvedClaim,Resolution,strategy for resolving conflicts
+P103,Multi-Source Reconciliation,pattern,Display,ResolvedClaim → Visualization,Display,how to present reconciled information
+P104,Graph Query Builder,pattern,G,"Graph⟨V, E⟩",G,underlying knowledge graph
+P104,Graph Query Builder,pattern,Q_{visual},VisualQuery,Q_{visual},visual pattern representation
+P104,Graph Query Builder,pattern,Cypher,String,Cypher,generated query language text
+P104,Graph Query Builder,pattern,Execute,Cypher → ResultSet,Execute,query execution function
+P105,Semantic Similarity Visualizer,pattern,Concepts,Set⟨Concept⟩,Concepts,set of semantic concepts to compare
+P105,Semantic Similarity Visualizer,pattern,Sim_{matrix},"Concept × Concept → [0,1]",Sim_{matrix},pairwise similarity scores
+P105,Semantic Similarity Visualizer,pattern,Layout,Concept → ℝ²,Layout,2D spatial positioning of concepts
+P105,Semantic Similarity Visualizer,pattern,Threshold,"ℝ ∈ [0,1]",Threshold,minimum similarity to display connection
+P106,Auto-Updating Content,pattern,Content,Component,Content,Component Content from tuple definition
+P106,Auto-Updating Content,pattern,Sources,Component,Sources,Component Sources from tuple definition
+P106,Auto-Updating Content,pattern,Monitor,Component,Monitor,Component Monitor from tuple definition
+P106,Auto-Updating Content,pattern,Update_{trigger},Component,Update_{trigger},Component Update_{trigger} from tuple definition
+P107,Suggested Edits,pattern,Content,Document,Content,original document content to be improved
+P107,Suggested Edits,pattern,Improvements,Set⟨Edit⟩,Improvements,set of AI-suggested edits with rationale
+P107,Suggested Edits,pattern,Confidence,"Edit → [0,1]",Confidence,confidence score for each suggested edit
+P107,Suggested Edits,pattern,Approval,"Edit → \{\text{pending}, \text{accepted}, \text{rejected}\}",Approval,approval state for each edit
+P108,Cross-Document Linking,pattern,Docs,Set⟨Document⟩,Docs,collection of interrelated documents
+P108,Cross-Document Linking,pattern,Relationships,Set⟨Link⟩,Relationships,semantic relationships between documents
+P108,Cross-Document Linking,pattern,Auto_{link},"(Document × Document) → [0,1]",Auto_{link},AI-computed relevance score for linking
+P108,Cross-Document Linking,pattern,Display,Link → Visualization,Display,how links are rendered in UI
+P109,Outdated Content Detection,pattern,Content,Document,Content,document content to be checked for staleness
+P109,Outdated Content Detection,pattern,Sources,Set⟨Source × Timestamp⟩,Sources,external sources with last-checked timestamps
+P109,Outdated Content Detection,pattern,Freshness,ContentSpan → ℝ,Freshness,freshness score per content segment (higher = fresher)
+P109,Outdated Content Detection,pattern,Alerts,Set⟨Alert⟩,Alerts,detected outdated content notifications
+P110,Collaborative Document Intelligence,pattern,Agents,Set⟨Agent⟩,Agents,multiple AI agents collaborating on document
+P110,Collaborative Document Intelligence,pattern,Document,SharedDocument,Document,shared document state with version control
+P110,Collaborative Document Intelligence,pattern,Contributions,Seq⟨Contribution⟩,Contributions,ordered sequence of agent contributions
+P110,Collaborative Document Intelligence,pattern,Coordination,Agent × Agent → Protocol,Coordination,coordination mechanism between agents
+P111,Document Evolution Timeline,pattern,Versions,Seq⟨Version⟩,Versions,chronologically ordered document versions
+P111,Document Evolution Timeline,pattern,Changes,Version × Version → Delta,Changes,computed diff between consecutive versions
+P111,Document Evolution Timeline,pattern,Contributors,Version → Set⟨Actor⟩,Contributors,humans and AI agents that modified each version
+P111,Document Evolution Timeline,pattern,Timestamps,Version → Time,Timestamps,temporal mapping of versions
+P112,Event Stream Visualization,pattern,Events,Stream⟨Event⟩,Events,real-time stream of events
+P112,Event Stream Visualization,pattern,Timeline,Time → Set⟨Event⟩,Timeline,temporal index of events
+P112,Event Stream Visualization,pattern,Filter,Event → Boolean,Filter,predicate to filter events
+P112,Event Stream Visualization,pattern,Aggregation,Seq⟨Event⟩ → Aggregate,Aggregation,grouping and summarization of events
+P113,Event Replay Control,pattern,History,Seq⟨Event⟩,History,recorded sequence of past events
+P113,Event Replay Control,pattern,Selector,(Event → Boolean) × TimeRange,Selector,predicate and time range for replay selection
+P113,Event Replay Control,pattern,Playback,PlaybackControl,Playback,"controls for playback speed, pause, step"
+P113,Event Replay Control,pattern,State_{restore},Seq⟨Event⟩ → State,State_{restore},reconstructs system state from event sequence
+P114,Stream Backpressure,pattern,Stream,Stream⟨Event⟩,Stream,incoming event stream with variable rate
+P114,Stream Backpressure,pattern,Buffer,BoundedQueue⟨Event⟩,Buffer,bounded buffer for temporary storage
+P114,Stream Backpressure,pattern,Rate_{control},ℕ × Time,Rate_{control},maximum events per time unit
+P114,Stream Backpressure,pattern,Drop_{strategy},Strategy,Drop_{strategy},policy for dropping events when overwhelmed
+P115,Event-Driven State Updates,pattern,State,ApplicationState,State,current application state
+P115,Event-Driven State Updates,pattern,Event_{stream},Stream⟨Event⟩,Event_{stream},incoming event stream triggering updates
+P115,Event-Driven State Updates,pattern,Reducer,State × Event → State,Reducer,pure function computing state transitions
+P115,Event-Driven State Updates,pattern,UI_{sync},State → Effect,UI_{sync},synchronizes UI with state changes
+P116,Multi-Stream Coordination UI,pattern,Streams,Set⟨Stream⟨Event⟩⟩,Streams,multiple independent event streams
+P116,Multi-Stream Coordination UI,pattern,Sync,SyncStrategy,Sync,time synchronization strategy for streams
+P116,Multi-Stream Coordination UI,pattern,Merge,Set⟨Stream⟩ → Stream,Merge,combines multiple streams into unified stream
+P116,Multi-Stream Coordination UI,pattern,Display,Stream → Visualization,Display,visualization of merged stream
+P117,Event Filter & Query,pattern,Stream,Stream⟨Event⟩,Stream,event stream to be queried
+P117,Event Filter & Query,pattern,Filters,Set⟨Predicate⟩,Filters,collection of filter predicates
+P117,Event Filter & Query,pattern,Query_{language},QueryLanguage,Query_{language},domain-specific query language for events
+P117,Event Filter & Query,pattern,Results,Stream⟨Event⟩,Results,filtered/queried result stream
+P118,Domain Context Switcher,pattern,Domains,Component,Domains,Component Domains from tuple definition
+P118,Domain Context Switcher,pattern,Context_{current},Component,Context_{current},Component Context_{current} from tuple definition
+P118,Domain Context Switcher,pattern,Switch,Component,Switch,Component Switch from tuple definition
+P118,Domain Context Switcher,pattern,Preserve_{state},Component,Preserve_{state},Component Preserve_{state} from tuple definition
+P119,Cross-Domain Integration View,pattern,Domains,Set⟨Domain⟩,Domains,collection of distinct business/data domains
+P119,Cross-Domain Integration View,pattern,Data_{integrated},Domain → DataSet,Data_{integrated},integrated data from each domain
+P119,Cross-Domain Integration View,pattern,Relationships,Set⟨CrossDomainLink⟩,Relationships,relationships spanning domain boundaries
+P119,Cross-Domain Integration View,pattern,Unified_{display},Visualization,Unified_{display},unified view integrating all domains
+P120,Domain-Specific Agent Activation,pattern,Domain,Component,Domain,Component Domain from tuple definition
+P120,Domain-Specific Agent Activation,pattern,Agents_{specialist},Component,Agents_{specialist},Component Agents_{specialist} from tuple definition
+P120,Domain-Specific Agent Activation,pattern,Activation,Component,Activation,Component Activation from tuple definition
+P120,Domain-Specific Agent Activation,pattern,Context,Component,Context,Component Context from tuple definition
+P121,Context Preservation Across Domains,pattern,Context,Component,Context,Component Context from tuple definition
+P121,Context Preservation Across Domains,pattern,Domain_{src},Component,Domain_{src},Component Domain_{src} from tuple definition
+P121,Context Preservation Across Domains,pattern,Domain_{tgt},Component,Domain_{tgt},Component Domain_{tgt} from tuple definition
+P121,Context Preservation Across Domains,pattern,Transform,Component,Transform,Component Transform from tuple definition
+P122,Multi-Domain Dashboard,pattern,Domains,Component,Domains,Component Domains from tuple definition
+P122,Multi-Domain Dashboard,pattern,Metrics,Component,Metrics,Component Metrics from tuple definition
+P122,Multi-Domain Dashboard,pattern,Aggregation,Component,Aggregation,Component Aggregation from tuple definition
+P122,Multi-Domain Dashboard,pattern,Layout,Component,Layout,Component Layout from tuple definition
+P123,Domain Boundary Indicator,pattern,Domain_{current},Component,Domain_{current},Component Domain_{current} from tuple definition
+P123,Domain Boundary Indicator,pattern,Scope,Component,Scope,Component Scope from tuple definition
+P123,Domain Boundary Indicator,pattern,Visual_{cue},Component,Visual_{cue},Component Visual_{cue} from tuple definition
+P123,Domain Boundary Indicator,pattern,Alerts,Component,Alerts,Component Alerts from tuple definition
+P124,Agent Trace Viewer,pattern,Execution,Component,Execution,Component Execution from tuple definition
+P124,Agent Trace Viewer,pattern,Steps,Component,Steps,Component Steps from tuple definition
+P124,Agent Trace Viewer,pattern,Branch_{decisions},Component,Branch_{decisions},Component Branch_{decisions} from tuple definition
+P124,Agent Trace Viewer,pattern,Visualization,Component,Visualization,Component Visualization from tuple definition
+P125,Decision Explanation,pattern,Decision,Component,Decision,Component Decision from tuple definition
+P125,Decision Explanation,pattern,Reasoning,Component,Reasoning,Component Reasoning from tuple definition
+P125,Decision Explanation,pattern,Factors,Component,Factors,Component Factors from tuple definition
+P125,Decision Explanation,pattern,Alternatives,Component,Alternatives,Component Alternatives from tuple definition
+P126,Token Usage Display,pattern,Usage,Component,Usage,Component Usage from tuple definition
+P126,Token Usage Display,pattern,Cost,Component,Cost,Component Cost from tuple definition
+P126,Token Usage Display,pattern,Limits,Component,Limits,Component Limits from tuple definition
+P126,Token Usage Display,pattern,Breakdown,Component,Breakdown,Component Breakdown from tuple definition
+P127,Error Debug Interface,pattern,Error,Component,Error,Component Error from tuple definition
+P127,Error Debug Interface,pattern,Stack_{trace},Component,Stack_{trace},Component Stack_{trace} from tuple definition
+P127,Error Debug Interface,pattern,Context,Component,Context,Component Context from tuple definition
+P127,Error Debug Interface,pattern,Solutions,Component,Solutions,Component Solutions from tuple definition
+P128,A/B Test Results,pattern,Variants,Component,Variants,Component Variants from tuple definition
+P128,A/B Test Results,pattern,Metrics,Component,Metrics,Component Metrics from tuple definition
+P128,A/B Test Results,pattern,Statistical_{sig},Component,Statistical_{sig},Component Statistical_{sig} from tuple definition
+P128,A/B Test Results,pattern,Winner,Component,Winner,Component Winner from tuple definition
+P129,Performance Metrics Dashboard,pattern,Metrics,Component,Metrics,Component Metrics from tuple definition
+P129,Performance Metrics Dashboard,pattern,Time_{series},Component,Time_{series},Component Time_{series} from tuple definition
+P129,Performance Metrics Dashboard,pattern,Thresholds,Component,Thresholds,Component Thresholds from tuple definition
+P129,Performance Metrics Dashboard,pattern,Alerts,Component,Alerts,Component Alerts from tuple definition
+P130,AI Agent Presence Indicator,pattern,Agents_{active},Component,Agents_{active},Component Agents_{active} from tuple definition
+P130,AI Agent Presence Indicator,pattern,Status,Component,Status,Component Status from tuple definition
+P130,AI Agent Presence Indicator,pattern,Location_{virtual},Component,Location_{virtual},Component Location_{virtual} from tuple definition
+P130,AI Agent Presence Indicator,pattern,Activity,Component,Activity,Component Activity from tuple definition
+P131,Multi-User + AI Avatar,pattern,Participants,Component,Participants,Component Participants from tuple definition
+P131,Multi-User + AI Avatar,pattern,Humans,Component,Humans,Component Humans from tuple definition
+P131,Multi-User + AI Avatar,pattern,Agents,Component,Agents,Component Agents from tuple definition
+P131,Multi-User + AI Avatar,pattern,Visual_{rep},Component,Visual_{rep},Component Visual_{rep} from tuple definition
+P132,AI Cursor Sharing,pattern,Agent,Component,Agent,Component Agent from tuple definition
+P132,AI Cursor Sharing,pattern,Focus_{current},Component,Focus_{current},Component Focus_{current} from tuple definition
+P132,AI Cursor Sharing,pattern,Path,Component,Path,Component Path from tuple definition
+P132,AI Cursor Sharing,pattern,Highlight,Component,Highlight,Component Highlight from tuple definition
+P133,Activity Feed,pattern,Events,Component,Events,Component Events from tuple definition
+P133,Activity Feed,pattern,Actors,Component,Actors,Component Actors from tuple definition
+P133,Activity Feed,pattern,Timestamps,Component,Timestamps,Component Timestamps from tuple definition
+P133,Activity Feed,pattern,Filter,Component,Filter,Component Filter from tuple definition
+P134,Collaboration Session,pattern,Participants,Component,Participants,Component Participants from tuple definition
+P134,Collaboration Session,pattern,Workspace,Component,Workspace,Component Workspace from tuple definition
+P134,Collaboration Session,pattern,Coordination,Component,Coordination,Component Coordination from tuple definition
+P134,Collaboration Session,pattern,State_{shared},Component,State_{shared},Component State_{shared} from tuple definition
+P135,Conflict Resolution Interface,pattern,Conflicts,Component,Conflicts,Component Conflicts from tuple definition
+P135,Conflict Resolution Interface,pattern,Options,Component,Options,Component Options from tuple definition
+P135,Conflict Resolution Interface,pattern,Reasoning,Component,Reasoning,Component Reasoning from tuple definition
+P135,Conflict Resolution Interface,pattern,Choose,Component,Choose,Component Choose from tuple definition
+P136,User Preference Learning,pattern,Interactions,Component,Interactions,Component Interactions from tuple definition
+P136,User Preference Learning,pattern,Patterns,Component,Patterns,Component Patterns from tuple definition
+P136,User Preference Learning,pattern,Model,Component,Model,Component Model from tuple definition
+P136,User Preference Learning,pattern,Adaptation,Component,Adaptation,Component Adaptation from tuple definition
+P137,Adaptive Interface,pattern,UI,Component,UI,Component UI from tuple definition
+P137,Adaptive Interface,pattern,User_{behavior},Component,User_{behavior},Component User_{behavior} from tuple definition
+P137,Adaptive Interface,pattern,Learn,Component,Learn,Component Learn from tuple definition
+P137,Adaptive Interface,pattern,Adapt,Component,Adapt,Component Adapt from tuple definition
+P138,Personalized Agent Configuration,pattern,User,Component,User,Component User from tuple definition
+P138,Personalized Agent Configuration,pattern,Agents,Component,Agents,Component Agents from tuple definition
+P138,Personalized Agent Configuration,pattern,Config,Component,Config,Component Config from tuple definition
+P138,Personalized Agent Configuration,pattern,Optimize,Component,Optimize,Component Optimize from tuple definition
+P139,Learning Progress Indicator,pattern,Model,Component,Model,Component Model from tuple definition
+P139,Learning Progress Indicator,pattern,Training_{data},Component,Training_{data},Component Training_{data} from tuple definition
+P139,Learning Progress Indicator,pattern,Accuracy,Component,Accuracy,Component Accuracy from tuple definition
+P139,Learning Progress Indicator,pattern,Progress,Component,Progress,Component Progress from tuple definition
+P140,Reset/Retrain Controls,pattern,Model,Component,Model,Component Model from tuple definition
+P140,Reset/Retrain Controls,pattern,Reset,Component,Reset,Component Reset from tuple definition
+P140,Reset/Retrain Controls,pattern,Retrain,Component,Retrain,Component Retrain from tuple definition
+P140,Reset/Retrain Controls,pattern,Confirm,Component,Confirm,Component Confirm from tuple definition
+P141,Workflow Template Gallery,pattern,Templates,Component,Templates,Component Templates from tuple definition
+P141,Workflow Template Gallery,pattern,Categories,Component,Categories,Component Categories from tuple definition
+P141,Workflow Template Gallery,pattern,Preview,Component,Preview,Component Preview from tuple definition
+P141,Workflow Template Gallery,pattern,Instantiate,Component,Instantiate,Component Instantiate from tuple definition
+P142,Automation Builder,pattern,Components,Component,Components,Component Components from tuple definition
+P142,Automation Builder,pattern,Canvas_{visual},Component,Canvas_{visual},Component Canvas_{visual} from tuple definition
+P142,Automation Builder,pattern,Connect,Component,Connect,Component Connect from tuple definition
+P142,Automation Builder,pattern,Execute,Component,Execute,Component Execute from tuple definition
+P143,Scheduled Agent,pattern,Agent,Component,Agent,Component Agent from tuple definition
+P143,Scheduled Agent,pattern,Schedule,Component,Schedule,Component Schedule from tuple definition
+P143,Scheduled Agent,pattern,Trigger,Component,Trigger,Component Trigger from tuple definition
+P143,Scheduled Agent,pattern,Execute,Component,Execute,Component Execute from tuple definition
+P144,Trigger-Action,pattern,Trigger,Component,Trigger,Component Trigger from tuple definition
+P144,Trigger-Action,pattern,Condition,Component,Condition,Component Condition from tuple definition
+P144,Trigger-Action,pattern,Action,Component,Action,Component Action from tuple definition
+P144,Trigger-Action,pattern,Execute,Component,Execute,Component Execute from tuple definition
+P145,Workflow Monitoring Dashboard,pattern,Workflows,Component,Workflows,Component Workflows from tuple definition
+P145,Workflow Monitoring Dashboard,pattern,Status,Component,Status,Component Status from tuple definition
+P145,Workflow Monitoring Dashboard,pattern,Metrics,Component,Metrics,Component Metrics from tuple definition
+P145,Workflow Monitoring Dashboard,pattern,Control,Component,Control,Component Control from tuple definition
+P146,Token Budget Indicator,pattern,Budget,Component,Budget,Component Budget from tuple definition
+P146,Token Budget Indicator,pattern,Used,Component,Used,Component Used from tuple definition
+P146,Token Budget Indicator,pattern,Remaining,Component,Remaining,Component Remaining from tuple definition
+P146,Token Budget Indicator,pattern,Alerts,Component,Alerts,Component Alerts from tuple definition
+P147,Cost Estimation Preview,pattern,Action,Component,Action,Component Action from tuple definition
+P147,Cost Estimation Preview,pattern,Tokens_{estimated},Component,Tokens_{estimated},Component Tokens_{estimated} from tuple definition
+P147,Cost Estimation Preview,pattern,Cost,Component,Cost,Component Cost from tuple definition
+P147,Cost Estimation Preview,pattern,Preview,Component,Preview,Component Preview from tuple definition
+P148,Resource Limit Controls,pattern,Limits,Component,Limits,Component Limits from tuple definition
+P148,Resource Limit Controls,pattern,Current,Component,Current,Component Current from tuple definition
+P148,Resource Limit Controls,pattern,Controls,Component,Controls,Component Controls from tuple definition
+P148,Resource Limit Controls,pattern,Enforcement,Component,Enforcement,Component Enforcement from tuple definition
+P149,Usage Analytics Dashboard,pattern,Usage_{history},Component,Usage_{history},Component Usage_{history} from tuple definition
+P149,Usage Analytics Dashboard,pattern,Trends,Component,Trends,Component Trends from tuple definition
+P149,Usage Analytics Dashboard,pattern,Breakdown,Component,Breakdown,Component Breakdown from tuple definition
+P149,Usage Analytics Dashboard,pattern,Insights,Component,Insights,Component Insights from tuple definition
+P150,Rate Limit Warning,pattern,Rate,Component,Rate,Component Rate from tuple definition
+P150,Rate Limit Warning,pattern,Limit,Component,Limit,Component Limit from tuple definition
+P150,Rate Limit Warning,pattern,Warning_{threshold},Component,Warning_{threshold},Component Warning_{threshold} from tuple definition
+P150,Rate Limit Warning,pattern,Alert,Component,Alert,Component Alert from tuple definition
+P152,Audit Trail Viewer,pattern,Actions,Component,Actions,Component Actions from tuple definition
+P152,Audit Trail Viewer,pattern,Actors,Component,Actors,Component Actors from tuple definition
+P152,Audit Trail Viewer,pattern,Timestamps,Component,Timestamps,Component Timestamps from tuple definition
+P152,Audit Trail Viewer,pattern,Filter,Component,Filter,Component Filter from tuple definition
+P153,Data Access Transparency,pattern,Data,Component,Data,Component Data from tuple definition
+P153,Data Access Transparency,pattern,Accessor,Component,Accessor,Component Accessor from tuple definition
+P153,Data Access Transparency,pattern,Purpose,Component,Purpose,Component Purpose from tuple definition
+P153,Data Access Transparency,pattern,Disclosure,Component,Disclosure,Component Disclosure from tuple definition
+P154,Secure Credential Management,pattern,Credentials,Component,Credentials,Component Credentials from tuple definition
+P154,Secure Credential Management,pattern,Encryption,Component,Encryption,Component Encryption from tuple definition
+P154,Secure Credential Management,pattern,Access_{control},Component,Access_{control},Component Access_{control} from tuple definition
+P154,Secure Credential Management,pattern,Rotation,Component,Rotation,Component Rotation from tuple definition
+P155,Trust Score Indicator,pattern,Agent,Component,Agent,Component Agent from tuple definition
+P155,Trust Score Indicator,pattern,Behavior_{history},Component,Behavior_{history},Component Behavior_{history} from tuple definition
+P155,Trust Score Indicator,pattern,Reliability,Component,Reliability,Component Reliability from tuple definition
+P155,Trust Score Indicator,pattern,Score,Component,Score,Component Score from tuple definition
