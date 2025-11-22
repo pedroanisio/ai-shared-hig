@@ -1,0 +1,8 @@
+# To include CSV data in Docker image:
+# 1. Ensure output/csv_export/ directory exists with CSV files
+# 2. Run: docker-compose build
+
+# To mount CSV data instead (more flexible):
+# 1. Uncomment volume mount in docker-compose.yml
+# 2. Run: docker-compose up -d
+

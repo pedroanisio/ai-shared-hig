@@ -38,9 +38,12 @@ COPY --chown=appuser:appuser *.py ./
 COPY --chown=appuser:appuser docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
-# Optional: Copy CSV data for seeding (if it exists)
-# This will be used to populate the database on first start
-COPY --chown=appuser:appuser output/csv_export* ./output/csv_export/ 2>/dev/null || true
+# Create output directory structure and copy CSV data for seeding
+RUN mkdir -p ./output/csv_master
+
+# Copy CSV master data for database seeding (if it exists)
+# This will include all CSV files from output/csv_master/ directory
+COPY --chown=appuser:appuser output/csv_master/ ./output/csv_master/
 
 # Set PATH to include user's local bin
 ENV PATH=/home/appuser/.local/bin:$PATH

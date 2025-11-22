@@ -120,7 +120,7 @@ P17,Key-Value Store,pattern,P.P17.2,Atomic Operations,set and delete are atomic,
 P18,Relational Database,pattern,P.P18.1,ACID,Atomicity: Transactions complete fully or not at all Consistency: Constraints always satisfied Isolation: Concurrent transactions don't interfere Durability: Committed changes persist,0
 P18,Relational Database,pattern,P.P18.2,Relational Algebra,"Queries expressed as: SELECT, PROJECT, JOIN, UNION, DIFFERENCE",0
 P19,Graph Database,pattern,P.P19.1,Efficient Traversal,"traverse(node, depth) in O(k·d) where k = avg degree, d = depth",0
-P19,Graph Database,pattern,P.P19.2,Property Graph Model,Both nodes and edges can have properties,0
+P19,Graph Database,pattern,P.P19.2,Core Property 2,Both nodes and edges can have properties,0
 P20,Document Store,pattern,P.P20.1,Schema-Free,Documents in same collection can have different structures,0
 P20,Document Store,pattern,P.P20.2,Nested Data,Documents can contain nested objects and arrays,0
 P21,Time-Series Store,pattern,P.P21.1,Temporal Ordering,timestamps are sorted: tᵢ < tᵢ₊₁,0
@@ -297,79 +297,79 @@ P75,Proactive Intervention,pattern,P.P75.1,Proactive Trigger,$\forall i \in \tex
 P75,Proactive Intervention,pattern,P.P75.2,Cognitive Load Awareness,$\forall i : U_{user}.\text{load} > \theta_{high} \implies T_{timing}(i) = \text{defer}$ (respects cognitive state),0
 P75,Proactive Intervention,pattern,P.P75.3,Confidence Threshold,$\forall p \in \text{Predictions} : p.\text{confidence} \geq \theta_{conf} \implies \text{intervene}(p)$,0
 P75,Proactive Intervention,pattern,P.P75.4,User Acceptance Rate,"$\frac{|\text{accepted\_interventions}|}{|\text{all\_interventions}|} > 0.8$ (high acceptance, per PDF)",0
-P76,Ambient AI,pattern,P.P76.1,Property 1,Formal specification for property 1,0
-P76,Ambient AI,pattern,P.P76.2,Property 2,Formal specification for property 2,0
-P76,Ambient AI,pattern,P.P76.3,Property 3,Formal specification for property 3,0
-P77,Intelligent Interruption,pattern,P.P77.1,Property 1,Formal specification for property 1,0
-P77,Intelligent Interruption,pattern,P.P77.2,Property 2,Formal specification for property 2,0
-P77,Intelligent Interruption,pattern,P.P77.3,Property 3,Formal specification for property 3,0
-P78,Background Task Management,pattern,P.P78.1,Property 1,Formal specification for property 1,0
-P78,Background Task Management,pattern,P.P78.2,Property 2,Formal specification for property 2,0
-P78,Background Task Management,pattern,P.P78.3,Property 3,Formal specification for property 3,0
-P79,Anticipatory Action,pattern,P.P79.1,Property 1,Formal specification for property 1,0
-P79,Anticipatory Action,pattern,P.P79.2,Property 2,Formal specification for property 2,0
-P79,Anticipatory Action,pattern,P.P79.3,Property 3,Formal specification for property 3,0
+P76,Ambient AI,pattern,P.P76.1,Core Property 1,Formal specification for property 1,0
+P76,Ambient AI,pattern,P.P76.2,Core Property 2,Formal specification for property 2,0
+P76,Ambient AI,pattern,P.P76.3,Core Property 3,Formal specification for property 3,0
+P77,Intelligent Interruption,pattern,P.P77.1,Core Property 1,Formal specification for property 1,0
+P77,Intelligent Interruption,pattern,P.P77.2,Core Property 2,Formal specification for property 2,0
+P77,Intelligent Interruption,pattern,P.P77.3,Core Property 3,Formal specification for property 3,0
+P78,Background Task Management,pattern,P.P78.1,Core Property 1,Formal specification for property 1,0
+P78,Background Task Management,pattern,P.P78.2,Core Property 2,Formal specification for property 2,0
+P78,Background Task Management,pattern,P.P78.3,Core Property 3,Formal specification for property 3,0
+P79,Anticipatory Action,pattern,P.P79.1,Core Property 1,Formal specification for property 1,0
+P79,Anticipatory Action,pattern,P.P79.2,Core Property 2,Formal specification for property 2,0
+P79,Anticipatory Action,pattern,P.P79.3,Core Property 3,Formal specification for property 3,0
 P80,Voice Conversation,pattern,P.P80.1,Full-Duplex Communication,$\forall t : I_{speech}(t) \land O_{speech}(t)$ can occur simultaneously (bidirectional),0
 P80,Voice Conversation,pattern,P.P80.2,Context Preservation,$\forall i : \text{Turn}_i \in M_{dialog} \implies \text{context}(\text{Turn}_{i+1}) \supseteq \text{context}(\text{Turn}_i)$,0
 P80,Voice Conversation,pattern,P.P80.3,Low Latency,$\Delta t_{response} = t_{O_{speech}} - t_{I_{speech}} < 300ms$ (perceptual real-time),0
 P80,Voice Conversation,pattern,P.P80.4,Confidence Threshold,"$\exists \theta \in (0,1) : \text{Confidence}(R_{intent}) \geq \theta \implies \text{execute}(R_{intent})$",0
-P81,Voice Command with Visual Feedback,pattern,P.P81.1,Property 1,Formal specification for property 1,0
-P81,Voice Command with Visual Feedback,pattern,P.P81.2,Property 2,Formal specification for property 2,0
-P81,Voice Command with Visual Feedback,pattern,P.P81.3,Property 3,Formal specification for property 3,0
-P82,Multimodal Input Fusion,pattern,P.P82.1,Property 1,Formal specification for property 1,0
-P82,Multimodal Input Fusion,pattern,P.P82.2,Property 2,Formal specification for property 2,0
-P82,Multimodal Input Fusion,pattern,P.P82.3,Property 3,Formal specification for property 3,0
-P83,Voice-First Navigation,pattern,P.P83.1,Property 1,Formal specification for property 1,0
-P83,Voice-First Navigation,pattern,P.P83.2,Property 2,Formal specification for property 2,0
-P83,Voice-First Navigation,pattern,P.P83.3,Property 3,Formal specification for property 3,0
-P84,Continuous Dictation,pattern,P.P84.1,Property 1,Formal specification for property 1,0
-P84,Continuous Dictation,pattern,P.P84.2,Property 2,Formal specification for property 2,0
-P84,Continuous Dictation,pattern,P.P84.3,Property 3,Formal specification for property 3,0
-P85,Voice Disambiguation,pattern,P.P85.1,Property 1,Formal specification for property 1,0
-P85,Voice Disambiguation,pattern,P.P85.2,Property 2,Formal specification for property 2,0
-P85,Voice Disambiguation,pattern,P.P85.3,Property 3,Formal specification for property 3,0
-P86,Approval Checkpoint,pattern,P.P86.1,Property 1,Formal specification for property 1,0
-P86,Approval Checkpoint,pattern,P.P86.2,Property 2,Formal specification for property 2,0
-P86,Approval Checkpoint,pattern,P.P86.3,Property 3,Formal specification for property 3,0
-P87,Agency Slider,pattern,P.P87.1,Property 1,Formal specification for property 1,0
-P87,Agency Slider,pattern,P.P87.2,Property 2,Formal specification for property 2,0
-P87,Agency Slider,pattern,P.P87.3,Property 3,Formal specification for property 3,0
-P88,Collaboration Mode Switcher,pattern,P.P88.1,Property 1,Formal specification for property 1,0
-P88,Collaboration Mode Switcher,pattern,P.P88.2,Property 2,Formal specification for property 2,0
-P88,Collaboration Mode Switcher,pattern,P.P88.3,Property 3,Formal specification for property 3,0
-P89,Confidence Indicator,pattern,P.P89.1,Property 1,Formal specification for property 1,0
-P89,Confidence Indicator,pattern,P.P89.2,Property 2,Formal specification for property 2,0
-P89,Confidence Indicator,pattern,P.P89.3,Property 3,Formal specification for property 3,0
-P90,Explanation on Demand,pattern,P.P90.1,Property 1,Formal specification for property 1,0
-P90,Explanation on Demand,pattern,P.P90.2,Property 2,Formal specification for property 2,0
-P90,Explanation on Demand,pattern,P.P90.3,Property 3,Formal specification for property 3,0
-P91,Intervention Request,pattern,P.P91.1,Property 1,Formal specification for property 1,0
-P91,Intervention Request,pattern,P.P91.2,Property 2,Formal specification for property 2,0
-P91,Intervention Request,pattern,P.P91.3,Property 3,Formal specification for property 3,0
-P92,Contextual Undo/Rollback,pattern,P.P92.1,Property 1,Formal specification for property 1,0
-P92,Contextual Undo/Rollback,pattern,P.P92.2,Property 2,Formal specification for property 2,0
-P92,Contextual Undo/Rollback,pattern,P.P92.3,Property 3,Formal specification for property 3,0
-P93,Agent Thinking Indicator,pattern,P.P93.1,Property 1,Formal specification for property 1,0
-P93,Agent Thinking Indicator,pattern,P.P93.2,Property 2,Formal specification for property 2,0
-P93,Agent Thinking Indicator,pattern,P.P93.3,Property 3,Formal specification for property 3,0
-P94,Tool Execution Visualization,pattern,P.P94.1,Property 1,Formal specification for property 1,0
-P94,Tool Execution Visualization,pattern,P.P94.2,Property 2,Formal specification for property 2,0
-P94,Tool Execution Visualization,pattern,P.P94.3,Property 3,Formal specification for property 3,0
-P95,Multi-Step Progress,pattern,P.P95.1,Property 1,Formal specification for property 1,0
-P95,Multi-Step Progress,pattern,P.P95.2,Property 2,Formal specification for property 2,0
-P95,Multi-Step Progress,pattern,P.P95.3,Property 3,Formal specification for property 3,0
-P96,Real-Time Confidence Display,pattern,P.P96.1,Property 1,Formal specification for property 1,0
-P96,Real-Time Confidence Display,pattern,P.P96.2,Property 2,Formal specification for property 2,0
-P96,Real-Time Confidence Display,pattern,P.P96.3,Property 3,Formal specification for property 3,0
-P97,Resource Usage Indicator,pattern,P.P97.1,Property 1,Formal specification for property 1,0
-P97,Resource Usage Indicator,pattern,P.P97.2,Property 2,Formal specification for property 2,0
-P97,Resource Usage Indicator,pattern,P.P97.3,Property 3,Formal specification for property 3,0
-P98,Agent State Timeline,pattern,P.P98.1,Property 1,Formal specification for property 1,0
-P98,Agent State Timeline,pattern,P.P98.2,Property 2,Formal specification for property 2,0
-P98,Agent State Timeline,pattern,P.P98.3,Property 3,Formal specification for property 3,0
-P99,Knowledge Graph Explorer,pattern,P.P99.1,Property 1,Formal specification for property 1,0
-P99,Knowledge Graph Explorer,pattern,P.P99.2,Property 2,Formal specification for property 2,0
-P99,Knowledge Graph Explorer,pattern,P.P99.3,Property 3,Formal specification for property 3,0
+P81,Voice Command with Visual Feedback,pattern,P.P81.1,Core Property 1,Formal specification for property 1,0
+P81,Voice Command with Visual Feedback,pattern,P.P81.2,Core Property 2,Formal specification for property 2,0
+P81,Voice Command with Visual Feedback,pattern,P.P81.3,Core Property 3,Formal specification for property 3,0
+P82,Multimodal Input Fusion,pattern,P.P82.1,Core Property 1,Formal specification for property 1,0
+P82,Multimodal Input Fusion,pattern,P.P82.2,Core Property 2,Formal specification for property 2,0
+P82,Multimodal Input Fusion,pattern,P.P82.3,Core Property 3,Formal specification for property 3,0
+P83,Voice-First Navigation,pattern,P.P83.1,Core Property 1,Formal specification for property 1,0
+P83,Voice-First Navigation,pattern,P.P83.2,Core Property 2,Formal specification for property 2,0
+P83,Voice-First Navigation,pattern,P.P83.3,Core Property 3,Formal specification for property 3,0
+P84,Continuous Dictation,pattern,P.P84.1,Core Property 1,Formal specification for property 1,0
+P84,Continuous Dictation,pattern,P.P84.2,Core Property 2,Formal specification for property 2,0
+P84,Continuous Dictation,pattern,P.P84.3,Core Property 3,Formal specification for property 3,0
+P85,Voice Disambiguation,pattern,P.P85.1,Core Property 1,Formal specification for property 1,0
+P85,Voice Disambiguation,pattern,P.P85.2,Core Property 2,Formal specification for property 2,0
+P85,Voice Disambiguation,pattern,P.P85.3,Core Property 3,Formal specification for property 3,0
+P86,Approval Checkpoint,pattern,P.P86.1,Core Property 1,Formal specification for property 1,0
+P86,Approval Checkpoint,pattern,P.P86.2,Core Property 2,Formal specification for property 2,0
+P86,Approval Checkpoint,pattern,P.P86.3,Core Property 3,Formal specification for property 3,0
+P87,Agency Slider,pattern,P.P87.1,Core Property 1,Formal specification for property 1,0
+P87,Agency Slider,pattern,P.P87.2,Core Property 2,Formal specification for property 2,0
+P87,Agency Slider,pattern,P.P87.3,Core Property 3,Formal specification for property 3,0
+P88,Collaboration Mode Switcher,pattern,P.P88.1,Core Property 1,Formal specification for property 1,0
+P88,Collaboration Mode Switcher,pattern,P.P88.2,Core Property 2,Formal specification for property 2,0
+P88,Collaboration Mode Switcher,pattern,P.P88.3,Core Property 3,Formal specification for property 3,0
+P89,Confidence Indicator,pattern,P.P89.1,Core Property 1,Formal specification for property 1,0
+P89,Confidence Indicator,pattern,P.P89.2,Core Property 2,Formal specification for property 2,0
+P89,Confidence Indicator,pattern,P.P89.3,Core Property 3,Formal specification for property 3,0
+P90,Explanation on Demand,pattern,P.P90.1,Core Property 1,Formal specification for property 1,0
+P90,Explanation on Demand,pattern,P.P90.2,Core Property 2,Formal specification for property 2,0
+P90,Explanation on Demand,pattern,P.P90.3,Core Property 3,Formal specification for property 3,0
+P91,Intervention Request,pattern,P.P91.1,Core Property 1,Formal specification for property 1,0
+P91,Intervention Request,pattern,P.P91.2,Core Property 2,Formal specification for property 2,0
+P91,Intervention Request,pattern,P.P91.3,Core Property 3,Formal specification for property 3,0
+P92,Contextual Undo/Rollback,pattern,P.P92.1,Core Property 1,Formal specification for property 1,0
+P92,Contextual Undo/Rollback,pattern,P.P92.2,Core Property 2,Formal specification for property 2,0
+P92,Contextual Undo/Rollback,pattern,P.P92.3,Core Property 3,Formal specification for property 3,0
+P93,Agent Thinking Indicator,pattern,P.P93.1,Core Property 1,Formal specification for property 1,0
+P93,Agent Thinking Indicator,pattern,P.P93.2,Core Property 2,Formal specification for property 2,0
+P93,Agent Thinking Indicator,pattern,P.P93.3,Core Property 3,Formal specification for property 3,0
+P94,Tool Execution Visualization,pattern,P.P94.1,Core Property 1,Formal specification for property 1,0
+P94,Tool Execution Visualization,pattern,P.P94.2,Core Property 2,Formal specification for property 2,0
+P94,Tool Execution Visualization,pattern,P.P94.3,Core Property 3,Formal specification for property 3,0
+P95,Multi-Step Progress,pattern,P.P95.1,Core Property 1,Formal specification for property 1,0
+P95,Multi-Step Progress,pattern,P.P95.2,Core Property 2,Formal specification for property 2,0
+P95,Multi-Step Progress,pattern,P.P95.3,Core Property 3,Formal specification for property 3,0
+P96,Real-Time Confidence Display,pattern,P.P96.1,Core Property 1,Formal specification for property 1,0
+P96,Real-Time Confidence Display,pattern,P.P96.2,Core Property 2,Formal specification for property 2,0
+P96,Real-Time Confidence Display,pattern,P.P96.3,Core Property 3,Formal specification for property 3,0
+P97,Resource Usage Indicator,pattern,P.P97.1,Core Property 1,Formal specification for property 1,0
+P97,Resource Usage Indicator,pattern,P.P97.2,Core Property 2,Formal specification for property 2,0
+P97,Resource Usage Indicator,pattern,P.P97.3,Core Property 3,Formal specification for property 3,0
+P98,Agent State Timeline,pattern,P.P98.1,Core Property 1,Formal specification for property 1,0
+P98,Agent State Timeline,pattern,P.P98.2,Core Property 2,Formal specification for property 2,0
+P98,Agent State Timeline,pattern,P.P98.3,Core Property 3,Formal specification for property 3,0
+P99,Knowledge Graph Explorer,pattern,P.P99.1,Core Property 1,Formal specification for property 1,0
+P99,Knowledge Graph Explorer,pattern,P.P99.2,Core Property 2,Formal specification for property 2,0
+P99,Knowledge Graph Explorer,pattern,P.P99.3,Core Property 3,Formal specification for property 3,0
 P100,Source Citation,pattern,P.P100.1,Complete Citation,$\forall span \in \text{Content} : \exists s \in Sources : Inline_{refs}(span) = s.id$ (every claim cited),0
 P100,Source Citation,pattern,P.P100.2,Verified Sources,$\forall s \in Sources : Verification(s.id) = \text{true}$ (all sources accessible),0
 P100,Source Citation,pattern,P.P100.3,Confidence Transparency,"$\forall s \in Sources : s.confidence \in [0,1]$ is visible to user",0
@@ -394,9 +394,9 @@ P105,Semantic Similarity Visualizer,pattern,P.P105.1,Similarity Symmetry,"$\fora
 P105,Semantic Similarity Visualizer,pattern,P.P105.2,Distance Preservation,"$\forall c_1, c_2 : Sim_{matrix}(c_1, c_2) > Sim_{matrix}(c_1, c_3) \implies$   $\|Layout(c_1) - Layout(c_2)\| < \|Layout(c_1) - Layout(c_3)\|$ (spatial proximity reflects similarity)",0
 P105,Semantic Similarity Visualizer,pattern,P.P105.3,Threshold Filtering,"$\forall c_1, c_2 : Sim_{matrix}(c_1, c_2) < Threshold \implies \neg \text{visible}(\text{edge}(c_1, c_2))$",0
 P105,Semantic Similarity Visualizer,pattern,P.P105.4,Self-Similarity Identity,"$\forall c \in Concepts : Sim_{matrix}(c, c) = 1$ (maximum self-similarity)",0
-P106,Auto-Updating Content,pattern,P.P106.1,Property 1,Formal specification for property 1,0
-P106,Auto-Updating Content,pattern,P.P106.2,Property 2,Formal specification for property 2,0
-P106,Auto-Updating Content,pattern,P.P106.3,Property 3,Formal specification for property 3,0
+P106,Auto-Updating Content,pattern,P.P106.1,Core Property 1,Formal specification for property 1,0
+P106,Auto-Updating Content,pattern,P.P106.2,Core Property 2,Formal specification for property 2,0
+P106,Auto-Updating Content,pattern,P.P106.3,Core Property 3,Formal specification for property 3,0
 P107,Suggested Edits,pattern,P.P107.1,Non-Overlapping Edits,"$\forall e_1, e_2 \in Improvements : e_1 \neq e_2 \implies e_1.span \cap e_2.span = \emptyset$ (disjoint)",0
 P107,Suggested Edits,pattern,P.P107.2,Confidence-Based Ranking,"$\forall e_1, e_2 : Confidence(e_1) > Confidence(e_2) \implies \text{priority}(e_1) > \text{priority}(e_2)$",0
 P107,Suggested Edits,pattern,P.P107.3,Explainable Suggestions,$\forall e \in Improvements : \exists r \in \text{String} : e.reason = r \land |r| > 0$ (all edits explained),0
@@ -441,115 +441,115 @@ P117,Event Filter & Query,pattern,P.P117.1,Filter Composability,"$\forall f_1, f
 P117,Event Filter & Query,pattern,P.P117.2,Query Selectivity,$\forall q \in \text{Queries} : |\text{Results}(q)| \leq |\text{Stream}|$ (filtering reduces size),0
 P117,Event Filter & Query,pattern,P.P117.3,Streaming Execution,$\forall e \in Stream : \text{latency}(\text{filter}(e)) < \Delta t_{threshold}$ (real-time filtering),0
 P117,Event Filter & Query,pattern,P.P117.4,Pattern Matching Expressiveness,"$\text{Query}_{language} \supseteq \{\text{SEQ}, \text{AND}, \text{OR}, \text{NOT}, \text{WITHIN}\}$ (temporal operators)",0
-P118,Domain Context Switcher,pattern,P.P118.1,Property 1,Formal specification for property 1,0
-P118,Domain Context Switcher,pattern,P.P118.2,Property 2,Formal specification for property 2,0
-P118,Domain Context Switcher,pattern,P.P118.3,Property 3,Formal specification for property 3,0
+P118,Domain Context Switcher,pattern,P.P118.1,Core Property 1,Formal specification for property 1,0
+P118,Domain Context Switcher,pattern,P.P118.2,Core Property 2,Formal specification for property 2,0
+P118,Domain Context Switcher,pattern,P.P118.3,Core Property 3,Formal specification for property 3,0
 P119,Cross-Domain Integration View,pattern,P.P119.1,Domain Isolation,"$\forall d_1, d_2 \in Domains : d_1 \neq d_2 \implies d_1.\text{schema} \cap d_2.\text{schema} = \emptyset$ (separate contexts)",0
 P119,Cross-Domain Integration View,pattern,P.P119.2,Integration Consistency,$\forall l \in Relationships : \exists t : l.\text{translator}(Data_{integrated}(l.\text{source})) \sim Data_{integrated}(l.\text{target})$,0
 P119,Cross-Domain Integration View,pattern,P.P119.3,Context Preservation,$\forall d \in Domains : \text{semantics}(Data_{integrated}(d)) = \text{semantics}_d(\text{original\_data}(d))$,0
 P119,Cross-Domain Integration View,pattern,P.P119.4,Agent Domain Assignment,$\forall a \in \text{Agents} : \exists! d \in Domains : a \in d.\text{agents}$ (unique assignment),0
-P120,Domain-Specific Agent Activation,pattern,P.P120.1,Property 1,Formal specification for property 1,0
-P120,Domain-Specific Agent Activation,pattern,P.P120.2,Property 2,Formal specification for property 2,0
-P120,Domain-Specific Agent Activation,pattern,P.P120.3,Property 3,Formal specification for property 3,0
-P121,Context Preservation Across Domains,pattern,P.P121.1,Property 1,Formal specification for property 1,0
-P121,Context Preservation Across Domains,pattern,P.P121.2,Property 2,Formal specification for property 2,0
-P121,Context Preservation Across Domains,pattern,P.P121.3,Property 3,Formal specification for property 3,0
-P122,Multi-Domain Dashboard,pattern,P.P122.1,Property 1,Formal specification for property 1,0
-P122,Multi-Domain Dashboard,pattern,P.P122.2,Property 2,Formal specification for property 2,0
-P122,Multi-Domain Dashboard,pattern,P.P122.3,Property 3,Formal specification for property 3,0
-P123,Domain Boundary Indicator,pattern,P.P123.1,Property 1,Formal specification for property 1,0
-P123,Domain Boundary Indicator,pattern,P.P123.2,Property 2,Formal specification for property 2,0
-P123,Domain Boundary Indicator,pattern,P.P123.3,Property 3,Formal specification for property 3,0
-P124,Agent Trace Viewer,pattern,P.P124.1,Property 1,Formal specification for property 1,0
-P124,Agent Trace Viewer,pattern,P.P124.2,Property 2,Formal specification for property 2,0
-P124,Agent Trace Viewer,pattern,P.P124.3,Property 3,Formal specification for property 3,0
-P125,Decision Explanation,pattern,P.P125.1,Property 1,Formal specification for property 1,0
-P125,Decision Explanation,pattern,P.P125.2,Property 2,Formal specification for property 2,0
-P125,Decision Explanation,pattern,P.P125.3,Property 3,Formal specification for property 3,0
-P126,Token Usage Display,pattern,P.P126.1,Property 1,Formal specification for property 1,0
-P126,Token Usage Display,pattern,P.P126.2,Property 2,Formal specification for property 2,0
-P126,Token Usage Display,pattern,P.P126.3,Property 3,Formal specification for property 3,0
-P127,Error Debug Interface,pattern,P.P127.1,Property 1,Formal specification for property 1,0
-P127,Error Debug Interface,pattern,P.P127.2,Property 2,Formal specification for property 2,0
-P127,Error Debug Interface,pattern,P.P127.3,Property 3,Formal specification for property 3,0
-P128,A/B Test Results,pattern,P.P128.1,Property 1,Formal specification for property 1,0
-P128,A/B Test Results,pattern,P.P128.2,Property 2,Formal specification for property 2,0
-P128,A/B Test Results,pattern,P.P128.3,Property 3,Formal specification for property 3,0
-P129,Performance Metrics Dashboard,pattern,P.P129.1,Property 1,Formal specification for property 1,0
-P129,Performance Metrics Dashboard,pattern,P.P129.2,Property 2,Formal specification for property 2,0
-P129,Performance Metrics Dashboard,pattern,P.P129.3,Property 3,Formal specification for property 3,0
-P130,AI Agent Presence Indicator,pattern,P.P130.1,Property 1,Formal specification for property 1,0
-P130,AI Agent Presence Indicator,pattern,P.P130.2,Property 2,Formal specification for property 2,0
-P130,AI Agent Presence Indicator,pattern,P.P130.3,Property 3,Formal specification for property 3,0
-P131,Multi-User + AI Avatar,pattern,P.P131.1,Property 1,Formal specification for property 1,0
-P131,Multi-User + AI Avatar,pattern,P.P131.2,Property 2,Formal specification for property 2,0
-P131,Multi-User + AI Avatar,pattern,P.P131.3,Property 3,Formal specification for property 3,0
-P132,AI Cursor Sharing,pattern,P.P132.1,Property 1,Formal specification for property 1,0
-P132,AI Cursor Sharing,pattern,P.P132.2,Property 2,Formal specification for property 2,0
-P132,AI Cursor Sharing,pattern,P.P132.3,Property 3,Formal specification for property 3,0
-P133,Activity Feed,pattern,P.P133.1,Property 1,Formal specification for property 1,0
-P133,Activity Feed,pattern,P.P133.2,Property 2,Formal specification for property 2,0
-P133,Activity Feed,pattern,P.P133.3,Property 3,Formal specification for property 3,0
-P134,Collaboration Session,pattern,P.P134.1,Property 1,Formal specification for property 1,0
-P134,Collaboration Session,pattern,P.P134.2,Property 2,Formal specification for property 2,0
-P134,Collaboration Session,pattern,P.P134.3,Property 3,Formal specification for property 3,0
-P135,Conflict Resolution Interface,pattern,P.P135.1,Property 1,Formal specification for property 1,0
-P135,Conflict Resolution Interface,pattern,P.P135.2,Property 2,Formal specification for property 2,0
-P135,Conflict Resolution Interface,pattern,P.P135.3,Property 3,Formal specification for property 3,0
-P136,User Preference Learning,pattern,P.P136.1,Property 1,Formal specification for property 1,0
-P136,User Preference Learning,pattern,P.P136.2,Property 2,Formal specification for property 2,0
-P136,User Preference Learning,pattern,P.P136.3,Property 3,Formal specification for property 3,0
-P137,Adaptive Interface,pattern,P.P137.1,Property 1,Formal specification for property 1,0
-P137,Adaptive Interface,pattern,P.P137.2,Property 2,Formal specification for property 2,0
-P137,Adaptive Interface,pattern,P.P137.3,Property 3,Formal specification for property 3,0
-P138,Personalized Agent Configuration,pattern,P.P138.1,Property 1,Formal specification for property 1,0
-P138,Personalized Agent Configuration,pattern,P.P138.2,Property 2,Formal specification for property 2,0
-P138,Personalized Agent Configuration,pattern,P.P138.3,Property 3,Formal specification for property 3,0
-P139,Learning Progress Indicator,pattern,P.P139.1,Property 1,Formal specification for property 1,0
-P139,Learning Progress Indicator,pattern,P.P139.2,Property 2,Formal specification for property 2,0
-P139,Learning Progress Indicator,pattern,P.P139.3,Property 3,Formal specification for property 3,0
-P140,Reset/Retrain Controls,pattern,P.P140.1,Property 1,Formal specification for property 1,0
-P140,Reset/Retrain Controls,pattern,P.P140.2,Property 2,Formal specification for property 2,0
-P140,Reset/Retrain Controls,pattern,P.P140.3,Property 3,Formal specification for property 3,0
-P141,Workflow Template Gallery,pattern,P.P141.1,Property 1,Formal specification for property 1,0
-P141,Workflow Template Gallery,pattern,P.P141.2,Property 2,Formal specification for property 2,0
-P141,Workflow Template Gallery,pattern,P.P141.3,Property 3,Formal specification for property 3,0
-P142,Automation Builder,pattern,P.P142.1,Property 1,Formal specification for property 1,0
-P142,Automation Builder,pattern,P.P142.2,Property 2,Formal specification for property 2,0
-P142,Automation Builder,pattern,P.P142.3,Property 3,Formal specification for property 3,0
-P143,Scheduled Agent,pattern,P.P143.1,Property 1,Formal specification for property 1,0
-P143,Scheduled Agent,pattern,P.P143.2,Property 2,Formal specification for property 2,0
-P143,Scheduled Agent,pattern,P.P143.3,Property 3,Formal specification for property 3,0
-P144,Trigger-Action,pattern,P.P144.1,Property 1,Formal specification for property 1,0
-P144,Trigger-Action,pattern,P.P144.2,Property 2,Formal specification for property 2,0
-P144,Trigger-Action,pattern,P.P144.3,Property 3,Formal specification for property 3,0
-P145,Workflow Monitoring Dashboard,pattern,P.P145.1,Property 1,Formal specification for property 1,0
-P145,Workflow Monitoring Dashboard,pattern,P.P145.2,Property 2,Formal specification for property 2,0
-P145,Workflow Monitoring Dashboard,pattern,P.P145.3,Property 3,Formal specification for property 3,0
-P146,Token Budget Indicator,pattern,P.P146.1,Property 1,Formal specification for property 1,0
-P146,Token Budget Indicator,pattern,P.P146.2,Property 2,Formal specification for property 2,0
-P146,Token Budget Indicator,pattern,P.P146.3,Property 3,Formal specification for property 3,0
-P147,Cost Estimation Preview,pattern,P.P147.1,Property 1,Formal specification for property 1,0
-P147,Cost Estimation Preview,pattern,P.P147.2,Property 2,Formal specification for property 2,0
-P147,Cost Estimation Preview,pattern,P.P147.3,Property 3,Formal specification for property 3,0
-P148,Resource Limit Controls,pattern,P.P148.1,Property 1,Formal specification for property 1,0
-P148,Resource Limit Controls,pattern,P.P148.2,Property 2,Formal specification for property 2,0
-P148,Resource Limit Controls,pattern,P.P148.3,Property 3,Formal specification for property 3,0
-P149,Usage Analytics Dashboard,pattern,P.P149.1,Property 1,Formal specification for property 1,0
-P149,Usage Analytics Dashboard,pattern,P.P149.2,Property 2,Formal specification for property 2,0
-P149,Usage Analytics Dashboard,pattern,P.P149.3,Property 3,Formal specification for property 3,0
-P150,Rate Limit Warning,pattern,P.P150.1,Property 1,Formal specification for property 1,0
-P150,Rate Limit Warning,pattern,P.P150.2,Property 2,Formal specification for property 2,0
-P150,Rate Limit Warning,pattern,P.P150.3,Property 3,Formal specification for property 3,0
-P152,Audit Trail Viewer,pattern,P.P152.1,Property 1,Formal specification for property 1,0
-P152,Audit Trail Viewer,pattern,P.P152.2,Property 2,Formal specification for property 2,0
-P152,Audit Trail Viewer,pattern,P.P152.3,Property 3,Formal specification for property 3,0
-P153,Data Access Transparency,pattern,P.P153.1,Property 1,Formal specification for property 1,0
-P153,Data Access Transparency,pattern,P.P153.2,Property 2,Formal specification for property 2,0
-P153,Data Access Transparency,pattern,P.P153.3,Property 3,Formal specification for property 3,0
-P154,Secure Credential Management,pattern,P.P154.1,Property 1,Formal specification for property 1,0
-P154,Secure Credential Management,pattern,P.P154.2,Property 2,Formal specification for property 2,0
-P154,Secure Credential Management,pattern,P.P154.3,Property 3,Formal specification for property 3,0
-P155,Trust Score Indicator,pattern,P.P155.1,Property 1,Formal specification for property 1,0
-P155,Trust Score Indicator,pattern,P.P155.2,Property 2,Formal specification for property 2,0
-P155,Trust Score Indicator,pattern,P.P155.3,Property 3,Formal specification for property 3,0
+P120,Domain-Specific Agent Activation,pattern,P.P120.1,Core Property 1,Formal specification for property 1,0
+P120,Domain-Specific Agent Activation,pattern,P.P120.2,Core Property 2,Formal specification for property 2,0
+P120,Domain-Specific Agent Activation,pattern,P.P120.3,Core Property 3,Formal specification for property 3,0
+P121,Context Preservation Across Domains,pattern,P.P121.1,Core Property 1,Formal specification for property 1,0
+P121,Context Preservation Across Domains,pattern,P.P121.2,Core Property 2,Formal specification for property 2,0
+P121,Context Preservation Across Domains,pattern,P.P121.3,Core Property 3,Formal specification for property 3,0
+P122,Multi-Domain Dashboard,pattern,P.P122.1,Core Property 1,Formal specification for property 1,0
+P122,Multi-Domain Dashboard,pattern,P.P122.2,Core Property 2,Formal specification for property 2,0
+P122,Multi-Domain Dashboard,pattern,P.P122.3,Core Property 3,Formal specification for property 3,0
+P123,Domain Boundary Indicator,pattern,P.P123.1,Core Property 1,Formal specification for property 1,0
+P123,Domain Boundary Indicator,pattern,P.P123.2,Core Property 2,Formal specification for property 2,0
+P123,Domain Boundary Indicator,pattern,P.P123.3,Core Property 3,Formal specification for property 3,0
+P124,Agent Trace Viewer,pattern,P.P124.1,Core Property 1,Formal specification for property 1,0
+P124,Agent Trace Viewer,pattern,P.P124.2,Core Property 2,Formal specification for property 2,0
+P124,Agent Trace Viewer,pattern,P.P124.3,Core Property 3,Formal specification for property 3,0
+P125,Decision Explanation,pattern,P.P125.1,Core Property 1,Formal specification for property 1,0
+P125,Decision Explanation,pattern,P.P125.2,Core Property 2,Formal specification for property 2,0
+P125,Decision Explanation,pattern,P.P125.3,Core Property 3,Formal specification for property 3,0
+P126,Token Usage Display,pattern,P.P126.1,Core Property 1,Formal specification for property 1,0
+P126,Token Usage Display,pattern,P.P126.2,Core Property 2,Formal specification for property 2,0
+P126,Token Usage Display,pattern,P.P126.3,Core Property 3,Formal specification for property 3,0
+P127,Error Debug Interface,pattern,P.P127.1,Core Property 1,Formal specification for property 1,0
+P127,Error Debug Interface,pattern,P.P127.2,Core Property 2,Formal specification for property 2,0
+P127,Error Debug Interface,pattern,P.P127.3,Core Property 3,Formal specification for property 3,0
+P128,A/B Test Results,pattern,P.P128.1,Core Property 1,Formal specification for property 1,0
+P128,A/B Test Results,pattern,P.P128.2,Core Property 2,Formal specification for property 2,0
+P128,A/B Test Results,pattern,P.P128.3,Core Property 3,Formal specification for property 3,0
+P129,Performance Metrics Dashboard,pattern,P.P129.1,Core Property 1,Formal specification for property 1,0
+P129,Performance Metrics Dashboard,pattern,P.P129.2,Core Property 2,Formal specification for property 2,0
+P129,Performance Metrics Dashboard,pattern,P.P129.3,Core Property 3,Formal specification for property 3,0
+P130,AI Agent Presence Indicator,pattern,P.P130.1,Core Property 1,Formal specification for property 1,0
+P130,AI Agent Presence Indicator,pattern,P.P130.2,Core Property 2,Formal specification for property 2,0
+P130,AI Agent Presence Indicator,pattern,P.P130.3,Core Property 3,Formal specification for property 3,0
+P131,Multi-User + AI Avatar,pattern,P.P131.1,Core Property 1,Formal specification for property 1,0
+P131,Multi-User + AI Avatar,pattern,P.P131.2,Core Property 2,Formal specification for property 2,0
+P131,Multi-User + AI Avatar,pattern,P.P131.3,Core Property 3,Formal specification for property 3,0
+P132,AI Cursor Sharing,pattern,P.P132.1,Core Property 1,Formal specification for property 1,0
+P132,AI Cursor Sharing,pattern,P.P132.2,Core Property 2,Formal specification for property 2,0
+P132,AI Cursor Sharing,pattern,P.P132.3,Core Property 3,Formal specification for property 3,0
+P133,Activity Feed,pattern,P.P133.1,Core Property 1,Formal specification for property 1,0
+P133,Activity Feed,pattern,P.P133.2,Core Property 2,Formal specification for property 2,0
+P133,Activity Feed,pattern,P.P133.3,Core Property 3,Formal specification for property 3,0
+P134,Collaboration Session,pattern,P.P134.1,Core Property 1,Formal specification for property 1,0
+P134,Collaboration Session,pattern,P.P134.2,Core Property 2,Formal specification for property 2,0
+P134,Collaboration Session,pattern,P.P134.3,Core Property 3,Formal specification for property 3,0
+P135,Conflict Resolution Interface,pattern,P.P135.1,Core Property 1,Formal specification for property 1,0
+P135,Conflict Resolution Interface,pattern,P.P135.2,Core Property 2,Formal specification for property 2,0
+P135,Conflict Resolution Interface,pattern,P.P135.3,Core Property 3,Formal specification for property 3,0
+P136,User Preference Learning,pattern,P.P136.1,Core Property 1,Formal specification for property 1,0
+P136,User Preference Learning,pattern,P.P136.2,Core Property 2,Formal specification for property 2,0
+P136,User Preference Learning,pattern,P.P136.3,Core Property 3,Formal specification for property 3,0
+P137,Adaptive Interface,pattern,P.P137.1,Core Property 1,Formal specification for property 1,0
+P137,Adaptive Interface,pattern,P.P137.2,Core Property 2,Formal specification for property 2,0
+P137,Adaptive Interface,pattern,P.P137.3,Core Property 3,Formal specification for property 3,0
+P138,Personalized Agent Configuration,pattern,P.P138.1,Core Property 1,Formal specification for property 1,0
+P138,Personalized Agent Configuration,pattern,P.P138.2,Core Property 2,Formal specification for property 2,0
+P138,Personalized Agent Configuration,pattern,P.P138.3,Core Property 3,Formal specification for property 3,0
+P139,Learning Progress Indicator,pattern,P.P139.1,Core Property 1,Formal specification for property 1,0
+P139,Learning Progress Indicator,pattern,P.P139.2,Core Property 2,Formal specification for property 2,0
+P139,Learning Progress Indicator,pattern,P.P139.3,Core Property 3,Formal specification for property 3,0
+P140,Reset/Retrain Controls,pattern,P.P140.1,Core Property 1,Formal specification for property 1,0
+P140,Reset/Retrain Controls,pattern,P.P140.2,Core Property 2,Formal specification for property 2,0
+P140,Reset/Retrain Controls,pattern,P.P140.3,Core Property 3,Formal specification for property 3,0
+P141,Workflow Template Gallery,pattern,P.P141.1,Core Property 1,Formal specification for property 1,0
+P141,Workflow Template Gallery,pattern,P.P141.2,Core Property 2,Formal specification for property 2,0
+P141,Workflow Template Gallery,pattern,P.P141.3,Core Property 3,Formal specification for property 3,0
+P142,Automation Builder,pattern,P.P142.1,Core Property 1,Formal specification for property 1,0
+P142,Automation Builder,pattern,P.P142.2,Core Property 2,Formal specification for property 2,0
+P142,Automation Builder,pattern,P.P142.3,Core Property 3,Formal specification for property 3,0
+P143,Scheduled Agent,pattern,P.P143.1,Core Property 1,Formal specification for property 1,0
+P143,Scheduled Agent,pattern,P.P143.2,Core Property 2,Formal specification for property 2,0
+P143,Scheduled Agent,pattern,P.P143.3,Core Property 3,Formal specification for property 3,0
+P144,Trigger-Action,pattern,P.P144.1,Core Property 1,Formal specification for property 1,0
+P144,Trigger-Action,pattern,P.P144.2,Core Property 2,Formal specification for property 2,0
+P144,Trigger-Action,pattern,P.P144.3,Core Property 3,Formal specification for property 3,0
+P145,Workflow Monitoring Dashboard,pattern,P.P145.1,Core Property 1,Formal specification for property 1,0
+P145,Workflow Monitoring Dashboard,pattern,P.P145.2,Core Property 2,Formal specification for property 2,0
+P145,Workflow Monitoring Dashboard,pattern,P.P145.3,Core Property 3,Formal specification for property 3,0
+P146,Token Budget Indicator,pattern,P.P146.1,Core Property 1,Formal specification for property 1,0
+P146,Token Budget Indicator,pattern,P.P146.2,Core Property 2,Formal specification for property 2,0
+P146,Token Budget Indicator,pattern,P.P146.3,Core Property 3,Formal specification for property 3,0
+P147,Cost Estimation Preview,pattern,P.P147.1,Core Property 1,Formal specification for property 1,0
+P147,Cost Estimation Preview,pattern,P.P147.2,Core Property 2,Formal specification for property 2,0
+P147,Cost Estimation Preview,pattern,P.P147.3,Core Property 3,Formal specification for property 3,0
+P148,Resource Limit Controls,pattern,P.P148.1,Core Property 1,Formal specification for property 1,0
+P148,Resource Limit Controls,pattern,P.P148.2,Core Property 2,Formal specification for property 2,0
+P148,Resource Limit Controls,pattern,P.P148.3,Core Property 3,Formal specification for property 3,0
+P149,Usage Analytics Dashboard,pattern,P.P149.1,Core Property 1,Formal specification for property 1,0
+P149,Usage Analytics Dashboard,pattern,P.P149.2,Core Property 2,Formal specification for property 2,0
+P149,Usage Analytics Dashboard,pattern,P.P149.3,Core Property 3,Formal specification for property 3,0
+P150,Rate Limit Warning,pattern,P.P150.1,Core Property 1,Formal specification for property 1,0
+P150,Rate Limit Warning,pattern,P.P150.2,Core Property 2,Formal specification for property 2,0
+P150,Rate Limit Warning,pattern,P.P150.3,Core Property 3,Formal specification for property 3,0
+P152,Audit Trail Viewer,pattern,P.P152.1,Core Property 1,Formal specification for property 1,0
+P152,Audit Trail Viewer,pattern,P.P152.2,Core Property 2,Formal specification for property 2,0
+P152,Audit Trail Viewer,pattern,P.P152.3,Core Property 3,Formal specification for property 3,0
+P153,Data Access Transparency,pattern,P.P153.1,Core Property 1,Formal specification for property 1,0
+P153,Data Access Transparency,pattern,P.P153.2,Core Property 2,Formal specification for property 2,0
+P153,Data Access Transparency,pattern,P.P153.3,Core Property 3,Formal specification for property 3,0
+P154,Secure Credential Management,pattern,P.P154.1,Core Property 1,Formal specification for property 1,0
+P154,Secure Credential Management,pattern,P.P154.2,Core Property 2,Formal specification for property 2,0
+P154,Secure Credential Management,pattern,P.P154.3,Core Property 3,Formal specification for property 3,0
+P155,Trust Score Indicator,pattern,P.P155.1,Core Property 1,Formal specification for property 1,0
+P155,Trust Score Indicator,pattern,P.P155.2,Core Property 2,Formal specification for property 2,0
+P155,Trust Score Indicator,pattern,P.P155.3,Core Property 3,Formal specification for property 3,0

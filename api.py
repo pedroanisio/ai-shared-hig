@@ -6,12 +6,15 @@ conforming to the Universal Corpus XML schema.
 """
 
 from fastapi import FastAPI, HTTPException, status, Query, Depends
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from typing import List, Optional
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from pathlib import Path
 import json
+import csv
+import io
+import re
 from sqlalchemy.orm import Session
 
 from models import Pattern, CategoryType, StatusType
@@ -198,6 +201,7 @@ async def root():
             "partial_update_pattern": "PATCH /patterns/{pattern_id}",
             "delete_pattern": "DELETE /patterns/{pattern_id}",
             "get_dependencies": "GET /patterns/{pattern_id}/dependencies",
+            "export_csv": "GET /export/csv",
             "statistics": "GET /statistics",
             "health": "GET /health"
         }
@@ -475,6 +479,272 @@ async def get_pattern_dependencies(pattern_id: str, db: Session = Depends(get_db
         )
     
     return pattern.dependencies if pattern.dependencies else {}
+
+
+@app.get("/export/csv", tags=["Export"])
+async def export_patterns_csv(
+    category: Optional[CategoryType] = Query(None, description="Filter by category"),
+    status_filter: Optional[StatusType] = Query(None, alias="status", description="Filter by status"),
+    db: Session = Depends(get_db)
+):
+    """
+    Export all patterns to a comprehensive CSV file with complete details.
+    
+    This endpoint returns a single CSV file containing ALL pattern data including:
+    - Pattern metadata (id, name, category, status, complexity, version)
+    - All components with their types, notations, and descriptions
+    - All type definitions with formal specifications
+    - All properties with formal specs and invariants
+    - All operations with signatures, formal definitions, and conditions
+    - All manifestations
+    - All dependencies
+    - Domains and other metadata
+    
+    Args:
+        category: Optional category filter
+        status_filter: Optional status filter
+        db: Database session
+        
+    Returns:
+        CSV file with complete pattern data (all nested details included)
+    """
+    repo = PatternRepository(db)
+    patterns = repo.list(
+        category=category,
+        status=status_filter,
+        limit=10000,  # Get all patterns
+        offset=0
+    )
+    
+    # Create CSV in memory with proper quoting for fields containing special characters
+    output = io.StringIO()
+    writer = csv.writer(output, quoting=csv.QUOTE_MINIMAL)
+    
+    # Write comprehensive header with all detail columns
+    writer.writerow([
+        # Pattern metadata
+        'pattern_id',
+        'pattern_name',
+        'pattern_type',
+        'category',
+        'status',
+        'complexity',
+        'version',
+        'domains',
+        'last_updated',
+        # Definition
+        'tuple_notation',
+        'tuple_notation_format',
+        'definition_description',
+        # Components (all details)
+        'components',
+        # Type definitions (all details)
+        'type_definitions',
+        # Properties (all details)
+        'properties',
+        # Operations (all details)
+        'operations',
+        # Dependencies
+        'requires_dependencies',
+        'uses_dependencies',
+        'specializes_dependencies',
+        'specialized_by_dependencies',
+        # Manifestations
+        'manifestations'
+    ])
+    
+    # Helper function to clean text for CSV (remove newlines and normalize whitespace)
+    def clean_text(text: str) -> str:
+        """Remove newlines and normalize whitespace for CSV output."""
+        if not text:
+            return ""
+        # Replace newlines with spaces
+        text = text.replace('\n', ' ').replace('\r', ' ')
+        # Normalize multiple spaces to single space
+        text = re.sub(r'\s+', ' ', text)
+        return text.strip()
+    
+    # Write pattern data
+    for pattern in patterns:
+        # Pattern type based on ID prefix
+        pattern_type = "concept" if pattern.id.startswith('C') else "flow" if pattern.id.startswith('F') else "pattern"
+        
+        # Extract tuple notation (clean it)
+        tuple_notation = clean_text(pattern.definition.tuple_notation.content)
+        tuple_notation_format = pattern.definition.tuple_notation.format
+        
+        # Extract description (clean it)
+        definition_description = clean_text(pattern.definition.description or "")
+        
+        # Extract domains
+        domains = "; ".join(pattern.metadata.domains.domain) if pattern.metadata.domains else ""
+        
+        # Build components string with full details
+        components_list = []
+        for comp in pattern.definition.components.component:
+            comp_str = f"{comp.name}[type: {clean_text(comp.type)}"
+            if comp.notation:
+                comp_str += f", notation: {clean_text(comp.notation)}"
+            comp_str += f", desc: {clean_text(comp.description)}]"
+            components_list.append(comp_str)
+        components_str = " | ".join(components_list)
+        
+        # Build type definitions string with full details
+        type_defs_list = []
+        if pattern.type_definitions:
+            for td in pattern.type_definitions.type_def:
+                td_str = f"{td.name}[def: {clean_text(td.definition.content)}, format: {td.definition.format}"
+                if td.description:
+                    td_str += f", desc: {clean_text(td.description)}"
+                td_str += "]"
+                type_defs_list.append(td_str)
+        type_defs_str = " | ".join(type_defs_list)
+        
+        # Build properties string with full details
+        properties_list = []
+        for prop in pattern.properties.property:
+            prop_str = f"{prop.id}:{prop.name}[spec: {clean_text(prop.formal_spec.content)}, format: {prop.formal_spec.format}"
+            if prop.description:
+                prop_str += f", desc: {clean_text(prop.description)}"
+            if prop.invariants:
+                inv_list = [f"{clean_text(inv.content)}({inv.format})" for inv in prop.invariants.invariant]
+                prop_str += f", invariants: {'; '.join(inv_list)}"
+            prop_str += "]"
+            properties_list.append(prop_str)
+        properties_str = " | ".join(properties_list)
+        
+        # Build operations string with full details
+        operations_list = []
+        for op in pattern.operations.operation:
+            op_str = f"{op.name}[sig: {clean_text(op.signature)}, def: {clean_text(op.formal_definition.content)}, format: {op.formal_definition.format}"
+            
+            if op.preconditions:
+                precond_list = [f"{clean_text(cond.content)}({cond.format})" for cond in op.preconditions.condition]
+                op_str += f", preconditions: {'; '.join(precond_list)}"
+            
+            if op.postconditions:
+                postcond_list = [f"{clean_text(cond.content)}({cond.format})" for cond in op.postconditions.condition]
+                op_str += f", postconditions: {'; '.join(postcond_list)}"
+            
+            if op.effects:
+                effects_cleaned = [clean_text(effect) for effect in op.effects.effect]
+                op_str += f", effects: {'; '.join(effects_cleaned)}"
+            
+            op_str += "]"
+            operations_list.append(op_str)
+        operations_str = " | ".join(operations_list)
+        
+        # Extract dependencies
+        requires_deps = ""
+        uses_deps = ""
+        specializes_deps = ""
+        specialized_by_deps = ""
+        
+        if pattern.dependencies:
+            if pattern.dependencies.requires:
+                requires_deps = "; ".join(pattern.dependencies.requires.pattern_ref)
+            if pattern.dependencies.uses:
+                uses_deps = "; ".join(pattern.dependencies.uses.pattern_ref)
+            if pattern.dependencies.specializes:
+                specializes_deps = "; ".join(pattern.dependencies.specializes.pattern_ref)
+            if pattern.dependencies.specialized_by:
+                specialized_by_deps = "; ".join(pattern.dependencies.specialized_by.pattern_ref)
+        
+        # Build manifestations string
+        manifestations_list = []
+        if pattern.manifestations:
+            for manif in pattern.manifestations.manifestation:
+                manif_str = f"{clean_text(manif.name)}"
+                if manif.description:
+                    manif_str += f"[{clean_text(manif.description)}]"
+                manifestations_list.append(manif_str)
+        manifestations_str = " | ".join(manifestations_list)
+        
+        # Write row with all details
+        writer.writerow([
+            pattern.id,
+            pattern.metadata.name,
+            pattern_type,
+            pattern.metadata.category,
+            pattern.metadata.status,
+            pattern.metadata.complexity or "",
+            pattern.version,
+            domains,
+            pattern.metadata.last_updated or "",
+            tuple_notation,
+            tuple_notation_format,
+            definition_description,
+            components_str,
+            type_defs_str,
+            properties_str,
+            operations_str,
+            requires_deps,
+            uses_deps,
+            specializes_deps,
+            specialized_by_deps,
+            manifestations_str
+        ])
+    
+    # Prepare response
+    output.seek(0)
+    
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": "attachment; filename=patterns_complete_export.csv"
+        }
+    )
+
+
+@app.get("/export/jsonl", tags=["Export"])
+async def export_patterns_jsonl(
+    category: Optional[CategoryType] = Query(None, description="Filter by category"),
+    status_filter: Optional[StatusType] = Query(None, alias="status", description="Filter by status"),
+    db: Session = Depends(get_db)
+):
+    """
+    Export all patterns to JSONL (JSON Lines) format.
+    
+    JSONL format has one complete JSON object per line, making it ideal for:
+    - Streaming large datasets
+    - Processing records one at a time
+    - Incremental loading
+    - Line-by-line analysis
+    
+    Each line is a complete Pattern object with all nested data.
+    
+    Args:
+        category: Optional category filter
+        status_filter: Optional status filter
+        db: Database session
+        
+    Returns:
+        JSONL file where each line is a complete pattern as JSON
+    """
+    repo = PatternRepository(db)
+    patterns = repo.list(
+        category=category,
+        status=status_filter,
+        limit=10000,  # Get all patterns
+        offset=0
+    )
+    
+    # Generate JSONL content (one JSON object per line)
+    def generate_jsonl():
+        for pattern in patterns:
+            # Convert pattern to dict and serialize to JSON
+            pattern_dict = pattern.model_dump(mode='json', exclude_none=False)
+            yield json.dumps(pattern_dict, ensure_ascii=False) + '\n'
+    
+    # Return streaming response with JSONL content
+    return StreamingResponse(
+        generate_jsonl(),
+        media_type="application/x-ndjson",  # JSONL media type
+        headers={
+            "Content-Disposition": "attachment; filename=patterns.jsonl"
+        }
+    )
 
 
 @app.get("/statistics", tags=["Statistics"])

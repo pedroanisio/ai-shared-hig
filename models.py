@@ -121,7 +121,16 @@ class Properties(BaseModel):
 
 
 class Conditions(BaseModel):
-    """Collection of condition expressions."""
+    """
+    Collection of condition expressions for preconditions/postconditions.
+    
+    Conditions are formal mathematical expressions that must hold before (preconditions)
+    or after (postconditions) an operation executes.
+    
+    Example:
+        Precondition: "x > 0 ∧ buffer ≠ ∅"
+        Postcondition: "result = f(x) ∧ buffer unchanged"
+    """
     
     condition: List[MathExpression] = Field(..., min_length=1, description="List of conditions")
 
@@ -133,14 +142,31 @@ class Effects(BaseModel):
 
 
 class Operation(BaseModel):
-    """An operation with signature, formal definition, and optional conditions."""
+    """
+    An operation with signature, formal definition, and optional conditions.
+    
+    Operations define the behavior of patterns with:
+    - **Signature**: Type-level specification of inputs/outputs
+    - **Formal Definition**: Mathematical definition of the operation
+    - **Preconditions**: Conditions that must hold before execution
+    - **Postconditions**: Conditions that must hold after execution
+    - **Effects**: Observable side effects of the operation
+    
+    Example:
+        name: "Push"
+        signature: "push(item: T) → Stack⟨T⟩"
+        formal_definition: "push(item, stack) = stack ++ [item]"
+        preconditions: ["stack.size < MAX_SIZE"]
+        postconditions: ["result.size = stack.size + 1", "result.top = item"]
+        effects: ["Stack state modified", "Size counter incremented"]
+    """
     
     name: str = Field(..., description="Operation name")
-    signature: str = Field(..., description="Operation signature")
-    formal_definition: MathExpression = Field(..., alias="formal-definition", description="Formal definition")
-    preconditions: Optional[Conditions] = Field(None, description="Optional preconditions")
-    postconditions: Optional[Conditions] = Field(None, description="Optional postconditions")
-    effects: Optional[Effects] = Field(None, description="Optional effects")
+    signature: str = Field(..., description="Operation signature (e.g., 'op(x: T) → R')")
+    formal_definition: MathExpression = Field(..., alias="formal-definition", description="Formal mathematical definition")
+    preconditions: Optional[Conditions] = Field(None, description="Conditions that must hold before execution")
+    postconditions: Optional[Conditions] = Field(None, description="Conditions that must hold after execution")
+    effects: Optional[Effects] = Field(None, description="Observable side effects")
     
     class Config:
         populate_by_name = True
@@ -270,6 +296,26 @@ class Pattern(BaseModel):
                             "formal-definition": {
                                 "content": "traverse(n: N, depth: ℕ) → Set⟨N⟩ = {n' ∈ N : distance(n, n') ≤ depth}",
                                 "format": "latex"
+                            },
+                            "preconditions": {
+                                "condition": [
+                                    {
+                                        "content": "n ∈ N ∧ depth ≥ 0",
+                                        "format": "latex"
+                                    }
+                                ]
+                            },
+                            "postconditions": {
+                                "condition": [
+                                    {
+                                        "content": "∀n' ∈ result: distance(n, n') ≤ depth",
+                                        "format": "latex"
+                                    },
+                                    {
+                                        "content": "n ∈ result",
+                                        "format": "latex"
+                                    }
+                                ]
                             }
                         }
                     ]

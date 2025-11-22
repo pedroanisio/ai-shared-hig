@@ -58,10 +58,12 @@ docker-compose*.yml
 *.md
 docs/
 
-# Output directories (most should be generated, except csv_export for seeding)
+# Output directories
+# Include csv_master for seeding (this is the master CSV data)
+# Other output directories are excluded
 output/*
-!output/csv_export/
-csv_master/
+!output/csv_master/
+!output/csv_master/**
 
 # Logs
 *.log

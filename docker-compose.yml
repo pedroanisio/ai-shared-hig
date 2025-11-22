@@ -13,8 +13,8 @@ services:
       # Persist database
       - patterns_data:/app/data
       # Optional: Mount CSV data for automatic seeding
-      # Uncomment if you have CSV export files to seed the database:
-      # - ./output/csv_export:/app/output/csv_export:ro
+      # Uncomment if you have CSV master files to seed the database:
+      # - ./output/csv_master:/app/output/csv_master:ro
       # Optional: Mount master_data if you need corpus_manager.py operations
       # - ./master_data:/app/master_data:ro
     environment:

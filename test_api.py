@@ -599,6 +599,191 @@ class TestStatisticsEndpoint:
         assert data["by_category"]["flow"] == 1
 
 
+class TestCSVExportEndpoint:
+    """Test CSV export endpoint."""
+    
+    def test_export_csv_no_line_breaks_in_data(self, client, valid_pattern_data):
+        """Test that CSV data doesn't contain line breaks that would corrupt the format."""
+        # Add multi-line content that should be cleaned
+        valid_pattern_data["operations"]["operation"][0]["formal-definition"]["content"] = """
+        This is a multi-line
+        formal definition
+        that should be cleaned
+        """
+        client.post("/patterns", json=valid_pattern_data)
+        
+        response = client.get("/export/csv")
+        assert response.status_code == 200
+        
+        # Parse CSV properly to verify structure
+        import csv as csv_module
+        import io
+        csv_file = io.StringIO(response.text)
+        reader = csv_module.reader(csv_file)
+        rows = list(reader)
+        
+        # Should have exactly 2 rows: header + 1 data row
+        assert len(rows) == 2, f"Expected 2 rows but got {len(rows)}: malformed CSV with line breaks in data"
+        
+        # Verify field counts match
+        header_fields = len(rows[0])
+        data_fields = len(rows[1])
+        assert data_fields == header_fields, f"Field count mismatch: {data_fields} vs {header_fields}"
+        
+        # Verify multi-line content was cleaned (no actual newlines in the field)
+        operations_column_index = rows[0].index('operations')
+        operations_data = rows[1][operations_column_index]
+        assert '\n' not in operations_data, "Newlines should be removed from CSV data"
+        assert "multi-line" in operations_data, "Content should still be present"
+    
+    def test_export_csv_empty(self, client):
+        """Test CSV export with no patterns."""
+        response = client.get("/export/csv")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/csv; charset=utf-8"
+        assert "Content-Disposition" in response.headers
+        assert "patterns_complete_export.csv" in response.headers["Content-Disposition"]
+        
+        # Verify CSV structure
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        assert len(lines) == 1  # Only header
+        assert "pattern_id" in lines[0]
+        assert "pattern_name" in lines[0]
+        assert "category" in lines[0]
+        assert "components" in lines[0]
+        assert "properties" in lines[0]
+        assert "operations" in lines[0]
+    
+    def test_export_csv_with_patterns(self, client, valid_pattern_data):
+        """Test CSV export with patterns."""
+        # Create test patterns
+        client.post("/patterns", json=valid_pattern_data)
+        
+        response = client.get("/export/csv")
+        assert response.status_code == 200
+        assert response.headers["content-type"] == "text/csv; charset=utf-8"
+        
+        # Verify CSV content
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        assert len(lines) == 2  # Header + 1 data row
+        
+        # Verify header includes all detail columns
+        header = lines[0]
+        assert "pattern_id" in header
+        assert "pattern_name" in header
+        assert "tuple_notation" in header
+        assert "components" in header
+        assert "properties" in header
+        assert "operations" in header
+        
+        # Verify data row contains pattern info with details
+        data_row = lines[1]
+        assert "C1" in data_row
+        assert "Graph Structure" in data_row
+        # Verify component details are included
+        assert "type:" in data_row  # Component type field
+        assert "desc:" in data_row  # Component description field
+    
+    def test_export_csv_filter_by_category(self, client, valid_pattern_data):
+        """Test CSV export with category filter."""
+        # Create patterns with different categories
+        concept_data = valid_pattern_data.copy()
+        concept_data["id"] = "C1"
+        concept_data["metadata"]["category"] = "concept"
+        client.post("/patterns", json=concept_data)
+        
+        pattern_data = valid_pattern_data.copy()
+        pattern_data["id"] = "P1"
+        pattern_data["metadata"]["category"] = "pattern"
+        client.post("/patterns", json=pattern_data)
+        
+        # Export only concepts
+        response = client.get("/export/csv?category=concept")
+        assert response.status_code == 200
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        assert len(lines) == 2  # Header + 1 concept
+        assert "C1" in lines[1]
+        assert "P1" not in csv_content
+    
+    def test_export_csv_filter_by_status(self, client, valid_pattern_data):
+        """Test CSV export with status filter."""
+        # Create patterns with different statuses
+        stable_data = valid_pattern_data.copy()
+        stable_data["id"] = "C1"
+        stable_data["metadata"]["status"] = "stable"
+        client.post("/patterns", json=stable_data)
+        
+        draft_data = valid_pattern_data.copy()
+        draft_data["id"] = "C2"
+        draft_data["metadata"]["status"] = "draft"
+        client.post("/patterns", json=draft_data)
+        
+        # Export only stable patterns
+        response = client.get("/export/csv?status=stable")
+        assert response.status_code == 200
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        assert len(lines) == 2  # Header + 1 stable
+        assert "C1" in lines[1]
+        assert "C2" not in csv_content
+    
+    def test_export_csv_complete_data(self, client, valid_pattern_data):
+        """Test that CSV export contains all expected fields with complete details."""
+        # Add dependencies and manifestations
+        valid_pattern_data["dependencies"] = {
+            "requires": {"pattern-ref": ["C2"]},
+            "uses": {"pattern-ref": ["C3"]}
+        }
+        valid_pattern_data["manifestations"] = {
+            "manifestation": [
+                {"name": "Test Manifestation", "description": "Test Description"}
+            ]
+        }
+        valid_pattern_data["metadata"]["domains"] = {
+            "domain": ["Domain1", "Domain2"]
+        }
+        valid_pattern_data["metadata"]["last_updated"] = "2025-11-22"
+        
+        client.post("/patterns", json=valid_pattern_data)
+        
+        response = client.get("/export/csv")
+        assert response.status_code == 200
+        
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        header = lines[0]
+        data_row = lines[1]
+        
+        # Verify all key fields are present in header
+        assert "requires_dependencies" in header
+        assert "uses_dependencies" in header
+        assert "manifestations" in header
+        assert "domains" in header
+        assert "last_updated" in header
+        assert "components" in header
+        assert "properties" in header
+        assert "operations" in header
+        assert "type_definitions" in header
+        
+        # Verify data includes expected values
+        assert "C2" in data_row  # requires dependency
+        assert "C3" in data_row  # uses dependency
+        assert "Domain1" in data_row or "Domain2" in data_row
+        assert "2025-11-22" in data_row
+        assert "Test Manifestation" in data_row
+        # Verify detailed component information is present
+        assert "[type:" in data_row  # Component details format
+        # Verify detailed property information is present
+        assert "P.C1.1" in data_row  # Property ID
+        assert "Connectivity" in data_row  # Property name
+        # Verify detailed operation information is present
+        assert "Traverse" in data_row  # Operation name
+        assert "[sig:" in data_row  # Operation signature marker
+
+
 # ==================== Integration Tests ====================
 
 class TestCompleteWorkflow:

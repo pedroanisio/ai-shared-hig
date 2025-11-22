@@ -7,25 +7,35 @@ echo "==========================================="
 
 # Initialize database
 echo "📦 Initializing database..."
-python3 init_db.py
+python3 -c "from database import init_db; init_db(); print('✓ Database schema ready')" || {
+    echo "⚠️  Warning: Database initialization failed"
+}
 
-# Check if CSV data exists
-CSV_DIR="/app/output/csv_export"
-if [ -d "$CSV_DIR" ] && [ -f "$CSV_DIR/patterns_summary.csv" ]; then
-    echo "📂 CSV data found - seeding database..."
+# Check if export file exists for restoration
+EXPORT_FILE="/app/output/master_data_final.csv"
+if [ -f "$EXPORT_FILE" ]; then
+    echo "📂 Master data export found - restoring patterns..."
     
-    # Run seeding script (skip existing patterns)
-    python3 seed_from_csv.py --quiet || {
-        echo "⚠️  Warning: Database seeding failed. Starting API anyway..."
+    # Wait a moment for database to be ready
+    sleep 1
+    
+    # Restore patterns from export via API
+    python3 restore_from_export.py 2>&1 | grep -E "^(✓|✗|=|  )" || {
+        echo "⚠️  Warning: Pattern restoration failed. Starting with empty database..."
     }
     
-    echo "✅ Database ready with data"
+    echo "✅ Database ready with restored data"
 else
-    echo "⚠️  No CSV data found at $CSV_DIR"
+    echo "⚠️  No master data export found at $EXPORT_FILE"
     echo "   Starting with empty database"
-    echo "   To seed data, mount CSV files to /app/output/csv_export"
+    echo ""
+    echo "   To restore patterns:"
+    echo "   1. Ensure master_data_final.csv exists in /app/output/"
+    echo "   2. Run: python3 restore_from_export.py"
+    echo "   Or use the API to create patterns interactively"
 fi
 
+echo ""
 echo "🚀 Starting FastAPI server..."
 echo "==========================================="
 
