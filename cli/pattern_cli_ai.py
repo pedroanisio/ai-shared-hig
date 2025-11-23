@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pattern CLI - AI-Optimized Command Line Interface
+Pattern CLI - AI-Optimized Command Line Interface (API Client)
 
 Fully compliant with modern AI-agent CLI design principles:
 - Structured output by default (JSON primary, YAML/CSV/Table optional)
@@ -10,6 +10,9 @@ Fully compliant with modern AI-agent CLI design principles:
 - Non-interactive operation
 - Deterministic grammar (named parameters only)
 - Comprehensive audit logging
+
+**Architecture**: This CLI is an API client - it uses HTTP requests to
+communicate with the Pattern API instead of direct database access.
 
 Exit Codes:
   0 - Success
@@ -39,6 +42,7 @@ from typing import Optional, List, Dict, Any, Tuple
 from pathlib import Path
 from datetime import datetime, timezone
 import io
+import os
 
 try:
     import yaml
@@ -46,14 +50,17 @@ try:
 except ImportError:
     YAML_AVAILABLE = False
 
-from database import SessionLocal, PatternRepository, init_db
-from models import Pattern, CategoryType, StatusType, ComplexityType
-from transform_jsonl_to_api import PatternTransformer
+try:
+    import requests
+except ImportError:
+    print("ERROR: requests library is required. Install it with: pip install requests", file=sys.stderr)
+    sys.exit(2)
 
 
 # Constants
-CLI_VERSION = "1.0.0"
+CLI_VERSION = "2.0.0"  # Updated version for API client architecture
 API_VERSION = "v1"
+DEFAULT_API_URL = os.getenv("PATTERN_API_URL", "http://localhost:8000")
 
 # Exit codes (POSIX + semantic)
 EXIT_SUCCESS = 0
@@ -142,19 +149,31 @@ class StructuredResponse:
 
 
 class PatternCLI:
-    """AI-optimized CLI for pattern management."""
+    """AI-optimized CLI for pattern management (API Client)."""
     
-    def __init__(self, output_format: str = 'json'):
-        """Initialize CLI with database connection."""
+    def __init__(self, output_format: str = 'json', api_url: str = DEFAULT_API_URL):
+        """Initialize CLI with API connection."""
+        self.api_url = api_url.rstrip('/')
+        self.output_format = output_format
+        self.response = StructuredResponse()
+        self.session = requests.Session()
+        
+        # Test API connectivity
         try:
-            self.db = SessionLocal()
-            self.repo = PatternRepository(self.db)
-            self.output_format = output_format
-            self.response = StructuredResponse()
-        except Exception as e:
+            response = self.session.get(f"{self.api_url}/health", timeout=5)
+            if response.status_code != 200:
+                output, code = StructuredResponse.error(
+                    "API_UNAVAILABLE",
+                    f"API health check failed: {response.status_code}",
+                    http_equivalent=503
+                )
+                print(output, file=sys.stderr)
+                sys.exit(EXIT_SYSTEM_ERROR)
+        except requests.exceptions.RequestException as e:
             output, code = StructuredResponse.error(
-                "DATABASE_CONNECTION_ERROR",
-                f"Failed to connect to database: {str(e)}",
+                "API_CONNECTION_ERROR",
+                f"Failed to connect to API at {self.api_url}: {str(e)}",
+                details={"api_url": self.api_url},
                 http_equivalent=503
             )
             print(output, file=sys.stderr)
@@ -165,16 +184,16 @@ class PatternCLI:
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
-        """Context manager exit - close database."""
-        self.db.close()
+        """Context manager exit - close session."""
+        self.session.close()
     
     # READ operations
     def get_pattern(self, pattern_id: str) -> int:
         """Get a specific pattern by ID with structured output."""
         try:
-            pattern = self.repo.get_by_id(pattern_id)
+            response = self.session.get(f"{self.api_url}/patterns/{pattern_id}")
             
-            if not pattern:
+            if response.status_code == 404:
                 output, code = self.response.error(
                     "NOT_FOUND",
                     f"Pattern '{pattern_id}' not found",
@@ -185,14 +204,15 @@ class PatternCLI:
                 print(output, file=sys.stderr)
                 return code
             
-            result = pattern.model_dump()
+            response.raise_for_status()
+            result = response.json()
             output = self.response.success(result, format=self.output_format)
             print(output)
             return EXIT_SUCCESS
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Failed to retrieve pattern: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -209,14 +229,19 @@ class PatternCLI:
     ) -> int:
         """List patterns with optional filtering."""
         try:
-            patterns = self.repo.list(
-                category=category,
-                status=status,
-                limit=limit,
-                offset=offset
-            )
+            params = {
+                "limit": limit,
+                "offset": offset
+            }
+            if category:
+                params["category"] = category
+            if status:
+                params["status"] = status
             
-            result = [p.model_dump() for p in patterns]
+            response = self.session.get(f"{self.api_url}/patterns", params=params)
+            response.raise_for_status()
+            
+            result = response.json()
             metadata = {
                 "count": len(result),
                 "limit": limit,
@@ -231,9 +256,9 @@ class PatternCLI:
             print(output)
             return EXIT_SUCCESS
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Failed to list patterns: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -242,20 +267,23 @@ class PatternCLI:
             return code
     
     def search_patterns(self, query: str, field: str = 'name') -> int:
-        """Search patterns by field content."""
+        """Search patterns by field content (client-side filtering)."""
         try:
-            patterns = self.repo.list(limit=1000)
+            # Get all patterns from API
+            response = self.session.get(f"{self.api_url}/patterns", params={"limit": 1000})
+            response.raise_for_status()
+            patterns = response.json()
             
             results = []
             query_lower = query.lower()
             
             for pattern in patterns:
                 if field == 'name':
-                    if query_lower in pattern.metadata.name.lower():
-                        results.append(pattern.model_dump())
+                    if query_lower in pattern.get('metadata', {}).get('name', '').lower():
+                        results.append(pattern)
                 elif field == 'id':
-                    if query_lower in pattern.id.lower():
-                        results.append(pattern.model_dump())
+                    if query_lower in pattern.get('id', '').lower():
+                        results.append(pattern)
             
             metadata = {
                 "query": query,
@@ -267,9 +295,9 @@ class PatternCLI:
             print(output)
             return EXIT_SUCCESS
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Search failed: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -281,30 +309,41 @@ class PatternCLI:
     def create_pattern(self, data: Dict) -> int:
         """Create a new pattern from data."""
         try:
-            pattern = Pattern(**data)
-            created = self.repo.create(pattern)
+            response = self.session.post(f"{self.api_url}/patterns", json=data)
             
-            result = created.model_dump()
+            if response.status_code == 409:
+                output, code = self.response.error(
+                    "ALREADY_EXISTS",
+                    f"Pattern already exists",
+                    details={"pattern_id": data.get('id')},
+                    http_equivalent=409,
+                    format=self.output_format
+                )
+                print(output, file=sys.stderr)
+                return code
+            
+            if response.status_code == 422:
+                output, code = self.response.error(
+                    "VALIDATION_ERROR",
+                    f"Invalid pattern data: {response.text}",
+                    details={"data": data},
+                    http_equivalent=422,
+                    format=self.output_format
+                )
+                print(output, file=sys.stderr)
+                return code
+            
+            response.raise_for_status()
+            result = response.json()
             output = self.response.success(result, format=self.output_format)
             print(output)
             return EXIT_SUCCESS
             
-        except ValueError as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "ALREADY_EXISTS",
-                f"Pattern already exists: {str(e)}",
-                details={"pattern_id": data.get('id')},
-                http_equivalent=409,
-                format=self.output_format
-            )
-            print(output, file=sys.stderr)
-            return code
-        except Exception as e:
-            output, code = self.response.error(
-                "VALIDATION_ERROR",
-                f"Invalid pattern data: {str(e)}",
-                details={"data": data},
-                http_equivalent=422,
+                "API_ERROR",
+                f"Create failed: {str(e)}",
+                http_equivalent=500,
                 format=self.output_format
             )
             print(output, file=sys.stderr)
@@ -314,22 +353,20 @@ class PatternCLI:
     def update_pattern(self, pattern_id: str, data: Dict) -> int:
         """Update an existing pattern."""
         try:
-            pattern = Pattern(**data)
-            
-            if pattern.id != pattern_id:
+            if data.get('id') != pattern_id:
                 output, code = self.response.error(
                     "VALIDATION_ERROR",
-                    f"Pattern ID mismatch: {pattern_id} != {pattern.id}",
-                    details={"expected": pattern_id, "provided": pattern.id},
+                    f"Pattern ID mismatch: {pattern_id} != {data.get('id')}",
+                    details={"expected": pattern_id, "provided": data.get('id')},
                     http_equivalent=422,
                     format=self.output_format
                 )
                 print(output, file=sys.stderr)
                 return code
             
-            updated = self.repo.update(pattern_id, pattern)
+            response = self.session.put(f"{self.api_url}/patterns/{pattern_id}", json=data)
             
-            if not updated:
+            if response.status_code == 404:
                 output, code = self.response.error(
                     "NOT_FOUND",
                     f"Pattern not found: {pattern_id}",
@@ -340,16 +377,17 @@ class PatternCLI:
                 print(output, file=sys.stderr)
                 return code
             
-            result = updated.model_dump()
+            response.raise_for_status()
+            result = response.json()
             output = self.response.success(result, format=self.output_format)
             print(output)
             return EXIT_SUCCESS
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "VALIDATION_ERROR",
+                "API_ERROR",
                 f"Update failed: {str(e)}",
-                http_equivalent=422,
+                http_equivalent=500,
                 format=self.output_format
             )
             print(output, file=sys.stderr)
@@ -359,9 +397,9 @@ class PatternCLI:
     def patch_pattern(self, pattern_id: str, data: Dict) -> int:
         """Partially update a pattern."""
         try:
-            updated = self.repo.partial_update(pattern_id, data)
+            response = self.session.patch(f"{self.api_url}/patterns/{pattern_id}", json=data)
             
-            if not updated:
+            if response.status_code == 404:
                 output, code = self.response.error(
                     "NOT_FOUND",
                     f"Pattern not found: {pattern_id}",
@@ -372,24 +410,26 @@ class PatternCLI:
                 print(output, file=sys.stderr)
                 return code
             
-            result = updated.model_dump()
+            if response.status_code == 422 or response.status_code == 400:
+                output, code = self.response.error(
+                    "VALIDATION_ERROR",
+                    f"Invalid patch data: {response.text}",
+                    details={"pattern_id": pattern_id, "patch": data},
+                    http_equivalent=422,
+                    format=self.output_format
+                )
+                print(output, file=sys.stderr)
+                return code
+            
+            response.raise_for_status()
+            result = response.json()
             output = self.response.success(result, format=self.output_format)
             print(output)
             return EXIT_SUCCESS
             
-        except ValueError as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "VALIDATION_ERROR",
-                f"Invalid patch data: {str(e)}",
-                details={"pattern_id": pattern_id, "patch": data},
-                http_equivalent=422,
-                format=self.output_format
-            )
-            print(output, file=sys.stderr)
-            return code
-        except Exception as e:
-            output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Patch failed: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -401,9 +441,9 @@ class PatternCLI:
     def delete_pattern(self, pattern_id: str) -> int:
         """Delete a pattern (non-interactive)."""
         try:
-            # Check if pattern exists
-            pattern = self.repo.get_by_id(pattern_id)
-            if not pattern:
+            response = self.session.delete(f"{self.api_url}/patterns/{pattern_id}")
+            
+            if response.status_code == 404:
                 output, code = self.response.error(
                     "NOT_FOUND",
                     f"Pattern not found: {pattern_id}",
@@ -414,27 +454,16 @@ class PatternCLI:
                 print(output, file=sys.stderr)
                 return code
             
-            # Delete
-            success = self.repo.delete(pattern_id)
+            response.raise_for_status()
             
-            if success:
-                result = {"pattern_id": pattern_id, "deleted": True}
-                output = self.response.success(result, format=self.output_format)
-                print(output)
-                return EXIT_SUCCESS
-            else:
-                output, code = self.response.error(
-                    "SYSTEM_ERROR",
-                    f"Failed to delete pattern: {pattern_id}",
-                    http_equivalent=500,
-                    format=self.output_format
-                )
-                print(output, file=sys.stderr)
-                return code
+            result = {"pattern_id": pattern_id, "deleted": True}
+            output = self.response.success(result, format=self.output_format)
+            print(output)
+            return EXIT_SUCCESS
                 
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Delete failed: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -455,31 +484,48 @@ class PatternCLI:
                 
                 if action == 'create':
                     try:
-                        pattern = Pattern(**data)
-                        created = self.repo.create(pattern)
-                        result = {"operation": "create", "pattern_id": created.id, "status": "success"}
+                        response = self.session.post(f"{self.api_url}/patterns", json=data)
+                        if response.status_code == 201:
+                            created = response.json()
+                            result = {"operation": "create", "pattern_id": created['id'], "status": "success"}
+                        else:
+                            result = {"operation": "create", "pattern_id": data.get('id'), "status": "failed", "error": response.text}
                     except Exception as e:
                         result = {"operation": "create", "pattern_id": data.get('id'), "status": "failed", "error": str(e)}
                 
                 elif action == 'update':
                     try:
-                        pattern = Pattern(**data)
-                        updated = self.repo.update(pattern_id, pattern)
-                        result = {"operation": "update", "pattern_id": pattern_id, "status": "success" if updated else "not_found"}
+                        response = self.session.put(f"{self.api_url}/patterns/{pattern_id}", json=data)
+                        if response.status_code == 200:
+                            result = {"operation": "update", "pattern_id": pattern_id, "status": "success"}
+                        elif response.status_code == 404:
+                            result = {"operation": "update", "pattern_id": pattern_id, "status": "not_found"}
+                        else:
+                            result = {"operation": "update", "pattern_id": pattern_id, "status": "failed", "error": response.text}
                     except Exception as e:
                         result = {"operation": "update", "pattern_id": pattern_id, "status": "failed", "error": str(e)}
                 
                 elif action == 'patch':
                     try:
-                        updated = self.repo.partial_update(pattern_id, data)
-                        result = {"operation": "patch", "pattern_id": pattern_id, "status": "success" if updated else "not_found"}
+                        response = self.session.patch(f"{self.api_url}/patterns/{pattern_id}", json=data)
+                        if response.status_code == 200:
+                            result = {"operation": "patch", "pattern_id": pattern_id, "status": "success"}
+                        elif response.status_code == 404:
+                            result = {"operation": "patch", "pattern_id": pattern_id, "status": "not_found"}
+                        else:
+                            result = {"operation": "patch", "pattern_id": pattern_id, "status": "failed", "error": response.text}
                     except Exception as e:
                         result = {"operation": "patch", "pattern_id": pattern_id, "status": "failed", "error": str(e)}
                 
                 elif action == 'delete':
                     try:
-                        success = self.repo.delete(pattern_id)
-                        result = {"operation": "delete", "pattern_id": pattern_id, "status": "success" if success else "not_found"}
+                        response = self.session.delete(f"{self.api_url}/patterns/{pattern_id}")
+                        if response.status_code == 204:
+                            result = {"operation": "delete", "pattern_id": pattern_id, "status": "success"}
+                        elif response.status_code == 404:
+                            result = {"operation": "delete", "pattern_id": pattern_id, "status": "not_found"}
+                        else:
+                            result = {"operation": "delete", "pattern_id": pattern_id, "status": "failed", "error": response.text}
                     except Exception as e:
                         result = {"operation": "delete", "pattern_id": pattern_id, "status": "failed", "error": str(e)}
                 
@@ -507,33 +553,45 @@ class PatternCLI:
     ) -> int:
         """Export patterns to JSONL format (one pattern per line)."""
         try:
-            patterns = self.repo.list(
-                category=category,
-                status=status,
-                limit=10000
-            )
+            # Build query parameters
+            params = {}
+            if category:
+                params["category"] = category
+            if status:
+                params["status"] = status
+            
+            # Use API's export endpoint
+            response = self.session.get(f"{self.api_url}/export/jsonl", params=params)
+            response.raise_for_status()
+            
+            # Get the content as text
+            content = response.text
+            lines = content.strip().split('\n')
             
             # Open output file or use stdout
             output_stream = open(output_file, 'w', encoding='utf-8') if output_file else sys.stdout
+            pattern_count = 0
             
             try:
-                for pattern in patterns:
-                    # Write each pattern as a single JSON line
-                    pattern_data = pattern.model_dump()
-                    
-                    # Optionally remove null fields for compact export
-                    if compact:
-                        pattern_data = self._remove_null_fields(pattern_data)
-                    
-                    json_line = json.dumps(pattern_data, ensure_ascii=False)
-                    print(json_line, file=output_stream)
+                for line in lines:
+                    if line:
+                        pattern_count += 1
+                        
+                        # Optionally remove null fields for compact export
+                        if compact:
+                            pattern_data = json.loads(line)
+                            pattern_data = self._remove_null_fields(pattern_data)
+                            json_line = json.dumps(pattern_data, ensure_ascii=False)
+                            print(json_line, file=output_stream)
+                        else:
+                            print(line, file=output_stream)
                 
                 # Write success message to stderr (so it doesn't mix with JSONL output)
                 size_note = " (compact mode)" if compact else ""
                 if output_file:
-                    sys.stderr.write(f"✅ Exported {len(patterns)} patterns to {output_file}{size_note}\n")
+                    sys.stderr.write(f"✅ Exported {pattern_count} patterns to {output_file}{size_note}\n")
                 else:
-                    sys.stderr.write(f"✅ Exported {len(patterns)} patterns to stdout{size_note}\n")
+                    sys.stderr.write(f"✅ Exported {pattern_count} patterns to stdout{size_note}\n")
                 
                 return EXIT_SUCCESS
                 
@@ -541,9 +599,9 @@ class PatternCLI:
                 if output_file:
                     output_stream.close()
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Export failed: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -568,14 +626,17 @@ class PatternCLI:
     def show_statistics(self) -> int:
         """Show database statistics."""
         try:
-            stats = self.repo.get_statistics()
+            response = self.session.get(f"{self.api_url}/statistics")
+            response.raise_for_status()
+            
+            stats = response.json()
             output = self.response.success(stats, format=self.output_format)
             print(output)
             return EXIT_SUCCESS
             
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             output, code = self.response.error(
-                "SYSTEM_ERROR",
+                "API_ERROR",
                 f"Failed to retrieve statistics: {str(e)}",
                 http_equivalent=500,
                 format=self.output_format
@@ -778,6 +839,7 @@ Examples:
     
     # Global options
     parser.add_argument('--format', choices=['json', 'yaml', 'compact'], default='json', help='Output format')
+    parser.add_argument('--api-url', help=f'API base URL (default: {DEFAULT_API_URL})')
     
     # Commands
     subparsers = parser.add_subparsers(dest='command', help='Command to execute')
@@ -825,6 +887,7 @@ Examples:
     export_parser.add_argument('--category', choices=['concept', 'pattern', 'flow'], help='Filter by category')
     export_parser.add_argument('--status', choices=['draft', 'stable', 'deprecated'], help='Filter by status')
     export_parser.add_argument('--output', help='Output file (default: stdout)')
+    export_parser.add_argument('--compact', action='store_true', help='Remove null fields from output')
     
     # STATS
     stats_parser = subparsers.add_parser('stats', help='Show statistics')
@@ -856,8 +919,8 @@ Examples:
         parser.print_help()
         return EXIT_SUCCESS
     
-    # Initialize database
-    init_db()
+    # Get API URL from args or environment variable
+    api_url = getattr(args, 'api_url', None) or DEFAULT_API_URL
     
     # Helper to load data from string or file
     def load_data(data_arg: str) -> Dict:
@@ -868,7 +931,7 @@ Examples:
             return json.loads(data_arg)
     
     # Execute command
-    with PatternCLI(output_format=args.format) as cli:
+    with PatternCLI(output_format=args.format, api_url=api_url) as cli:
         if args.command == 'get':
             return cli.get_pattern(args.id)
         
@@ -910,7 +973,8 @@ Examples:
             return cli.export_patterns(
                 category=args.category,
                 status=args.status,
-                output_file=args.output
+                output_file=args.output,
+                compact=args.compact
             )
         
         elif args.command == 'stats':
