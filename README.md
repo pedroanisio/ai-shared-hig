@@ -24,56 +24,105 @@ The Universal Corpus Pattern Language provides a comprehensive, formally specifi
 
 ### Installation
 
+#### From Source (Development)
+
 ```bash
 # Clone the repository
 git clone [repository-url]
 cd universal
 
-# Install dependencies
-pip install -r requirements.txt
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Initialize database (optional: add --sample for demo data)
-python init_db.py --sample
+# Install in editable mode with all dev dependencies
+pip install -e ".[dev,test]"
+```
+
+#### Using pip (once published)
+
+```bash
+pip install universal-corpus
 ```
 
 ### Using the API
 
+#### Development Server
+
 ```bash
-# Start the FastAPI server
-python api.py
+# Using the convenience script
+./scripts/run_dev_server.sh
+
+# Or manually
+source venv/bin/activate
+uvicorn universal_corpus.api:app --reload
 
 # API will be available at http://localhost:8000
 # Interactive docs at http://localhost:8000/docs
 # Database file: patterns.db (created automatically)
 ```
 
+#### Docker
+
+```bash
+# Build the image
+docker build -t universal-corpus .
+
+# Run the container
+docker run -d -p 8000:8000 -v $(pwd)/data:/app/data universal-corpus
+
+# Using docker-compose
+docker-compose up -d
+```
+
 ### Running Tests
 
 ```bash
-# Run all tests with coverage
-pytest test_api.py -v --cov=. --cov-report=html
+# Using the convenience script
+./scripts/run_tests.sh
 
-# Run specific test class
-pytest test_api.py::TestCreatePattern -v
+# Or manually
+pytest tests/ -v --cov=universal_corpus --cov-report=html
+
+# Run specific test file
+pytest tests/test_api.py -v
 
 # Run with output
-pytest test_api.py -v -s
+pytest tests/ -v -s
 ```
 
-### Database Management
+### Code Quality
 
 ```bash
-# Initialize empty database
-python init_db.py
+# Check code quality
+./scripts/lint.sh
 
-# Initialize with sample data
-python init_db.py --sample
+# Auto-format code
+./scripts/format.sh
+```
 
-# Reset database (WARNING: deletes all data)
-python init_db.py --reset
+### CLI Tools
 
-# Reset and load sample data
-python init_db.py --reset --sample
+The package provides several command-line tools:
+
+```bash
+# Pattern management CLI
+universal-corpus list --category concept
+universal-corpus get C1
+universal-corpus create --file pattern.json
+
+# Corpus manager
+corpus-manager export --format jsonl
+corpus-manager import --file patterns.jsonl
+
+# Compact format converter (NEW!)
+python -m universal_corpus.cli.compact_converter to-compact input.jsonl output_compact.jsonl
+python -m universal_corpus.cli.compact_converter analyze input.jsonl
+python -m universal_corpus.cli.compact_converter validate input.jsonl
+
+# Assessment tools
+assess-dependencies
+assess-data-quality
 ```
 
 ### API Examples
@@ -103,13 +152,276 @@ print(xml_response.text)
 # List all patterns
 patterns = requests.get("http://localhost:8000/patterns?category=concept")
 print(patterns.json())
+
+# Export to JSONL (full format)
+jsonl_data = requests.get("http://localhost:8000/export/jsonl")
+with open("patterns.jsonl", "wb") as f:
+    f.write(jsonl_data.content)
+
+# Export to Compact JSONL (30% token reduction for AI/LLM sharing)
+compact_data = requests.get("http://localhost:8000/export/compact")
+with open("patterns_compact.jsonl", "wb") as f:
+    f.write(compact_data.content)
+
+# Export to CSV Compact (spreadsheet + programmatic access)
+csv_compact = requests.get("http://localhost:8000/export/csv-compact")
+with open("patterns_compact.csv", "wb") as f:
+    f.write(csv_compact.content)
+
+# Export to CSV Simple (91% reduction, perfect for humans!)
+csv_simple = requests.get("http://localhost:8000/export/csv-simple")
+with open("patterns_simple.csv", "wb") as f:
+    f.write(csv_simple.content)
+
+# Import from JSONL
+with open("patterns.jsonl", "rb") as f:
+    files = {"file": ("patterns.jsonl", f, "application/x-ndjson")}
+    response = requests.post(
+        "http://localhost:8000/import/jsonl?skip_existing=true",
+        files=files
+    )
+    print(response.json())
+    # {"status": "completed", "statistics": {"total": 10, "imported": 8, "skipped": 2, ...}}
+
+# Import from JSON array
+with open("patterns.json", "rb") as f:
+    files = {"file": ("patterns.json", f, "application/json")}
+    response = requests.post(
+        "http://localhost:8000/import/json",
+        files=files
+    )
+    print(response.json())
 ```
+
+### Python Package Usage
+
+```python
+from universal_corpus import Pattern, PatternRepository, init_db, get_db
+
+# Initialize database
+init_db()
+
+# Use repository pattern
+from universal_corpus.database import SessionLocal
+db = SessionLocal()
+repo = PatternRepository(db)
+
+# Create a pattern
+pattern = Pattern(**pattern_data)
+created = repo.create(pattern)
+
+# Query patterns
+patterns = repo.list(category="concept", limit=10)
+
+# Get statistics
+stats = repo.get_statistics()
+print(f"Total patterns: {stats['total_patterns']}")
+```
+
+### Multiple Export Formats
+
+The Universal Corpus provides **multiple export formats** optimized for different use cases:
+
+| Format | Size | Best For |
+|--------|------|----------|
+| **Full JSONL** | 1,042 KB | API storage, complete data |
+| **Compact JSONL** | 732 KB (-30%) | AI/LLM prompts, token optimization |
+| **CSV Compact** | 832 KB (-20%) | Data analysis, spreadsheets + code |
+| **CSV Simple** | 90 KB (-91%) | Human review, stakeholder presentations ⭐ |
+
+### Compact Format for AI/LLM Sharing
+
+The **Compact JSONL format** is specifically designed for sharing patterns with AI assistants and LLMs. It achieves **~30% token reduction** while preserving all semantic information.
+
+#### Why Use Compact Format?
+
+- **Save Tokens**: ~30% reduction in token consumption (260K → 183K tokens for 176 patterns)
+- **Lower Costs**: Reduced API costs for AI interactions
+- **Fit More Context**: Include more patterns within context windows
+- **Still Human-Readable**: Uses intuitive abbreviations (`n` for name, `def` for definition)
+- **Lossless**: Complete round-trip conversion validated
+
+#### Quick Start
+
+```bash
+# Export patterns in compact format
+curl http://localhost:8000/export/compact -o patterns_compact.jsonl
+
+# Convert existing corpus to compact format
+python -m universal_corpus.cli.compact_converter to-compact \
+  final_corpus.jsonl final_corpus_compact.jsonl
+
+# Analyze compression ratio
+python -m universal_corpus.cli.compact_converter analyze final_corpus.jsonl
+```
+
+#### Format Comparison
+
+**Full Format** (1,482 tokens per pattern average):
+```json
+{
+  "id": "C1",
+  "version": "1.1",
+  "metadata": {
+    "name": "Graph Structure",
+    "category": "concept",
+    "status": "stable",
+    "complexity": "medium"
+  },
+  "definition": {
+    "tuple_notation": {
+      "content": "$G = (N, E, \\lambda_n, \\lambda_e)$",
+      "format": "latex"
+    }
+  }
+}
+```
+
+**Compact Format** (1,039 tokens per pattern average):
+```json
+{
+  "id": "C1",
+  "v": "1.1",
+  "name": "Graph Structure",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "def": "$G = (N, E, \\lambda_n, \\lambda_e)$"
+}
+```
+
+**Savings:** ~443 tokens per pattern (29.8% reduction)
+
+#### Key Abbreviations
+
+| Full | Compact | Full | Compact |
+|------|---------|------|---------|
+| `version` | `v` | `formal_spec` | `spec` |
+| `category` | `cat` | `preconditions` | `pre` |
+| `complexity` | `cx` | `postconditions` | `post` |
+| `components` | `comps` | `effects` | `fx` |
+| `properties` | `props` | `invariants` | `inv` |
+| `operations` | `ops` | `manifestations` | `manif` |
+
+#### API Integration
+
+```python
+import requests
+
+# Export compact format
+compact = requests.get("http://localhost:8000/export/compact")
+
+# Import compact format
+with open("patterns_compact.jsonl", "rb") as f:
+    response = requests.post(
+        "http://localhost:8000/import/compact",
+        files={"file": f}
+    )
+```
+
+#### Use Cases
+
+- **AI Prompts**: Embed pattern data in prompts with minimal token overhead
+- **RAG Systems**: Efficient pattern embedding and retrieval
+- **Documentation**: Quick pattern reference for AI assistants
+- **API Optimization**: Reduce bandwidth and token costs
+
+### CSV Formats for Spreadsheets & Data Analysis
+
+Two **CSV formats** provide columnar (spreadsheet-friendly) representations:
+
+#### CSV Simple (Recommended for Humans!) ⭐
+
+```bash
+curl http://localhost:8000/export/csv-simple -o patterns.csv
+# or
+python -m universal_corpus.cli.compact_converter to-csv --simple input.jsonl output.csv
+```
+
+**Features:**
+- **91% smaller** than full format (90KB vs 1MB!)
+- Opens directly in Excel/Google Sheets
+- Human-readable columns only
+- Count columns: `num_components`, `num_properties`, etc.
+- Perfect for stakeholder reviews and quick browsing
+
+**Sample columns:**
+```
+id | name | category | status | complexity | num_components | num_properties | ...
+C1 | Graph Structure | concept | stable | medium | 2 | 2 | ...
+```
+
+#### CSV Compact (For Data Analysis)
+
+```bash
+curl http://localhost:8000/export/csv-compact -o patterns.csv
+```
+
+**Features:**
+- Full data preservation with detail columns
+- Programmatic access via compact JSON in `*_detail` columns
+- Spreadsheet-compatible for manual review
+- Round-trip conversion supported
+
+**Use cases:**
+- pandas/R analysis: `pd.read_csv('patterns.csv')`
+- SQL imports
+- BI tools
+- Combined manual + programmatic workflows
+
+📖 **Full Documentation**: 
+- [docs/COMPACT_FORMAT.md](docs/COMPACT_FORMAT.md) - Compact JSONL specification
+- [docs/CSV_FORMAT_GUIDE.md](docs/CSV_FORMAT_GUIDE.md) - CSV formats guide and examples
 
 ---
 
 ## 🏗️ Architecture
 
-### Components
+### Project Structure
+
+```
+universal/
+├── src/
+│   └── universal_corpus/      # Main package
+│       ├── __init__.py         # Package initialization
+│       ├── models.py           # Pydantic models for validation
+│       ├── database.py         # SQLAlchemy database layer
+│       ├── api.py              # FastAPI REST API
+│       ├── compact_format.py   # Token-efficient format (NEW!)
+│       ├── cli/                # Command-line tools
+│       │   ├── pattern_cli.py
+│       │   ├── pattern_cli_ai.py
+│       │   ├── corpus_manager.py
+│       │   └── compact_converter.py  # Compact format CLI (NEW!)
+│       └── scripts/            # Utility scripts
+├── tests/                      # Test suite
+│   ├── conftest.py            # Pytest configuration and fixtures
+│   └── test_api.py            # API and model tests
+├── data/                       # Data storage
+│   └── master_data/           # Master dataset
+│       ├── final_corpus.jsonl         # Full format corpus
+│       └── final_corpus_compact.jsonl # Compact format (NEW!)
+├── docs/                       # Documentation
+│   ├── COMPACT_FORMAT.md      # Compact format specification (NEW!)
+│   └── autonomous_ai_extracted.txt
+├── examples/                   # Example code
+│   └── compact_format_demo.py # Compact format demo (NEW!)
+├── output/                     # Generated outputs
+│   ├── csv_master/
+│   ├── generated_md/
+│   └── m2m/
+├── scripts/                    # Development scripts
+│   ├── run_dev_server.sh      # Start development server
+│   ├── run_tests.sh           # Run test suite
+│   ├── lint.sh                # Code quality checks
+│   └── format.sh              # Auto-format code
+├── pyproject.toml             # Project metadata and dependencies
+├── Dockerfile                 # Docker configuration
+├── docker-compose.yml         # Docker Compose configuration
+└── README.md                  # This file
+```
+
+### Core Components
 
 1. **models.py** - Pydantic models for validation and serialization
    - Type-safe models matching XSD schema
@@ -124,11 +436,11 @@ print(patterns.json())
 
 3. **api.py** - FastAPI REST API
    - Complete CRUD endpoints
-   - XML export functionality
+   - XML/JSON/JSONL export functionality
    - Filtering and pagination
    - Statistics and dependencies endpoints
 
-4. **test_api.py** - Comprehensive test suite
+4. **tests/** - Comprehensive test suite
    - 50+ test cases covering all scenarios
    - Model validation tests
    - API endpoint tests
