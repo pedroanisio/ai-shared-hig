@@ -4,34 +4,11 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
 # Virtual environments
 venv/
 env/
 ENV/
-.venv
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
 
 # Testing
 .pytest_cache/
@@ -39,42 +16,44 @@ ENV/
 htmlcov/
 .tox/
 
-# Database files (use volumes instead)
+# Database files (don't include in image)
 *.db
 *.sqlite
 *.sqlite3
+patterns.db
+test_patterns.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
 # Git
 .git/
 .gitignore
-.gitattributes
-
-# Docker
-Dockerfile
-docker-compose*.yml
-.dockerignore
 
 # Documentation
-*.md
 docs/
 
-# Output directories
-# Include csv_master for seeding (this is the master CSV data)
-# Other output directories are excluded
-output/*
-!output/csv_master/
-!output/csv_master/**
+# Build artifacts
+build/
+dist/
+*.egg-info/
 
 # Logs
 *.log
-logs/
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Temporary files
-*.tmp
-*.temp
-*.bak
+# Generated output (don't include large generated files)
+output/generated_md/*.md
+output/m2m/xml/*.xml
+output/m2m/yaml/*.yaml
 
+# Keep structure files
+!output/**/.gitkeep
+!data/**/.gitkeep

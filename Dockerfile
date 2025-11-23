@@ -1,6 +1,6 @@
 # Multi-stage build for Universal Corpus Pattern API
 # Stage 1: Build stage with all dependencies
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -10,9 +10,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml for better layer caching
-COPY pyproject.toml .
-COPY README.md .
+# Copy pyproject.toml and source code for installation
+COPY pyproject.toml README.md ./
+COPY src/ ./src/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir --user .
@@ -41,11 +41,7 @@ COPY --chown=appuser:appuser docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
 # Create data directory for database and output
-RUN mkdir -p ./data ./output/csv_master
-
-# Copy master data for database seeding (if it exists)
-COPY --chown=appuser:appuser master_data/ ./master_data/ 2>/dev/null || true
-COPY --chown=appuser:appuser output/csv_master/ ./output/csv_master/ 2>/dev/null || true
+RUN mkdir -p ./data ./output/csv_master ./master_data
 
 # Set PATH to include user's local bin
 ENV PATH=/home/appuser/.local/bin:$PATH
