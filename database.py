@@ -269,7 +269,18 @@ class PatternRepository:
     
     def _deep_merge(self, base: dict, update: dict) -> dict:
         """
-        Recursively merge update dict into base dict.
+        Recursively merge update dict into base dict with intelligent array handling.
+        
+        Arrays are merged intelligently based on identifying keys:
+        - operations.operation: merged by "name"
+        - properties.property: merged by "id"
+        - components.component: merged by "name"
+        - type_definitions.type_def: merged by "name"
+        - manifestations.manifestation: merged by "name"
+        - Other arrays: replaced entirely
+        
+        REPLACE MODE: If update dict contains {"__replace__": true}, the value
+        completely replaces the base (no merging).
         
         Args:
             base: Base dictionary
@@ -281,12 +292,118 @@ class PatternRepository:
         result = base.copy()
         
         for key, value in update.items():
-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            # Skip the replace marker itself
+            if key == "__replace__":
+                continue
+                
+            # Check if this update has explicit replace mode
+            if isinstance(value, dict) and value.get("__replace__") is True:
+                # Remove the marker and use the rest as replacement
+                clean_value = {k: v for k, v in value.items() if k != "__replace__"}
+                result[key] = clean_value
+            elif key in result and isinstance(result[key], dict) and isinstance(value, dict):
                 # Recursively merge nested dicts
                 result[key] = self._deep_merge(result[key], value)
+            elif key in result and isinstance(result[key], list) and isinstance(value, list):
+                # Intelligent array merging based on context
+                result[key] = self._merge_arrays(key, result[key], value)
             else:
                 # Overwrite with new value
                 result[key] = value
+        
+        return result
+    
+    def _merge_arrays(self, key: str, base_array: list, update_array: list) -> list:
+        """
+        Merge arrays intelligently based on identifying keys.
+        
+        REPLACE MODE: If none of the update items match existing items (by merge key),
+        the entire array is replaced. This allows for complete array replacement.
+        
+        MERGE MODE: If any update items match existing items, those items are merged
+        and unmatched base items are preserved.
+        
+        Args:
+            key: The field name (to determine merge strategy)
+            base_array: Existing array
+            update_array: Array with updates
+            
+        Returns:
+            Merged or replaced array
+        """
+        # Define merge strategies for different array types
+        merge_strategies = {
+            'operation': 'name',      # operations.operation merged by name
+            'property': 'id',         # properties.property merged by id
+            'component': 'name',      # components.component merged by name
+            'type-def': 'name',       # type-definitions.type-def merged by name
+            'type_def': 'name',       # type_definitions.type_def merged by name (both formats)
+            'manifestation': 'name',  # manifestations.manifestation merged by name
+            'invariant': None,        # invariants - replace entire array
+            'condition': None,        # conditions - replace entire array
+            'effect': None,           # effects - replace entire array
+            'domain': None,           # domains - replace entire array
+            'pattern-ref': None,      # pattern refs - replace entire array
+            'pattern_ref': None,      # pattern refs - replace entire array
+        }
+        
+        merge_key = merge_strategies.get(key)
+        
+        if merge_key is None:
+            # No intelligent merge - replace entire array
+            return update_array
+        
+        # Build lookup dictionary from base array
+        base_dict = {}
+        non_mergeable_base_items = []
+        
+        for item in base_array:
+            if isinstance(item, dict) and merge_key in item:
+                identifier = item[merge_key]
+                base_dict[identifier] = item
+            else:
+                # Item doesn't have the merge key
+                non_mergeable_base_items.append(item)
+        
+        # Check if ANY update items match existing items
+        update_identifiers = set()
+        for item in update_array:
+            if isinstance(item, dict) and merge_key in item:
+                update_identifiers.add(item[merge_key])
+        
+        has_overlap = bool(update_identifiers & set(base_dict.keys()))
+        
+        # REPLACE MODE: No overlapping keys means complete replacement
+        if not has_overlap and base_dict:
+            return update_array
+        
+        # MERGE MODE: Has overlaps, merge intelligently
+        result = []
+        updated_keys = set()
+        
+        for item in update_array:
+            if isinstance(item, dict) and merge_key in item:
+                identifier = item[merge_key]
+                updated_keys.add(identifier)
+                
+                if identifier in base_dict:
+                    # Merge with existing item
+                    merged_item = self._deep_merge(base_dict[identifier], item)
+                    result.append(merged_item)
+                else:
+                    # New item - add it
+                    result.append(item)
+            else:
+                # Item doesn't have merge key, just add it
+                result.append(item)
+        
+        # Add base items that weren't updated (only in merge mode)
+        for identifier, item in base_dict.items():
+            if identifier not in updated_keys:
+                result.append(item)
+        
+        # Add back non-mergeable items from base
+        result.extend(non_mergeable_base_items)
         
         return result
     
