@@ -27,9 +27,9 @@ from pathlib import Path
 from datetime import datetime, timezone
 import yaml
 
-from database import SessionLocal, PatternRepository, init_db
-from models import Pattern, CategoryType, StatusType, ComplexityType
-from transform_jsonl_to_api import PatternTransformer
+from universal_corpus.database import SessionLocal, PatternRepository, init_db
+from universal_corpus.models import Pattern, CategoryType, StatusType, ComplexityType
+# Note: PatternTransformer functionality removed - module no longer exists
 
 
 # Version and API information

@@ -17,8 +17,8 @@ import io
 import re
 from sqlalchemy.orm import Session
 
-from models import Pattern, CategoryType, StatusType
-from database import get_db, init_db, PatternRepository
+from universal_corpus.models import Pattern, CategoryType, StatusType
+from universal_corpus.database import get_db, init_db, PatternRepository
 
 
 # Initialize FastAPI application

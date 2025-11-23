@@ -10,11 +10,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better layer caching
-COPY requirements.txt .
+# Copy pyproject.toml for better layer caching
+COPY pyproject.toml .
+COPY README.md .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --user -r requirements.txt
+RUN pip install --no-cache-dir --user .
 
 
 # Stage 2: Production runtime image
@@ -31,19 +32,20 @@ RUN useradd -m -u 1000 appuser && \
 # Copy Python dependencies from builder
 COPY --from=builder /root/.local /home/appuser/.local
 
-# Copy application code
-COPY --chown=appuser:appuser *.py ./
+# Copy application source code
+COPY --chown=appuser:appuser src/ ./src/
+COPY --chown=appuser:appuser pyproject.toml README.md ./
 
 # Copy entrypoint script
 COPY --chown=appuser:appuser docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
-# Create output directory structure and copy CSV data for seeding
-RUN mkdir -p ./output/csv_master
+# Create data directory for database and output
+RUN mkdir -p ./data ./output/csv_master
 
-# Copy CSV master data for database seeding (if it exists)
-# This will include all CSV files from output/csv_master/ directory
-COPY --chown=appuser:appuser output/csv_master/ ./output/csv_master/
+# Copy master data for database seeding (if it exists)
+COPY --chown=appuser:appuser master_data/ ./master_data/ 2>/dev/null || true
+COPY --chown=appuser:appuser output/csv_master/ ./output/csv_master/ 2>/dev/null || true
 
 # Set PATH to include user's local bin
 ENV PATH=/home/appuser/.local/bin:$PATH
@@ -60,6 +62,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
 ENV SQLALCHEMY_DATABASE_URL=sqlite:////app/data/patterns.db
 
 # Run the API with entrypoint script

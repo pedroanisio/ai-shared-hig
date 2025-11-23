@@ -14,7 +14,7 @@ from datetime import datetime
 from typing import Optional, List
 import json
 
-from models import Pattern
+from universal_corpus.models import Pattern
 
 
 # Database configuration

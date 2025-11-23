@@ -15,13 +15,13 @@ import xml.etree.ElementTree as ET
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from api import app
-from models import (
+from universal_corpus.api import app
+from universal_corpus.models import (
     Pattern, Metadata, Definition, MathExpression, Components, Component,
     Properties, Property, Operations, Operation, Manifestations, Manifestation,
     Dependencies, PatternRefs, TypeDefinitions, TypeDef
 )
-from database import Base, get_db
+from universal_corpus.database import Base, get_db
 
 
 # Create test database engine

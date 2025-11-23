@@ -7,7 +7,7 @@ echo "==========================================="
 
 # Initialize database
 echo "📦 Initializing database..."
-python3 -c "from database import init_db; init_db(); print('✓ Database schema ready')" || {
+python3 -c "from universal_corpus.database import init_db; init_db(); print('✓ Database schema ready')" || {
     echo "⚠️  Warning: Database initialization failed"
 }
 
@@ -40,5 +40,5 @@ echo "🚀 Starting FastAPI server..."
 echo "==========================================="
 
 # Start the API server
-exec uvicorn api:app --host 0.0.0.0 --port 8000
+exec uvicorn universal_corpus.api:app --host 0.0.0.0 --port 8000
 
