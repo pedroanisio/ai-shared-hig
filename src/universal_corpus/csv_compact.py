@@ -346,3 +346,5 @@ def patterns_to_csv_simple(patterns: List[Pattern]) -> str:
     
     return output.getvalue()
 
+
+

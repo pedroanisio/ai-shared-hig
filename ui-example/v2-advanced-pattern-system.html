@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal App Anatomy - Advanced Pattern System v3 (HCI Corpus)</title>
+    <!-- KaTeX for LaTeX rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            position: relative;
+            max-width: 1920px;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        #canvas-container { position: relative; width: 100%; background: white; }
+        .screenshot { width: 100%; display: block; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        
+        /* Enhanced area styling with pattern-based coloring */
+        .area {
+            position: absolute;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+        
+        /* Concept-based coloring (magenta tint) */
+        .area[data-has-concepts="true"] {
+            background: linear-gradient(135deg, rgba(219, 39, 119, 0.05), rgba(219, 39, 119, 0.02)) !important;
+        }
+        
+        /* Flow-based coloring (cyan tint) */
+        .area[data-has-flows="true"] {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.05), rgba(6, 182, 212, 0.02)) !important;
+        }
+        
+        .area.l1-container { border-color: rgba(239, 68, 68, 0.8); background: rgba(239, 68, 68, 0.08); border-width: 3px; }
+        .area.l1-container:hover, .area.l1-container.active { border-color: #ef4444; background: rgba(239, 68, 68, 0.15); z-index: 5; }
+        .area.l2-region { border-color: rgba(59, 130, 246, 0.7); background: rgba(59, 130, 246, 0.1); border-width: 3px; }
+        .area.l2-region:hover, .area.l2-region.active { border-color: #3b82f6; background: rgba(59, 130, 246, 0.18); z-index: 6; }
+        .area.l3-zone { border-color: rgba(168, 85, 247, 0.65); background: rgba(168, 85, 247, 0.09); border-width: 2px; border-style: dashed; }
+        .area.l3-zone:hover, .area.l3-zone.active { border-color: #a855f7; background: rgba(168, 85, 247, 0.16); z-index: 7; }
+        .area.l4-component { border-color: rgba(34, 197, 94, 0.6); background: rgba(34, 197, 94, 0.07); border-width: 2px; border-style: dotted; }
+        .area.l4-component:hover, .area.l4-component.active { border-color: #22c55e; background: rgba(34, 197, 94, 0.14); z-index: 8; }
+        .area.l5-atom { border-color: rgba(249, 115, 22, 0.55); background: rgba(249, 115, 22, 0.06); border-width: 1px; border-style: dotted; }
+        .area.l5-atom:hover, .area.l5-atom.active { border-color: #f97316; background: rgba(249, 115, 22, 0.12); z-index: 9; }
+        
+        .label {
+            position: absolute;
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+            opacity: 0;
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+        }
+        .l1-container .label { background: linear-gradient(135deg, #ef4444, #dc2626); font-size: 12px; font-weight: 700; }
+        .l2-region .label { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .l3-zone .label { background: linear-gradient(135deg, #a855f7, #9333ea); }
+        .l4-component .label { background: linear-gradient(135deg, #22c55e, #16a34a); }
+        .l5-atom .label { background: linear-gradient(135deg, #f97316, #ea580c); font-size: 10px; }
+        .area:hover .label, .area.active .label { opacity: 1; transform: translateY(0); }
+        
+        .label::before {
+            content: attr(data-id);
+            display: inline-block;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-right: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 9px;
+        }
+        
+        .label .patterns {
+            display: block;
+            font-size: 9px;
+            margin-top: 6px;
+            opacity: 0.95;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .pattern-tag {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-top: 2px;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .pattern-tag.concept { background: rgba(219, 39, 119, 0.3); border-color: rgba(219, 39, 119, 0.5); }
+        .pattern-tag.flow { background: rgba(6, 182, 212, 0.3); border-color: rgba(6, 182, 212, 0.5); }
+        
+        .domain-selector {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 90vw;
+        }
+        .domain-selector h4 {
+            font-size: 13px;
+            color: #1f2937;
+            margin-right: 10px;
+            font-weight: 700;
+        }
+        .domain-selector .version-badge {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .domain-selector .version-badge::before {
+            content: "⚡";
+            font-size: 14px;
+        }
+        .domain-selector button {
+            background: #e5e7eb;
+            color: #374151;
+            border: 2px solid transparent;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .domain-selector button:hover { background: #d1d5db; transform: translateY(-1px); }
+        .domain-selector button.active { background: #3b82f6; color: white; border-color: #2563eb; }
+        
+        .controls {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 260px;
+            max-width: 300px;
+            transition: all 0.3s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .controls.hidden { transform: translateX(calc(100% + 40px)); }
+        .controls h4 {
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #1f2937;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+        .controls button {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+        }
+        .controls button:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .controls button.secondary { background: #6b7280; }
+        .controls button.secondary:hover { background: #4b5563; }
+        .controls button.pattern-filter { background: #8b5cf6; font-size: 11px; padding: 8px 12px; }
+        .controls button.pattern-filter:hover { background: #7c3aed; }
+        .control-section { margin-bottom: 20px; }
+        .control-section h5 {
+            font-size: 11px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        
+        .pattern-count {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-left: 4px solid #22c55e;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #15803d;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+        }
+        
+        .advanced-features {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin-top: 12px;
+            border-radius: 8px;
+            font-size: 10px;
+            color: #92400e;
+            font-weight: 600;
+        }
+        
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            max-width: 520px;
+            z-index: 1000;
+            max-height: 85vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        .legend.hidden { transform: translateX(calc(-100% - 40px)); }
+        .legend h3 {
+            margin-bottom: 18px;
+            font-size: 18px;
+            color: #111827;
+            font-weight: 700;
+            border-bottom: 3px solid #e5e7eb;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend h3::before {
+            content: "⚡";
+            font-size: 20px;
+        }
+        .legend-section { margin-bottom: 18px; }
+        .legend-section h4 {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            font-size: 12px;
+            color: #374151;
+            line-height: 1.5;
+        }
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            margin-right: 12px;
+            border: 2px solid;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .legend-color::after {
+            content: attr(data-level);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+        .legend-text { flex: 1; }
+        .legend-text strong { display: block; font-weight: 600; margin-bottom: 2px; }
+        .legend-text small { color: #6b7280; font-size: 11px; }
+        
+        .pattern-legend-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #f9fafb, #f3f4f6);
+            font-size: 11px;
+            border: 1px solid #e5e7eb;
+        }
+        .pattern-legend-item strong { color: #1f2937; font-weight: 700; }
+        .pattern-legend-item code {
+            background: #e5e7eb;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .domain-note {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-left: 4px solid #3b82f6;
+            padding: 14px;
+            margin-top: 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #1e40af;
+            line-height: 1.6;
+        }
+        
+        .hierarchy-note {
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border-left: 4px solid #22c55e;
+            padding: 14px;
+            margin-top: 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #15803d;
+            line-height: 1.6;
+        }
+        
+        .legend-instructions {
+            margin-top: 18px;
+            padding-top: 18px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.7;
+        }
+        
+        .toggle-panels-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border: none;
+            color: white;
+            padding: 12px 26px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            z-index: 1001;
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+            transition: all 0.2s;
+        }
+        .toggle-panels-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.5);
+        }
+        
+        .pattern-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        .pattern-modal.active { display: flex; }
+        .pattern-modal-content {
+            background: white;
+            padding: 35px;
+            border-radius: 18px;
+            max-width: 950px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.6);
+        }
+        .pattern-modal-content h3 {
+            font-size: 22px;
+            color: #1f2937;
+            margin-bottom: 18px;
+            border-bottom: 3px solid #e5e7eb;
+            padding-bottom: 14px;
+        }
+        .pattern-modal-content h4 {
+            font-size: 16px;
+            color: #1f2937;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .pattern-modal-content .pattern-code {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            color: #3b82f6;
+            font-weight: 700;
+            border: 2px solid #3b82f6;
+        }
+        .pattern-details { margin-top: 18px; }
+        .pattern-details p {
+            margin-bottom: 14px;
+            line-height: 1.7;
+            color: #374151;
+        }
+        .pattern-details strong { color: #1f2937; }
+        .pattern-section {
+            background: #f9fafb;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 4px solid #3b82f6;
+        }
+        .pattern-section.formal-spec { border-left-color: #8b5cf6; }
+        .pattern-section.operations { border-left-color: #22c55e; }
+        .pattern-section.properties { border-left-color: #f59e0b; }
+        .pattern-section.dependencies { border-left-color: #ef4444; }
+        .latex-formula {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin: 8px 0;
+            font-family: 'Times New Roman', serif;
+            font-size: 14px;
+            border: 1px solid #e5e7eb;
+            overflow-x: auto;
+        }
+        .operation-item, .property-item {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+        }
+        .operation-item code, .property-item code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        .component-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .component-item {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            font-size: 12px;
+        }
+        .component-item strong {
+            color: #3b82f6;
+            font-family: 'Courier New', monospace;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .badge.stable { background: #dcfce7; color: #15803d; }
+        .badge.experimental { background: #fef3c7; color: #92400e; }
+        .badge.deprecated { background: #fee2e2; color: #991b1b; }
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e5e7eb;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+        .close-modal:hover { background: #dc2626; color: white; }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .loading-overlay.hidden { display: none; }
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        kbd {
+            background: #f3f4f6;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1f2937;
+            display: inline-block;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        details summary {
+            transition: color 0.2s;
+        }
+        
+        details summary:hover {
+            color: #2563eb;
+        }
+        
+        details[open] summary {
+            margin-bottom: 8px;
+        }
+        
+        @media (max-width: 768px) {
+            .legend, .controls { font-size: 11px; padding: 15px; }
+            .domain-selector { flex-wrap: wrap; max-width: 90vw; }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">⚡ Loading HCI Corpus...</div>
+    </div>
+    
+    <div class="domain-selector">
+        <h4>Domain:</h4>
+        <span class="version-badge">V3: HCI CORPUS</span>
+        <button onclick="switchDomain('cms')" class="active" data-domain="cms">CMS Editor</button>
+        <button onclick="switchDomain('code')" data-domain="code">Code Editor</button>
+        <button onclick="switchDomain('pkm')" data-domain="pkm">PKM/AI Tool</button>
+        <button onclick="switchDomain('math')" data-domain="math">Math Proofs</button>
+        <button onclick="switchDomain('cad')" data-domain="cad">CAD/Engineering</button>
+    </div>
+
+    <button class="toggle-panels-btn" onclick="togglePanels()">⚙ Toggle UI</button>
+
+    <div class="controls">
+        <div class="pattern-count" id="pattern-count-display">
+            📦 Loading HCI Corpus...<br>
+            <small>Complete formal specifications</small>
+        </div>
+        
+        <div class="advanced-features">
+            ⚡ v3: Full HCI Corpus Integration<br>
+            • Formal specifications (LaTeX)<br>
+            • Properties & Operations<br>
+            • Dependencies & Relations
+        </div>
+        
+        <div class="control-section">
+            <h4>Hierarchy Levels</h4>
+            <button onclick="toggleAllLabels()">🏷 Toggle All Labels</button>
+            <button onclick="toggleLevel('l1-container')" class="secondary">L1: Containers</button>
+            <button onclick="toggleLevel('l2-region')" class="secondary">L2: Regions</button>
+            <button onclick="toggleLevel('l3-zone')" class="secondary">L3: Zones</button>
+            <button onclick="toggleLevel('l4-component')" class="secondary">L4: Components</button>
+            <button onclick="toggleLevel('l5-atom')" class="secondary">L5: Atoms</button>
+        </div>
+
+        <div class="control-section">
+            <h5>Pattern Filters</h5>
+            <button onclick="filterByPatternType('C')" class="pattern-filter">📚 Concepts (C)</button>
+            <button onclick="filterByPatternType('P')" class="pattern-filter">🎨 Patterns (P)</button>
+            <button onclick="filterByPatternType('F')" class="pattern-filter">🌊 Flows (F)</button>
+            <button onclick="clearPatternFilter()" class="pattern-filter secondary">❌ Clear</button>
+        </div>
+
+        <div class="control-section">
+            <h5>Core Patterns</h5>
+            <button onclick="filterByPattern('C1')" class="pattern-filter">C1: Graph</button>
+            <button onclick="filterByPattern('P1')" class="pattern-filter">P1: Canvas</button>
+            <button onclick="filterByPattern('P3')" class="pattern-filter">P3: Navigator</button>
+            <button onclick="filterByPattern('P15')" class="pattern-filter">P15: Reasoning</button>
+        </div>
+        
+        <div class="control-section">
+            <h5>Storage & Communication</h5>
+            <button onclick="filterByPattern('P19')" class="pattern-filter">P19: Graph DB</button>
+            <button onclick="filterByPattern('P22')" class="pattern-filter">P22: Event Bus</button>
+            <button onclick="filterByPattern('P23')" class="pattern-filter">P23: Real-Time</button>
+        </div>
+        
+        <div class="control-section">
+            <h5>Architecture Patterns</h5>
+            <button onclick="filterByPattern('P29')" class="pattern-filter">P29: State Store</button>
+            <button onclick="filterByPattern('P30')" class="pattern-filter">P30: Command</button>
+            <button onclick="filterByPattern('P32')" class="pattern-filter">P32: Plugins</button>
+        </div>
+        
+        <div class="control-section">
+            <h5>Search Patterns</h5>
+            <input type="text" id="pattern-search" placeholder="Search by ID or name..." 
+                   style="width:100%;padding:8px;border:1px solid #d1d5db;border-radius:6px;font-size:12px;margin-bottom:8px;"
+                   onkeyup="searchPatterns(this.value)">
+            <button onclick="showAllPatternsList()" class="pattern-filter">📋 Browse All Patterns</button>
+            <button onclick="showCorpusStatistics()" class="pattern-filter">📊 Corpus Statistics</button>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3>Advanced Pattern System</h3>
+        
+        <div class="pattern-count">
+            <strong>Version 3: HCI Corpus Integration</strong><br>
+            <span id="legend-pattern-count">Loading patterns...</span><br>
+            <small>Formal specifications with LaTeX rendering</small>
+        </div>
+        
+        <div class="legend-section">
+            <h4>Hierarchy Levels</h4>
+            <div class="legend-item">
+                <div class="legend-color" data-level="L1" style="background: rgba(239, 68, 68, 0.15); border-color: #ef4444; border-width: 3px;"></div>
+                <div class="legend-text">
+                    <strong>L1: Containers</strong>
+                    <small>Structural foundation & application chrome</small>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" data-level="L2" style="background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; border-width: 3px;"></div>
+                <div class="legend-text">
+                    <strong>L2: Regions</strong>
+                    <small>Major spatial divisions & panels</small>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" data-level="L3" style="background: rgba(168, 85, 247, 0.15); border-color: #a855f7; border-style: dashed;"></div>
+                <div class="legend-text">
+                    <strong>L3: Zones</strong>
+                    <small>Functional groupings & feature areas</small>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" data-level="L4" style="background: rgba(34, 197, 94, 0.15); border-color: #22c55e; border-style: dotted;"></div>
+                <div class="legend-text">
+                    <strong>L4: Components</strong>
+                    <small>Reusable blocks & UI elements</small>
+                </div>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" data-level="L5" style="background: rgba(249, 115, 22, 0.15); border-color: #f97316; border-style: dotted;"></div>
+                <div class="legend-text">
+                    <strong>L5: Atoms</strong>
+                    <small>Actionable primitives & controls</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="legend-section">
+            <h4>Pattern Categories</h4>
+            <div class="pattern-legend-item">
+                <strong>Concepts (C1-C5)</strong><br>
+                <code>Foundational</code> Data structures & primitives
+            </div>
+            <div class="pattern-legend-item">
+                <strong>Patterns (P1-P34)</strong><br>
+                <code>UI & Architecture</code> Complete interaction & system patterns
+            </div>
+            <div class="pattern-legend-item">
+                <strong>Flows (F1-F4)</strong><br>
+                <code>Data Movement</code> Input, transform, feedback, output
+            </div>
+        </div>
+        
+        <div class="legend-section">
+            <h4>Advanced Features</h4>
+            <div class="pattern-legend-item">
+                <strong>🎨 Semantic Highlighting</strong><br>
+                Areas with <code>Concepts</code> show magenta tint<br>
+                Areas with <code>Flows</code> show cyan tint
+            </div>
+            <div class="pattern-legend-item">
+                <strong>🔍 Enhanced Labels</strong><br>
+                Pattern tags color-coded by type<br>
+                Full corpus definitions in modal
+            </div>
+        </div>
+
+        <div class="hierarchy-note">
+            <strong>🎯 HCI Corpus Integration:</strong> This version dynamically loads the complete HCI Corpus with formal specifications, properties, operations, and dependencies. All patterns include LaTeX mathematical notation, pre/postconditions, and invariants!
+        </div>
+
+        <div class="domain-note" id="domain-specific-note">
+            <strong>CMS Editor Context:</strong> Document editing with collaborative tools, version control, and content management workflows.
+        </div>
+
+        <div class="legend-instructions">
+            <strong>🚀 v3 Usage:</strong> Switch domains to explore pattern reuse. Use search to find patterns by name/ID. Click areas for detailed HCI Corpus specifications with LaTeX formulas, operations, and formal properties!
+            <details style="margin-top:12px;">
+                <summary style="cursor:pointer;font-weight:700;color:#3b82f6;">⌨️ Keyboard Shortcuts</summary>
+                <div style="margin-top:8px;padding:10px;background:white;border-radius:6px;font-family:monospace;font-size:11px;">
+                    <div><kbd>1-5</kbd> Toggle hierarchy levels</div>
+                    <div><kbd>A</kbd> Toggle all labels</div>
+                    <div><kbd>B</kbd> Browse all patterns</div>
+                    <div><kbd>S</kbd> Show statistics</div>
+                    <div><kbd>/</kbd> Focus search box</div>
+                    <div><kbd>Tab</kbd> Toggle UI panels</div>
+                    <div><kbd>Esc</kbd> Close modals</div>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <div class="pattern-modal" id="pattern-modal">
+        <div class="pattern-modal-content">
+            <button class="close-modal" onclick="closePatternModal()">×</button>
+            <div id="pattern-modal-body"></div>
+        </div>
+    </div>
+
+    <div class="container" id="canvas-container"></div>
+
+    <script>
+        // HCI CORPUS PATTERN DATABASE (Dynamic Loading from hci-corpus.json)
+        let PATTERNS = {};  // Will be populated from corpus file
+        let CORPUS_DATA = [];  // Full corpus with all metadata
+        
+        // Load corpus from JSON file
+        async function loadCorpus() {
+            try {
+                const response = await fetch('hci-corpus.json');
+                const text = await response.text();
+                // Parse JSONL format (one JSON object per line)
+                const lines = text.trim().split('\n');
+                CORPUS_DATA = lines.map(line => JSON.parse(line));
+                
+                // Build PATTERNS lookup for backward compatibility
+                CORPUS_DATA.forEach(pattern => {
+                    PATTERNS[pattern.id] = {
+                        name: pattern.metadata.name,
+                        type: pattern.metadata.category === 'concept' ? 'Concept' : 
+                              pattern.id.startsWith('F') ? 'Flow' : 'Pattern',
+                        definition: pattern.definition.description,
+                        status: pattern.metadata.status,
+                        complexity: pattern.metadata.complexity,
+                        version: pattern.version,
+                        // Keep full corpus reference
+                        _corpus: pattern
+                    };
+                });
+                
+                // Update UI with counts
+                const concepts = CORPUS_DATA.filter(p => p.metadata.category === 'concept').length;
+                const flows = CORPUS_DATA.filter(p => p.id.startsWith('F')).length;
+                const patterns = CORPUS_DATA.length - concepts - flows;
+                
+                document.getElementById('pattern-count-display').innerHTML = `
+                    📦 ${CORPUS_DATA.length} HCI Corpus Patterns<br>
+                    <small>${concepts} Concepts • ${patterns} Patterns • ${flows} Flows</small>
+                `;
+                
+                document.getElementById('legend-pattern-count').textContent = 
+                    `Complete corpus with ${CORPUS_DATA.length} patterns`;
+                
+                console.log('✅ HCI Corpus loaded:', {
+                    total: CORPUS_DATA.length,
+                    concepts, patterns, flows
+                });
+                
+                return true;
+            } catch (error) {
+                console.error('❌ Failed to load HCI Corpus:', error);
+                document.getElementById('pattern-count-display').innerHTML = `
+                    ⚠️ Failed to load corpus<br>
+                    <small>Using fallback data</small>
+                `;
+                // Fallback to minimal data
+                loadFallbackPatterns();
+                return false;
+            }
+        }
+        
+        // Fallback patterns if corpus file cannot be loaded
+        function loadFallbackPatterns() {
+            PATTERNS = {
+            'C1': { name: 'Graph Structure', type: 'Concept', definition: 'A graph structure represents entities (nodes) and their relationships (edges), fundamental to modeling connected data.', components: 'nodes, edges, labels', manifestations: 'Knowledge graphs, File trees, Feature history, Axiom dependencies, Part hierarchies' },
+            'C2': { name: 'Document/Artifact', type: 'Concept', definition: 'Documents and artifacts process input to produce output, encapsulating computational transformation patterns.', components: 'content, metadata, version', manifestations: 'Text documents, source code, proofs, CAD models, content blocks' },
+            'C3': { name: 'Symbolic Expression', type: 'Concept', definition: 'Symbolic expressions represent mathematical and computational formulas as structured tree data.', components: 'root, children, operators', manifestations: 'Symbolic math, Tags/taxonomies, Code AST, Mathematical formulas, Constraints' },
+            'C4': { name: 'Metadata Schema', type: 'Concept', definition: 'Metadata schemas define structured data fields with types and validation rules.', components: 'schema, data, validators', manifestations: 'Tags, Properties, Attributes, Annotations, Labels' },
+            'C5': { name: 'Version History', type: 'Concept', definition: 'Version history tracks changes over time as immutable states and deltas.', components: 'states, deltas, branches', manifestations: 'Git commits, Document revisions, Edit history, Feature sequence' },
+            
+            'P1': { name: 'Direct Manipulation Canvas', type: 'Pattern', definition: 'Direct manipulation canvases enable users to interact with visual objects through direct gestures.', components: 'viewport, objects, cursor, tools', manifestations: 'Graph editor, 3D viewport, Drawing canvas, Visual editor, Diagram editors' },
+            'P2': { name: 'Command Interface', type: 'Pattern', definition: 'Command interfaces enable users to execute actions through text-based commands.', components: 'input, parser, executor, history', manifestations: 'Search bar, Command line, Command palette, Query input' },
+            'P3': { name: 'Hierarchical Navigator', type: 'Pattern', definition: 'Hierarchical navigators display and enable navigation through tree-structured data.', components: 'tree, selection, expansion, breadcrumb', manifestations: 'File explorer, Feature tree, Theorem library, Layer panel, Outline view' },
+            'P4': { name: 'Property Inspector', type: 'Pattern', definition: 'Property inspectors display and enable editing of object properties in structured panels.', components: 'selection, fields, validators, commit', manifestations: 'Properties panel, Inspector, Settings panel, Attributes editor' },
+            'P5': { name: 'Tabbed Workspace', type: 'Pattern', definition: 'Tabbed workspaces organize content into switchable tabs for efficient multi-tasking.', components: 'tabs, active, buffers, state', manifestations: 'Editor tabs, Document tabs, Multi-file editing, Chat tabs' },
+            'P6': { name: 'Palette/Toolbar', type: 'Pattern', definition: 'Palettes and toolbars provide collections of tools and actions for user selection.', components: 'tools, active_tool, cursor_mode, actions', manifestations: 'Drawing tools, Code actions, Sketch tools, Formatting toolbar' },
+            'P7': { name: 'Breadcrumb Trail', type: 'Pattern', definition: 'Breadcrumb trails show hierarchical paths with navigation to ancestor levels.', components: 'path, separators, actions, links', manifestations: 'File path, Navigation chain, Context path, Location history' },
+            'P8': { name: 'Search-Based Navigation', type: 'Pattern', definition: 'Search-based navigation enables finding items through text queries and ranking.', components: 'query, index, results, ranker', manifestations: 'File search, Theorem search, Command palette, Symbol search' },
+            'P9': { name: 'Backlinks/References', type: 'Pattern', definition: 'Backlinks show bidirectional references between related items in a system.', components: 'item, references, reverse_index, links', manifestations: 'Backlinks panel, References, Usages, Dependencies, Citations' },
+            'P10': { name: 'Parser/Compiler Pipeline', type: 'Pattern', definition: 'Parser and compiler pipelines transform source through multiple stages to output.', components: 'lexer, parser, analyzer, optimizer, generator', manifestations: 'Code compiler, LaTeX renderer, Formula parser, Query compiler' },
+            'P11': { name: 'Validator/Checker', type: 'Pattern', definition: 'Validators check data against rules and constraints for correctness.', components: 'rules, input, checker, report', manifestations: 'Proof checker, Type checker, Constraint validator, Linter, Schema validator' },
+            'P12': { name: 'Solver/Optimizer', type: 'Pattern', definition: 'Solvers find solutions satisfying constraints using search algorithms.', components: 'constraints, variables, objective, algorithm', manifestations: 'Constraint solver, Parametric solver, Theorem prover, Layout engine' },
+            'P13': { name: 'Indexer/Query Engine', type: 'Pattern', definition: 'Indexers build searchable structures and query engines retrieve efficiently.', components: 'data, index_structure, query_processor, cache', manifestations: 'Full-text search, Graph index, Symbol table, Spatial index' },
+            'P14': { name: 'Agent Swarm', type: 'Pattern', definition: 'Agent swarms coordinate multiple autonomous workers processing in parallel.', components: 'agents, tasks, coordination, results', manifestations: 'Multi-agent reasoning, Parallel analysis, Distributed builds, Map-reduce' },
+            'P15': { name: 'Reasoning Chain', type: 'Pattern', definition: 'Reasoning chains show sequential logical steps building toward conclusions.', components: 'steps, state, dependencies, result', manifestations: 'AI reasoning, Proof derivation, Build pipelines, Computation traces' },
+            'P16': { name: 'Suggestion/Recommendation', type: 'Pattern', definition: 'Suggestion systems analyze context to proactively offer next actions.', components: 'context, model, candidates, ranking', manifestations: 'AI suggestions, Autocomplete, Code actions, Tactic hints' },
+            
+            'P17': { name: 'Key-Value Store', type: 'Pattern', definition: 'Key-value stores provide fast access through simple key lookups.', components: 'hash_table, key_type, value_type, operations', manifestations: 'Cache, Settings storage, Session state, Metadata store' },
+            'P18': { name: 'Relational Database', type: 'Pattern', definition: 'Relational databases organize data in tables with typed columns and relationships.', components: 'tables, schemas, constraints, indices', manifestations: 'Content database, File metadata, User data, Application state' },
+            'P19': { name: 'Graph Database', type: 'Pattern', definition: 'Graph databases store nodes and edges optimized for traversing relationships.', components: 'nodes, edges, properties, traversal', manifestations: 'Knowledge graphs, Dependency graphs, Citation networks, Social graphs' },
+            'P20': { name: 'Document Store', type: 'Pattern', definition: 'Document stores save semi-structured documents with flexible schemas.', components: 'collections, documents, queries, indices', manifestations: 'Note storage, Configuration, Log aggregation, CMS content' },
+            'P21': { name: 'Time-Series Store', type: 'Pattern', definition: 'Time-series stores optimize timestamped data points for analytics.', components: 'series, timestamps, values, aggregations', manifestations: 'Edit history, Telemetry, Sensor data, Activity log, Stock prices' },
+            
+            'P22': { name: 'Event Bus', type: 'Pattern', definition: 'Event buses enable decoupled publish-subscribe messaging between components.', components: 'publishers, subscribers, topics, broker', manifestations: 'UI events, Component communication, Plugin events, Message queues' },
+            'P23': { name: 'Real-Time Sync', type: 'Pattern', definition: 'Real-time sync keeps data synchronized across clients with conflict resolution.', components: 'local_state, remote_state, diff_engine, merger', manifestations: 'Collaborative editing, Live preview, Cloud sync, Multi-device sync' },
+            'P24': { name: 'Request-Response API', type: 'Pattern', definition: 'Request-response APIs enable client-server communication with defined contracts.', components: 'endpoint, request, handler, response', manifestations: 'REST API, RPC, GraphQL, Command interface, HTTP services' },
+            'P25': { name: 'Streaming Protocol', type: 'Pattern', definition: 'Streaming protocols enable continuous data flow with backpressure handling.', components: 'producer, consumer, buffer, backpressure', manifestations: 'WebSocket, Live updates, Progressive rendering, Compilation output' },
+            
+            'P26': { name: 'Status Bar/Indicator', type: 'Pattern', definition: 'Status bars persistently display system state and activity.', components: 'indicators, messages, progress_bars, state', manifestations: 'Status bar, Activity indicator, Sync status, Agent activity' },
+            'P27': { name: 'Toast/Notification', type: 'Pattern', definition: 'Toasts show temporary message overlays with auto-dismiss.', components: 'message, duration, dismiss_action, stack', manifestations: 'Success message, Error alert, Info notification, User feedback' },
+            'P28': { name: 'Progress Indicator', type: 'Pattern', definition: 'Progress indicators visualize completion status of long operations.', components: 'current, total, percentage, eta', manifestations: 'Loading bar, Build progress, Verification progress, File upload' },
+            
+            'P29': { name: 'Centralized State Store', type: 'Pattern', definition: 'Centralized stores provide single source of truth for application state.', components: 'store, reducers, selectors, subscriptions', manifestations: 'Redux-like stores, Global state, Application model, State management' },
+            'P30': { name: 'Command Pattern', type: 'Pattern', definition: 'Command pattern encapsulates actions as reversible objects.', components: 'command, executor, undo_stack, redo_stack', manifestations: 'Undo/redo system, Macro recording, Transaction log, Action history' },
+            'P31': { name: 'Observer Pattern', type: 'Pattern', definition: 'Observer pattern notifies subscribers of subject changes automatically.', components: 'subject, observers, notify_mechanism, subscriptions', manifestations: 'Data binding, Event listeners, Reactive subscriptions, Watchers' },
+            'P32': { name: 'Plugin Architecture', type: 'Pattern', definition: 'Plugin architectures extend core systems with loadable modules.', components: 'plugin_interface, registry, loader, lifecycle', manifestations: 'Extensions, Plugins, Addons, Modules, Third-party integrations' },
+            'P33': { name: 'Hook System', type: 'Pattern', definition: 'Hook systems provide predefined extension points in execution flow.', components: 'hooks, handlers, registration, invocation', manifestations: 'Lifecycle hooks, Event handlers, Middleware, Interceptors' },
+            'P34': { name: 'Strategy Pattern', type: 'Pattern', definition: 'Strategy pattern enables swappable algorithms for the same task.', components: 'strategy_interface, implementations, selector, context', manifestations: 'File format handlers, Solver algorithms, Rendering engines, Exporters' },
+            
+            'F1.1': { name: 'Capture Flow', type: 'Flow', definition: 'Input capture validates and normalizes external inputs before storing.', components: 'source, validator, normalizer, ingester', examples: 'User types, File dropped, API called, Sensor triggered' },
+            'F1.2': { name: 'Import Flow', type: 'Flow', definition: 'Import flow ingests bulk data through parsing and mapping.', components: 'importer, parser, mapper, validator', examples: 'CSV import, Repository clone, Library import, Model import' },
+            'F1.3': { name: 'Live Stream Flow', type: 'Flow', definition: 'Live streams process continuous real-time input.', components: 'stream, buffer, processor, consumer', examples: 'Live typing, Cursor tracking, Real-time sensors, Network packets' },
+            
+            'F2.1': { name: 'Pipeline Flow', type: 'Flow', definition: 'Pipeline flow transforms data through sequential stages.', components: 'stages, intermediate_results, error_handling', examples: 'Source → Compile → Link, Markdown → HTML, Sketch → Solve' },
+            'F2.2': { name: 'Agent Orchestration Flow', type: 'Flow', definition: 'Orchestration coordinates specialized agents for complex tasks.', components: 'orchestrator, agents, task_queue, aggregator', examples: 'Multi-agent reasoning, Parallel tests, Distributed analysis' },
+            'F2.3': { name: 'Incremental Computation', type: 'Flow', definition: 'Incremental computation recomputes only what changed.', components: 'dependency_graph, change_detection, invalidation', examples: 'Incremental compilation, Reactive UI, Spreadsheet recalc' },
+            'F2.4': { name: 'Enrichment Flow', type: 'Flow', definition: 'Enrichment adds computed metadata to existing data.', components: 'base_data, enrichers, metadata, analyzers', examples: 'Graph analysis, Code analysis, Document analysis, Model analysis' },
+            
+            'F3.1': { name: 'Learning Loop', type: 'Flow', definition: 'Learning loops improve system behavior from observations.', components: 'observations, model, update_rule, predictions', examples: 'Suggestion ranking, Autocomplete learning, Search tuning' },
+            'F3.2': { name: 'Validation Loop', type: 'Flow', definition: 'Validation loops feed errors back for correction.', components: 'output, validator, error_reporter, corrector', examples: 'Proof verification, Compiler errors, Constraint violations' },
+            'F3.3': { name: 'Adaptation Loop', type: 'Flow', definition: 'Adaptation loops tune parameters based on performance.', components: 'metrics, evaluator, tuner, parameters', examples: 'Autosave interval, Cache tuning, Agent timeout, Quality adjustment' },
+            'F3.4': { name: 'User Preference Loop', type: 'Flow', definition: 'Preference loops learn user choices over time.', components: 'choices, preference_model, recommender, history', examples: 'Command frequency, File suggestions, Theme preferences' },
+            
+            'F4.1': { name: 'Reactive Render Flow', type: 'Flow', definition: 'Reactive rendering auto-updates UI on data changes.', components: 'data, subscribers, render_engine, diff', examples: 'Graph visualization, Live preview, Dashboard updates' },
+            'F4.2': { name: 'Notification Flow', type: 'Flow', definition: 'Notification flow proactively alerts users to events.', components: 'trigger, filter, formatter, notifier', examples: 'Build complete, Error alerts, Suggestion ready, Agent done' },
+            'F4.3': { name: 'Export/Publish Flow', type: 'Flow', definition: 'Export flow converts and publishes data to external formats.', components: 'data, exporter, format_converter, publisher', examples: 'PDF export, API response, G-code output, Report generation' },
+            'F4.4': { name: 'Materialized View Flow', type: 'Flow', definition: 'Materialized views pre-compute data for fast access.', components: 'query, materializer, cache, invalidator', examples: 'Rendered preview, Compiled binary, Index tables, Thumbnails' }
+            };
+        }
+
+        // Enhanced domain configurations
+        const DOMAINS = {
+            cms: {
+                name: "CMS Editor",
+                note: "Document editing with collaborative tools, version control, and content management.",
+                svgGenerator: () => `<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                    <rect width="1920" height="1080" fill="#f3f4f6"/>
+                    <rect x="0" y="0" width="1920" height="63" fill="#5B9BD5"/>
+                    <text x="65" y="38" font-family="Arial" font-size="15" font-weight="600" fill="white">CMS Editor - Advanced</text>
+                    <rect x="0" y="63" width="1920" height="35" fill="#FFC857"/>
+                    <text x="25" y="85" font-family="Arial" font-size="12" fill="#333">⚡ Status: Real-time sync enabled</text>
+                    <rect x="0" y="98" width="1920" height="52" fill="#e0e7ff"/>
+                    <text x="55" y="128" font-family="Arial" font-size="14" font-weight="600" fill="#1f2937">📄 Document</text>
+                    <rect x="0" y="150" width="340" height="890" fill="#f9fafb"/>
+                    <rect x="0" y="150" width="42" height="890" fill="#ffffff" opacity="0.8"/>
+                    <rect x="42" y="150" width="298" height="890" fill="#fafafa"/>
+                    <text x="62" y="189" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">🛠 Tools</text>
+                    <rect x="325" y="150" width="1150" height="890" fill="white"/>
+                    <rect x="340" y="165" width="1120" height="45" fill="#f3f4f6"/>
+                    <text x="370" y="194" font-family="Arial" font-size="12" font-weight="600" fill="#3b82f6">📄 Document Tabs</text>
+                    <rect x="440" y="250" width="985" height="750" rx="8" fill="white" stroke="#e5e7eb"/>
+                    <text x="500" y="308" font-family="Arial" font-size="10" fill="#9ca3af">🎨 Canvas</text>
+                    <rect x="1475" y="150" width="445" height="890" fill="#fafafa"/>
+                    <text x="1505" y="188" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">⚙ Inspector</text>
+                    <rect x="0" y="1040" width="1920" height="40" fill="#f3f4f6"/>
+                    <text x="25" y="1064" font-family="Arial" font-size="11" fill="#6b7280">✓ Status</text>
+                </svg>`,
+                areas: [
+                    { id: "L1.1", level: "l1-container", bounds: { left: 0, top: 0, width: 100, height: 5.8 }, label: "Application Header", position: { top: 50, left: 50 }, patterns: ['P26', 'P2'] },
+                    { id: "L1.2", level: "l1-container", bounds: { left: 0, top: 5.8, width: 100, height: 3.2 }, label: "Status Bar", position: { top: 50, left: 5 }, patterns: ['P26', 'P23'] },
+                    { id: "L2.1", level: "l2-region", bounds: { left: 0, top: 13.8, width: 17.7, height: 82.4 }, label: "Tool Panel Region", position: { top: 40, left: 50 }, patterns: ['P6', 'P3', 'P32'] },
+                    { id: "L2.2", level: "l2-region", bounds: { left: 17.7, top: 13.8, width: 59.1, height: 82.4 }, label: "Canvas Region", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'P30'] },
+                    { id: "L2.3", level: "l2-region", bounds: { left: 76.8, top: 13.8, width: 23.2, height: 82.4 }, label: "Inspector Region", position: { top: 40, left: 50 }, patterns: ['P4', 'C4', 'P31'] },
+                    { id: "L3.3", level: "l3-zone", bounds: { left: 18.5, top: 15.3, width: 57.5, height: 4.2 }, label: "Document Tabs", position: { top: 50, left: 50 }, patterns: ['P5', 'P29'] },
+                    { id: "L3.4", level: "l3-zone", bounds: { left: 23, top: 23.1, width: 51.3, height: 69.4 }, label: "Editor Canvas", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'F1.1', 'F4.1', 'P23'] },
+                ]
+            },
+            
+            code: {
+                name: "Code Editor (IDE)",
+                note: "Software development with debugging, version control, terminal access, and code intelligence.",
+                svgGenerator: () => `<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                    <rect width="1920" height="1080" fill="#1e1e1e"/>
+                    <rect x="0" y="0" width="1920" height="48" fill="#2d2d2d"/>
+                    <text x="20" y="30" font-family="monospace" font-size="13" fill="#cccccc">File Edit View...</text>
+                    <rect x="0" y="48" width="1920" height="43" fill="#2d2d2d"/>
+                    <circle cx="900" cy="70" r="12" fill="#4CAF50"/>
+                    <text x="920" y="76" font-family="Arial" font-size="12" fill="#cccccc">▶ Run</text>
+                    <rect x="0" y="91" width="77" height="918" fill="#252526"/>
+                    <rect x="77" y="91" width="307" height="918" fill="#252526"/>
+                    <text x="95" y="120" font-family="Arial" font-size="13" font-weight="600" fill="#cccccc">EXPLORER</text>
+                    <text x="95" y="155" font-family="monospace" font-size="12" fill="#8a8a8a">📁 src</text>
+                    <rect x="384" y="91" width="1152" height="918" fill="#1e1e1e"/>
+                    <text x="420" y="170" font-family="monospace" font-size="13" fill="#569cd6">def</text>
+                    <rect x="1536" y="91" width="384" height="918" fill="#252526"/>
+                    <text x="1556" y="120" font-family="Arial" font-size="13" font-weight="600" fill="#cccccc">DEBUGGER</text>
+                    <rect x="0" y="999" width="1920" height="81" fill="#1e1e1e" stroke="#2d2d2d" stroke-width="1"/>
+                    <text x="20" y="1030" font-family="Arial" font-size="12" font-weight="600" fill="#cccccc">TERMINAL</text>
+                </svg>`,
+                areas: [
+                    { id: "L1.1", level: "l1-container", bounds: { left: 0, top: 0, width: 100, height: 4.5 }, label: "Menu Bar", position: { top: 50, left: 50 }, patterns: [] },
+                    { id: "L1.2", level: "l1-container", bounds: { left: 0, top: 4.5, width: 100, height: 4 }, label: "Toolbar", position: { top: 50, left: 50 }, patterns: ['P6'] },
+                    { id: "L1.3", level: "l1-container", bounds: { left: 0, top: 92.5, width: 100, height: 7.5 }, label: "Terminal", position: { bottom: 100, left: 50 }, patterns: ['P2', 'F2.1'] },
+                    
+                    { id: "L2.1", level: "l2-region", bounds: { left: 0, top: 8.5, width: 4, height: 84 }, label: "Activity Bar", position: { top: 40, left: 100 }, patterns: ['P6'] },
+                    { id: "L2.2", level: "l2-region", bounds: { left: 4, top: 8.5, width: 16, height: 84 }, label: "Sidebar", position: { top: 40, left: 50 }, patterns: ['P3', 'P13'] },
+                    { id: "L2.3", level: "l2-region", bounds: { left: 20, top: 8.5, width: 60, height: 84 }, label: "Editor Region", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'C3', 'P5', 'P29', 'P30'] },
+                    { id: "L2.4", level: "l2-region", bounds: { left: 80, top: 8.5, width: 20, height: 84 }, label: "Auxiliary Panel", position: { top: 40, left: 50 }, patterns: ['P4', 'P11', 'P31'] },
+                    
+                    { id: "L3.1", level: "l3-zone", bounds: { left: 4.5, top: 9, width: 15, height: 5 }, label: "Explorer Header", position: { top: 50, left: 50 }, patterns: ['P8'] },
+                    { id: "L3.2", level: "l3-zone", bounds: { left: 4.5, top: 14, width: 15, height: 78 }, label: "File Tree", position: { top: 50, left: 50 }, patterns: ['P3', 'C1', 'P19'] },
+                    { id: "L3.3", level: "l3-zone", bounds: { left: 20.5, top: 9, width: 59, height: 4 }, label: "Editor Tabs", position: { top: 50, left: 50 }, patterns: ['P5', 'P29'] },
+                    { id: "L3.4", level: "l3-zone", bounds: { left: 20.5, top: 13, width: 59, height: 79 }, label: "Code Canvas", position: { top: 50, left: 50 }, patterns: ['P1', 'C3', 'F1.1', 'F4.1', 'P30', 'P31'] },
+                ]
+            },
+            
+            pkm: {
+                name: "PKM & AI Reasoning Tool",
+                note: "Knowledge management with graph visualization, AI reasoning chains, and semantic connections.",
+                svgGenerator: () => `<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                    <rect width="1920" height="1080" fill="#fafafa"/>
+                    <rect x="0" y="0" width="1920" height="54" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                    <rect x="40" y="15" width="800" height="24" rx="12" fill="#f3f4f6"/>
+                    <text x="60" y="32" font-family="Arial" font-size="12" fill="#6b7280">🔍 Search or ask AI...</text>
+                    <rect x="0" y="54" width="1920" height="38" fill="#f9fafb"/>
+                    <text x="30" y="78" font-family="Arial" font-size="11" fill="#6b7280">Home / Knowledge</text>
+                    <rect x="0" y="92" width="480" height="934" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                    <text x="25" y="120" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">🕸 Graph</text>
+                    <circle cx="240" cy="300" r="60" fill="#3b82f6" opacity="0.2" stroke="#3b82f6" stroke-width="2"/>
+                    <rect x="480" y="92" width="960" height="934" fill="white"/>
+                    <text x="520" y="138" font-family="Arial" font-size="13" fill="#1e40af">🏷 Tags</text>
+                    <rect x="1440" y="92" width="480" height="934" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+                    <text x="1465" y="120" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">🤖 AI Reasoning</text>
+                    <rect x="0" y="1026" width="1920" height="54" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1"/>
+                    <text x="30" y="1058" font-family="Arial" font-size="11" fill="#6b7280">⚡ AI: 3 reasoning steps</text>
+                </svg>`,
+                areas: [
+                    { id: "L1.1", level: "l1-container", bounds: { left: 0, top: 0, width: 100, height: 5 }, label: "Command Bar", position: { top: 50, left: 50 }, patterns: ['P2', 'P8', 'P16'] },
+                    { id: "L1.2", level: "l1-container", bounds: { left: 0, top: 5, width: 100, height: 3.5 }, label: "Breadcrumb", position: { top: 50, left: 50 }, patterns: ['P7'] },
+                    { id: "L1.3", level: "l1-container", bounds: { left: 0, top: 95, width: 100, height: 5 }, label: "AI Status", position: { bottom: 100, left: 50 }, patterns: ['P26', 'F2.2', 'P28'] },
+                    
+                    { id: "L2.1", level: "l2-region", bounds: { left: 0, top: 8.5, width: 25, height: 86.5 }, label: "Graph Navigator", position: { top: 40, left: 50 }, patterns: ['P1', 'C1', 'P19', 'P9'] },
+                    { id: "L2.2", level: "l2-region", bounds: { left: 25, top: 8.5, width: 50, height: 86.5 }, label: "Main Workspace", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'P20', 'P29', 'P23'] },
+                    { id: "L2.3", level: "l2-region", bounds: { left: 75, top: 8.5, width: 25, height: 86.5 }, label: "AI Reasoning", position: { top: 40, left: 50 }, patterns: ['P16', 'P15', 'F2.2', 'P14'] },
+                    
+                    { id: "L3.1", level: "l3-zone", bounds: { left: 0.5, top: 9, width: 24, height: 40 }, label: "Knowledge Graph", position: { top: 50, left: 50 }, patterns: ['P1', 'C1', 'F4.1', 'P19'] },
+                    { id: "L3.2", level: "l3-zone", bounds: { left: 0.5, top: 49, width: 24, height: 46 }, label: "Backlinks", position: { top: 50, left: 50 }, patterns: ['P9', 'C1'] },
+                    { id: "L3.3", level: "l3-zone", bounds: { left: 25.5, top: 9, width: 49, height: 5 }, label: "Note Metadata", position: { top: 50, left: 50 }, patterns: ['C4'] },
+                    { id: "L3.4", level: "l3-zone", bounds: { left: 25.5, top: 14, width: 49, height: 81 }, label: "Content Editor", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'F1.1', 'P23', 'P31'] },
+                    { id: "L3.5", level: "l3-zone", bounds: { left: 75.5, top: 9, width: 24, height: 45 }, label: "Reasoning Chain", position: { top: 50, left: 50 }, patterns: ['P15', 'F2.2'] },
+                    { id: "L3.6", level: "l3-zone", bounds: { left: 75.5, top: 54, width: 24, height: 41 }, label: "AI Suggestions", position: { top: 50, left: 50 }, patterns: ['P16', 'F3.1'] },
+                ]
+            },
+            
+            math: {
+                name: "Mathematical Proof Editor",
+                note: "Formal mathematics with theorem proving, symbolic computation, and verification systems.",
+                svgGenerator: () => `<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                    <rect width="1920" height="1080" fill="#fefefe"/>
+                    <rect x="0" y="0" width="1920" height="65" fill="#6366f1" opacity="0.9"/>
+                    <text x="40" y="42" font-family="serif" font-size="18" font-weight="600" fill="white">⚡ Theorem Prover Advanced</text>
+                    <rect x="0" y="65" width="384" height="950" fill="#f8f9fa"/>
+                    <text x="25" y="100" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">📚 Library</text>
+                    <rect x="384" y="65" width="1056" height="950" fill="white"/>
+                    <text x="440" y="125" font-family="serif" font-size="13" font-weight="600" fill="#92400e">Theorem:</text>
+                    <text x="420" y="215" font-family="serif" font-size="13" font-weight="600" fill="#1f2937">Proof:</text>
+                    <rect x="1440" y="65" width="480" height="950" fill="#f8f9fa"/>
+                    <text x="1465" y="100" font-family="Arial" font-size="13" font-weight="600" fill="#1f2937">✓ Verification</text>
+                    <rect x="0" y="1015" width="1920" height="65" fill="#f0fdf4" stroke="#22c55e" stroke-width="2"/>
+                    <text x="40" y="1053" font-family="Arial" font-size="12" font-weight="600" fill="#15803d">✓ Verified & Type-checked</text>
+                </svg>`,
+                areas: [
+                    { id: "L1.1", level: "l1-container", bounds: { left: 0, top: 0, width: 100, height: 6 }, label: "Proof Header", position: { top: 50, left: 50 }, patterns: [] },
+                    { id: "L1.2", level: "l1-container", bounds: { left: 0, top: 94, width: 100, height: 6 }, label: "Verification Status", position: { bottom: 100, left: 50 }, patterns: ['P26', 'P11', 'F3.2', 'P28'] },
+                    
+                    { id: "L2.1", level: "l2-region", bounds: { left: 0, top: 6, width: 20, height: 88 }, label: "Theorem Library", position: { top: 40, left: 50 }, patterns: ['P3', 'P8', 'P13', 'C1'] },
+                    { id: "L2.2", level: "l2-region", bounds: { left: 20, top: 6, width: 55, height: 88 }, label: "Proof Canvas", position: { top: 50, left: 50 }, patterns: ['P1', 'C3', 'P30', 'C5', 'P29'] },
+                    { id: "L2.3", level: "l2-region", bounds: { left: 75, top: 6, width: 25, height: 88 }, label: "Verification Panel", position: { top: 40, left: 50 }, patterns: ['P11', 'P16', 'P12', 'P10'] },
+                    
+                    { id: "L3.1", level: "l3-zone", bounds: { left: 0.5, top: 7, width: 19, height: 6 }, label: "Library Search", position: { top: 50, left: 50 }, patterns: ['P8', 'P13'] },
+                    { id: "L3.2", level: "l3-zone", bounds: { left: 0.5, top: 13, width: 19, height: 81 }, label: "Axiom List", position: { top: 50, left: 50 }, patterns: ['P3', 'C1'] },
+                    { id: "L3.3", level: "l3-zone", bounds: { left: 20.5, top: 7, width: 54, height: 8 }, label: "Theorem Statement", position: { top: 50, left: 50 }, patterns: ['C3'] },
+                    { id: "L3.4", level: "l3-zone", bounds: { left: 20.5, top: 15, width: 54, height: 79 }, label: "Proof Steps", position: { top: 50, left: 50 }, patterns: ['P1', 'F2.1', 'C3', 'P30', 'P31'] },
+                    { id: "L3.5", level: "l3-zone", bounds: { left: 75.5, top: 7, width: 24, height: 30 }, label: "Symbolic Evaluator", position: { top: 50, left: 50 }, patterns: ['P10', 'C3'] },
+                    { id: "L3.6", level: "l3-zone", bounds: { left: 75.5, top: 37, width: 24, height: 30 }, label: "Type Checker", position: { top: 50, left: 50 }, patterns: ['P11', 'F3.2'] },
+                    { id: "L3.7", level: "l3-zone", bounds: { left: 75.5, top: 67, width: 24, height: 27 }, label: "Proof Assistant", position: { top: 50, left: 50 }, patterns: ['P16', 'F2.2', 'P12'] },
+                ]
+            },
+            
+            cad: {
+                name: "CAD/Engineering Tool",
+                note: "Computer-aided design with parametric modeling, simulation, and manufacturing workflows.",
+                svgGenerator: () => `<svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                    <rect width="1920" height="1080" fill="#2c2c2c"/>
+                    <rect x="0" y="0" width="1920" height="54" fill="#3d3d3d"/>
+                    <rect x="20" y="12" width="70" height="30" rx="4" fill="#0078d4"/>
+                    <text x="32" y="32" font-family="Arial" font-size="11" font-weight="600" fill="white">⚡ Sketch</text>
+                    <rect x="0" y="54" width="1920" height="32" fill="#2c2c2c"/>
+                    <text x="20" y="76" font-family="Arial" font-size="11" fill="#999999">Part1.ipt</text>
+                    <rect x="0" y="86" width="346" height="908" fill="#262626"/>
+                    <text x="20" y="115" font-family="Arial" font-size="12" font-weight="600" fill="#cccccc">📋 Features</text>
+                    <rect x="346" y="86" width="1190" height="908" fill="#1a1a1a"/>
+                    <rect x="356" y="96" width="96" height="888" fill="#2c2c2c"/>
+                    <rect x="452" y="96" width="1074" height="888" fill="#1a1a1a"/>
+                    <line x1="472" y1="540" x2="1506" y2="540" stroke="#3a3a3a" stroke-width="1"/>
+                    <line x1="989" y1="116" x2="989" y2="964" stroke="#3a3a3a" stroke-width="1"/>
+                    <path d="M 700 400 L 1200 400 L 1200 700 L 700 700 Z" fill="none" stroke="#0078d4" stroke-width="3"/>
+                    <rect x="1536" y="86" width="384" height="908" fill="#262626"/>
+                    <text x="1556" y="115" font-family="Arial" font-size="12" font-weight="600" fill="#cccccc">⚙ Properties</text>
+                    <rect x="0" y="994" width="1920" height="86" fill="#1a1a1a" stroke="#3d3d3d" stroke-width="1"/>
+                    <text x="20" y="1025" font-family="Arial" font-size="11" font-weight="600" fill="#cccccc">Command:</text>
+                </svg>`,
+                areas: [
+                    { id: "L1.1", level: "l1-container", bounds: { left: 0, top: 0, width: 100, height: 5 }, label: "Ribbon Toolbar", position: { top: 50, left: 50 }, patterns: ['P6'] },
+                    { id: "L1.2", level: "l1-container", bounds: { left: 0, top: 5, width: 100, height: 3 }, label: "Model Browser", position: { top: 50, left: 50 }, patterns: ['P7'] },
+                    { id: "L1.3", level: "l1-container", bounds: { left: 0, top: 92, width: 100, height: 8 }, label: "Command Line", position: { bottom: 100, left: 50 }, patterns: ['P2'] },
+                    
+                    { id: "L2.1", level: "l2-region", bounds: { left: 0, top: 8, width: 18, height: 84 }, label: "Feature Tree", position: { top: 40, left: 50 }, patterns: ['P3', 'C1', 'C5', 'P30', 'P21'] },
+                    { id: "L2.2", level: "l2-region", bounds: { left: 18, top: 8, width: 62, height: 84 }, label: "3D Viewport", position: { top: 50, left: 50 }, patterns: ['P1', 'C2', 'F4.1', 'P31'] },
+                    { id: "L2.3", level: "l2-region", bounds: { left: 80, top: 8, width: 20, height: 84 }, label: "Properties Panel", position: { top: 40, left: 50 }, patterns: ['P4', 'P11', 'P12', 'C4'] },
+                    
+                    { id: "L3.1", level: "l3-zone", bounds: { left: 0.5, top: 8.5, width: 17, height: 6 }, label: "Part Navigator", position: { top: 50, left: 50 }, patterns: ['P3'] },
+                    { id: "L3.2", level: "l3-zone", bounds: { left: 0.5, top: 14.5, width: 17, height: 77.5 }, label: "Feature History", position: { top: 50, left: 50 }, patterns: ['C1', 'C5', 'F2.1', 'P30', 'P21'] },
+                    { id: "L3.3", level: "l3-zone", bounds: { left: 18.5, top: 8.5, width: 5, height: 83 }, label: "Tools Palette", position: { top: 50, left: 100 }, patterns: ['P6', 'P34'] },
+                    { id: "L3.4", level: "l3-zone", bounds: { left: 23.5, top: 8.5, width: 56, height: 83 }, label: "3D Canvas", position: { top: 50, left: 50 }, patterns: ['P1', 'F4.1'] },
+                    { id: "L3.5", level: "l3-zone", bounds: { left: 80.5, top: 8.5, width: 19, height: 25 }, label: "Sketch Parameters", position: { top: 50, left: 50 }, patterns: ['P4', 'C4', 'P12'] },
+                    { id: "L3.6", level: "l3-zone", bounds: { left: 80.5, top: 33.5, width: 19, height: 25 }, label: "Material Properties", position: { top: 50, left: 50 }, patterns: ['P4', 'C4'] },
+                    { id: "L3.7", level: "l3-zone", bounds: { left: 80.5, top: 58.5, width: 19, height: 33.5 }, label: "Constraints", position: { top: 50, left: 50 }, patterns: ['P11', 'P12', 'F3.2'] },
+                ]
+            }
+        };
+
+        let currentDomain = 'cms';
+        let allLabelsVisible = false;
+        let visibleLevels = new Set();
+        let panelsVisible = true;
+        let patternFilter = null;
+
+        function renderDomain() {
+            const domain = DOMAINS[currentDomain];
+            const container = document.getElementById('canvas-container');
+            const svg = domain.svgGenerator();
+            
+            let areasHTML = domain.areas.map(area => {
+                if (patternFilter && !matchesPatternFilter(area.patterns, patternFilter)) return '';
+                
+                const positionStyle = [];
+                if (area.position.top !== undefined) positionStyle.push(`top: ${area.position.top}%`);
+                if (area.position.bottom !== undefined) positionStyle.push(`bottom: ${area.position.bottom}%`);
+                if (area.position.left !== undefined) positionStyle.push(`left: ${area.position.left}%`);
+                
+                const transform = [];
+                if (area.position.top !== undefined && area.position.left !== undefined) {
+                    transform.push('translate(-50%, -50%)');
+                }
+                
+                // Enhanced: Detect pattern categories for semantic coloring
+                const hasConcepts = area.patterns && area.patterns.some(p => p.startsWith('C'));
+                const hasFlows = area.patterns && area.patterns.some(p => p.startsWith('F'));
+                
+                const patternTags = area.patterns && area.patterns.length > 0
+                    ? `<span class="patterns">${area.patterns.map(p => {
+                        const pType = PATTERNS[p] ? PATTERNS[p].type.toLowerCase() : '';
+                        const tagClass = pType === 'concept' ? 'concept' : pType === 'flow' ? 'flow' : '';
+                        return `<span class="pattern-tag ${tagClass}">${p}</span>`;
+                    }).join('')}</span>`
+                    : '';
+                
+                return `
+                    <div class="area ${area.level}" data-id="${area.id}" 
+                         data-patterns="${area.patterns ? area.patterns.join(',') : ''}"
+                         data-has-concepts="${hasConcepts}" data-has-flows="${hasFlows}"
+                         style="left: ${area.bounds.left}%; top: ${area.bounds.top}%; width: ${area.bounds.width}%; height: ${area.bounds.height}%;">
+                        <div class="label" data-id="${area.id}" style="${positionStyle.join('; ')}; ${transform.length ? 'transform: ' + transform.join(' ') : ''}">
+                            ${area.label}${patternTags}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `${svg}<div class="overlay">${areasHTML}</div>`;
+            document.getElementById('domain-specific-note').innerHTML = `<strong>${domain.name}:</strong> ${domain.note}`;
+            attachEventListeners();
+        }
+
+        function matchesPatternFilter(patterns, filter) {
+            if (!patterns || patterns.length === 0) return false;
+            if (filter.length === 1) return patterns.some(p => p.startsWith(filter));
+            return patterns.includes(filter);
+        }
+
+        function attachEventListeners() {
+            document.querySelectorAll('.area').forEach(area => {
+                area.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    const patterns = this.dataset.patterns;
+                    if (patterns && patterns.length > 0) {
+                        showPatternModal(patterns.split(','), this.dataset.id);
+                    }
+                });
+            });
+        }
+
+        function showPatternModal(patternCodes, areaId) {
+            const modal = document.getElementById('pattern-modal');
+            const body = document.getElementById('pattern-modal-body');
+            let html = `<h3>🎯 Area ${areaId} - HCI Corpus Patterns</h3>`;
+            
+            patternCodes.forEach(code => {
+                const pattern = PATTERNS[code];
+                if (!pattern) return;
+                
+                const typeIcon = pattern.type === 'Concept' ? '📚' : pattern.type === 'Flow' ? '🌊' : '🎨';
+                const corpus = pattern._corpus;
+                
+                html += `<div class="pattern-details">`;
+                
+                // Header with pattern code and name
+                html += `<h4>
+                    <span class="pattern-code">${code}</span> ${typeIcon} ${pattern.name}
+                    <span class="badge ${pattern.status}">${pattern.status || 'stable'}</span>
+                    ${pattern.version ? `<span class="badge" style="background:#e0e7ff;color:#3730a3;">v${pattern.version}</span>` : ''}
+                </h4>`;
+                
+                // Definition and description
+                html += `<p><strong>Definition:</strong> ${pattern.definition}</p>`;
+                
+                // Formal specification (if available)
+                if (corpus && corpus.definition && corpus.definition.tuple_notation) {
+                    html += `<div class="pattern-section formal-spec">
+                        <strong>📐 Formal Specification:</strong>
+                        <div class="latex-formula" id="latex-${code}-tuple">${escapeHtml(corpus.definition.tuple_notation.content)}</div>
+                    </div>`;
+                }
+                
+                // Components
+                if (corpus && corpus.definition && corpus.definition.components && corpus.definition.components.component) {
+                    const components = corpus.definition.components.component;
+                    html += `<div class="pattern-section">
+                        <strong>🧩 Components:</strong>
+                        <div class="component-list">`;
+                    components.forEach(comp => {
+                        html += `<div class="component-item">
+                            <strong>${escapeHtml(comp.notation || comp.name)}</strong>
+                            <div style="font-size:10px;color:#6b7280;margin-top:4px;">${escapeHtml(comp.type)}</div>
+                            <div style="font-size:11px;margin-top:4px;">${escapeHtml(comp.description)}</div>
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                }
+                
+                // Properties
+                if (corpus && corpus.properties && corpus.properties.property) {
+                    const props = corpus.properties.property;
+                    html += `<div class="pattern-section properties">
+                        <strong>⚡ Properties:</strong>`;
+                    props.forEach(prop => {
+                        html += `<div class="property-item">
+                            <strong>${escapeHtml(prop.name)}</strong>
+                            <p style="margin:6px 0;font-size:12px;">${escapeHtml(prop.description)}</p>
+                            ${prop.formal_spec ? `<div class="latex-formula" style="font-size:12px;">${escapeHtml(prop.formal_spec.content)}</div>` : ''}
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                // Operations
+                if (corpus && corpus.operations && corpus.operations.operation) {
+                    const ops = corpus.operations.operation;
+                    html += `<div class="pattern-section operations">
+                        <strong>🔧 Operations:</strong>`;
+                    ops.forEach(op => {
+                        html += `<div class="operation-item">
+                            <strong>${escapeHtml(op.name)}</strong>
+                            <div style="margin:6px 0;"><code>${escapeHtml(op.signature)}</code></div>
+                            ${op.effects && op.effects.effect ? 
+                                `<div style="font-size:11px;color:#6b7280;margin-top:6px;">
+                                    ${op.effects.effect.map(e => `• ${escapeHtml(e)}`).join('<br>')}
+                                </div>` : ''}
+                        </div>`;
+                    });
+                    html += `</div>`;
+                }
+                
+                // Manifestations
+                if (corpus && corpus.manifestations && corpus.manifestations.manifestation) {
+                    const manifs = corpus.manifestations.manifestation;
+                    html += `<div class="pattern-section">
+                        <strong>🌍 Manifestations:</strong>
+                        <div style="margin-top:8px;font-size:12px;">`;
+                    manifs.forEach(m => {
+                        html += `<div style="margin-bottom:6px;">
+                            <strong>${escapeHtml(m.name)}</strong>
+                            ${m.description ? ` — ${escapeHtml(m.description)}` : ''}
+                        </div>`;
+                    });
+                    html += `</div></div>`;
+                }
+                
+                // Dependencies
+                if (corpus && corpus.dependencies) {
+                    let depsHtml = '<div style="margin-top:8px;font-size:12px;">';
+                    
+                    if (typeof corpus.dependencies === 'object' && corpus.dependencies !== null) {
+                        // Handle structured dependencies
+                        if (corpus.dependencies.dependency) {
+                            const deps = Array.isArray(corpus.dependencies.dependency) ? 
+                                corpus.dependencies.dependency : [corpus.dependencies.dependency];
+                            deps.forEach(dep => {
+                                const depId = dep.pattern_id || dep.id || dep;
+                                depsHtml += `<div style="padding:6px;background:white;border-radius:6px;margin:4px 0;">
+                                    <span style="cursor:pointer;color:#3b82f6;text-decoration:underline;" 
+                                          onclick="event.stopPropagation();showPatternModal(['${depId}'], 'Dependency')">
+                                        ${depId}
+                                    </span>
+                                    ${dep.relationship ? ` — ${escapeHtml(dep.relationship)}` : ''}
+                                </div>`;
+                            });
+                        } else {
+                            // Show raw dependencies
+                            depsHtml += `<pre style="background:white;padding:8px;border-radius:6px;font-size:11px;overflow-x:auto;">${JSON.stringify(corpus.dependencies, null, 2)}</pre>`;
+                        }
+                    } else if (corpus.dependencies) {
+                        depsHtml += `<p>${escapeHtml(String(corpus.dependencies))}</p>`;
+                    } else {
+                        depsHtml += `<p style="color:#6b7280;">No explicit dependencies</p>`;
+                    }
+                    
+                    depsHtml += '</div>';
+                    html += `<div class="pattern-section dependencies">
+                        <strong>🔗 Dependencies:</strong>
+                        ${depsHtml}
+                    </div>`;
+                }
+                
+                html += `</div><hr style="margin:24px 0;border:none;border-top:2px solid #e5e7eb;">`;
+            });
+            
+            body.innerHTML = html;
+            modal.classList.add('active');
+            
+            // Render LaTeX formulas using KaTeX
+            setTimeout(() => renderMathInModal(), 100);
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function renderMathInModal() {
+            try {
+                // Render LaTeX formulas in the modal
+                document.querySelectorAll('.latex-formula').forEach(elem => {
+                    const latex = elem.textContent.trim();
+                    // Remove surrounding $ if present
+                    const cleanLatex = latex.replace(/^\$+|\$+$/g, '');
+                    try {
+                        katex.render(cleanLatex, elem, {
+                            throwOnError: false,
+                            displayMode: true
+                        });
+                    } catch (e) {
+                        // Keep original text if KaTeX fails
+                        elem.style.fontFamily = "'Courier New', monospace";
+                        elem.style.color = '#6b7280';
+                    }
+                });
+            } catch (error) {
+                console.warn('KaTeX not available:', error);
+            }
+        }
+
+        function closePatternModal() {
+            document.getElementById('pattern-modal').classList.remove('active');
+        }
+
+        function switchDomain(domainKey) {
+            currentDomain = domainKey;
+            document.querySelectorAll('.domain-selector button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.domain === domainKey);
+            });
+            allLabelsVisible = false;
+            visibleLevels.clear();
+            patternFilter = null;
+            renderDomain();
+        }
+
+        function toggleAllLabels() {
+            allLabelsVisible = !allLabelsVisible;
+            document.querySelectorAll('.area').forEach(area => {
+                area.classList.toggle('active', allLabelsVisible);
+            });
+        }
+
+        function toggleLevel(levelClass) {
+            if (visibleLevels.has(levelClass)) {
+                visibleLevels.delete(levelClass);
+            } else {
+                visibleLevels.add(levelClass);
+            }
+            document.querySelectorAll('.area').forEach(area => {
+                if (area.classList.contains(levelClass)) {
+                    area.classList.toggle('active');
+                }
+            });
+        }
+
+        function filterByPatternType(type) {
+            patternFilter = type;
+            renderDomain();
+            setTimeout(() => {
+                document.querySelectorAll('.area').forEach(area => area.classList.add('active'));
+            }, 100);
+        }
+
+        function filterByPattern(pattern) {
+            patternFilter = pattern;
+            renderDomain();
+            setTimeout(() => {
+                document.querySelectorAll('.area').forEach(area => area.classList.add('active'));
+            }, 100);
+        }
+
+        function clearPatternFilter() {
+            patternFilter = null;
+            renderDomain();
+        }
+        
+        function searchPatterns(query) {
+            if (!query || query.length < 2) {
+                clearPatternFilter();
+                return;
+            }
+            
+            const lowerQuery = query.toLowerCase();
+            const matchingIds = Object.keys(PATTERNS).filter(id => {
+                const pattern = PATTERNS[id];
+                return id.toLowerCase().includes(lowerQuery) || 
+                       pattern.name.toLowerCase().includes(lowerQuery) ||
+                       (pattern.definition && pattern.definition.toLowerCase().includes(lowerQuery));
+            });
+            
+            if (matchingIds.length > 0) {
+                // Highlight matching patterns
+                patternFilter = matchingIds[0]; // Show first match
+                renderDomain();
+                setTimeout(() => {
+                    document.querySelectorAll('.area').forEach(area => {
+                        const patterns = area.dataset.patterns ? area.dataset.patterns.split(',') : [];
+                        if (patterns.some(p => matchingIds.includes(p))) {
+                            area.classList.add('active');
+                        }
+                    });
+                }, 100);
+            }
+        }
+        
+        function showAllPatternsList() {
+            const modal = document.getElementById('pattern-modal');
+            const body = document.getElementById('pattern-modal-body');
+            
+            let html = `<h3>📋 Complete HCI Corpus Index (${Object.keys(PATTERNS).length} Patterns)</h3>`;
+            
+            // Group by category
+            const concepts = [];
+            const patterns = [];
+            const flows = [];
+            
+            Object.keys(PATTERNS).sort().forEach(id => {
+                const p = PATTERNS[id];
+                const item = `<div style="padding:8px;margin:4px 0;background:#f9fafb;border-radius:6px;cursor:pointer;border:1px solid #e5e7eb;" 
+                             onclick="showPatternModal(['${id}'], 'Browse')">
+                    <strong style="color:#3b82f6;font-family:'Courier New',monospace;">${id}</strong> 
+                    — ${escapeHtml(p.name)}
+                    <span class="badge ${p.status}" style="margin-left:8px;">${p.status || 'stable'}</span>
+                    ${p.complexity ? `<span class="badge" style="background:#fef3c7;color:#92400e;margin-left:4px;">${p.complexity}</span>` : ''}
+                </div>`;
+                
+                if (id.startsWith('C')) concepts.push(item);
+                else if (id.startsWith('F')) flows.push(item);
+                else patterns.push(item);
+            });
+            
+            html += `<h4>📚 Concepts (${concepts.length})</h4><div>${concepts.join('')}</div>`;
+            html += `<h4 style="margin-top:20px;">🎨 Patterns (${patterns.length})</h4><div>${patterns.join('')}</div>`;
+            html += `<h4 style="margin-top:20px;">🌊 Flows (${flows.length})</h4><div>${flows.join('')}</div>`;
+            
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+        
+        function showCorpusStatistics() {
+            const modal = document.getElementById('pattern-modal');
+            const body = document.getElementById('pattern-modal-body');
+            
+            // Calculate statistics
+            const total = CORPUS_DATA.length;
+            const byCategory = {};
+            const byStatus = {};
+            const byComplexity = {};
+            const byDomain = {};
+            
+            CORPUS_DATA.forEach(p => {
+                const cat = p.metadata.category;
+                const status = p.metadata.status;
+                const complexity = p.metadata.complexity;
+                
+                byCategory[cat] = (byCategory[cat] || 0) + 1;
+                byStatus[status] = (byStatus[status] || 0) + 1;
+                byComplexity[complexity] = (byComplexity[complexity] || 0) + 1;
+                
+                if (p.metadata.domains && p.metadata.domains.domain) {
+                    p.metadata.domains.domain.forEach(d => {
+                        byDomain[d] = (byDomain[d] || 0) + 1;
+                    });
+                }
+            });
+            
+            let html = `<h3>📊 HCI Corpus Statistics</h3>`;
+            
+            html += `<div class="pattern-section">
+                <strong>📦 Total Patterns:</strong> ${total}
+                <div style="margin-top:12px;font-size:14px;">
+                    <div style="padding:8px;background:white;border-radius:6px;margin:4px 0;">
+                        <strong>By Category:</strong><br>
+                        ${Object.entries(byCategory).map(([k, v]) => 
+                            `<span style="margin-left:12px;">${k}: <strong>${v}</strong> (${(v/total*100).toFixed(1)}%)</span>`
+                        ).join('<br>')}
+                    </div>
+                    <div style="padding:8px;background:white;border-radius:6px;margin:4px 0;">
+                        <strong>By Status:</strong><br>
+                        ${Object.entries(byStatus).map(([k, v]) => 
+                            `<span style="margin-left:12px;">${k}: <strong>${v}</strong> (${(v/total*100).toFixed(1)}%)</span>`
+                        ).join('<br>')}
+                    </div>
+                    <div style="padding:8px;background:white;border-radius:6px;margin:4px 0;">
+                        <strong>By Complexity:</strong><br>
+                        ${Object.entries(byComplexity).map(([k, v]) => 
+                            `<span style="margin-left:12px;">${k}: <strong>${v}</strong> (${(v/total*100).toFixed(1)}%)</span>`
+                        ).join('<br>')}
+                    </div>
+                </div>
+            </div>`;
+            
+            html += `<div class="pattern-section">
+                <strong>🌍 Domains Covered:</strong>
+                <div style="margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;">
+                    ${Object.entries(byDomain)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 15)
+                        .map(([k, v]) => 
+                            `<span style="padding:6px 12px;background:white;border-radius:6px;font-size:11px;border:1px solid #e5e7eb;">
+                                ${escapeHtml(k)} <strong>(${v})</strong>
+                            </span>`
+                        ).join('')}
+                </div>
+            </div>`;
+            
+            // Pattern with most operations
+            const withOps = CORPUS_DATA.filter(p => p.operations && p.operations.operation)
+                .map(p => ({
+                    id: p.id,
+                    name: p.metadata.name,
+                    count: p.operations.operation.length
+                }))
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 5);
+            
+            html += `<div class="pattern-section operations">
+                <strong>🔧 Patterns with Most Operations:</strong>
+                <div style="margin-top:8px;">
+                    ${withOps.map(p => 
+                        `<div style="padding:6px;background:white;border-radius:6px;margin:4px 0;font-size:12px;">
+                            <strong style="color:#3b82f6;">${p.id}</strong> ${escapeHtml(p.name)} — ${p.count} operations
+                        </div>`
+                    ).join('')}
+                </div>
+            </div>`;
+            
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function togglePanels() {
+            panelsVisible = !panelsVisible;
+            const legend = document.querySelector('.legend');
+            const controls = document.querySelector('.controls');
+            legend.classList.toggle('hidden', !panelsVisible);
+            controls.classList.toggle('hidden', !panelsVisible);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.area') && !e.target.closest('.pattern-modal')) {
+                if (!allLabelsVisible && visibleLevels.size === 0) {
+                    document.querySelectorAll('.area.active').forEach(area => area.classList.remove('active'));
+                }
+            }
+        });
+
+        document.getElementById('pattern-modal').addEventListener('click', function(e) {
+            if (e.target === this) closePatternModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            // Ignore if typing in search box
+            if (e.target.id === 'pattern-search') return;
+            
+            if (e.key >= '1' && e.key <= '5') {
+                toggleLevel(`l${e.key}-${['container', 'region', 'zone', 'component', 'atom'][e.key - 1]}`);
+            }
+            if (e.key === 'a' || e.key === 'A') toggleAllLabels();
+            if (e.key === 'b' || e.key === 'B') { e.preventDefault(); showAllPatternsList(); }
+            if (e.key === 's' || e.key === 'S') { e.preventDefault(); showCorpusStatistics(); }
+            if (e.key === 'Tab') { e.preventDefault(); togglePanels(); }
+            if (e.key === 'Escape') closePatternModal();
+            if (e.key === '/') { 
+                e.preventDefault(); 
+                document.getElementById('pattern-search').focus(); 
+            }
+        });
+
+        // Initialize - Load corpus then render
+        async function initialize() {
+            console.log('⚡ HCI Corpus Pattern System v3 initializing...');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            try {
+                await loadCorpus();
+                console.log('📊 Pattern breakdown:', {
+                    concepts: Object.keys(PATTERNS).filter(k => k.startsWith('C')).length,
+                    patterns: Object.keys(PATTERNS).filter(k => k.startsWith('P')).length,
+                    flows: Object.keys(PATTERNS).filter(k => k.startsWith('F')).length,
+                    total: Object.keys(PATTERNS).length
+                });
+                renderDomain();
+            } catch (error) {
+                console.error('Failed to initialize:', error);
+            } finally {
+                // Hide loading overlay
+                setTimeout(() => {
+                    loadingOverlay.classList.add('hidden');
+                }, 500);
+            }
+        }
+        
+        // Start initialization
+        initialize();
+    </script>
+</body>
+</html>

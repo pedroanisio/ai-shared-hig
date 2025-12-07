@@ -33,3 +33,5 @@ echo ""
 # Run with auto-reload
 uvicorn universal_corpus.api:app --reload --host 0.0.0.0 --port 8000
 
+
+

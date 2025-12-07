@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Editor - HCI Pattern Visualization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-50: #F0F9FF;
+            --primary-500: #0EA5E9;
+            --primary-600: #0284C7;
+            --primary-700: #0369A1;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --error: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.5;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 2px solid var(--gray-200);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+
+        .controls {
+            background: white;
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .controls label {
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.9rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--gray-300);
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--gray-700);
+        }
+
+        .btn:hover {
+            background: var(--gray-50);
+            border-color: var(--primary-500);
+        }
+
+        .btn.active {
+            background: var(--primary-500);
+            color: white;
+            border-color: var(--primary-600);
+        }
+
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--primary-500);
+            background: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: var(--primary-600);
+        }
+
+        .toggle-btn:hover {
+            background: var(--primary-50);
+        }
+
+        .toggle-btn.active {
+            background: var(--primary-500);
+            color: white;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 180px);
+        }
+
+        .visualization-panel {
+            flex: 1;
+            padding: 2rem;
+            overflow: auto;
+            background: var(--gray-50);
+        }
+
+        .screenshot-container {
+            position: relative;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            overflow: hidden;
+            margin: 0 auto;
+            max-width: 1400px;
+        }
+
+        .screenshot {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .area {
+            position: absolute;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .area:hover {
+            background: rgba(14, 165, 233, 0.15);
+            border-color: var(--primary-500);
+            z-index: 10;
+        }
+
+        .area.highlighted {
+            background: rgba(14, 165, 233, 0.25);
+            border-color: var(--primary-600);
+            border-width: 3px;
+            z-index: 20;
+        }
+
+        .area-label {
+            position: absolute;
+            background: var(--primary-600);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 30;
+        }
+
+        .area:hover .area-label,
+        .area.highlighted .area-label {
+            opacity: 1;
+        }
+
+        .info-panel {
+            width: 400px;
+            background: white;
+            border-left: 1px solid var(--gray-200);
+            overflow-y: auto;
+            display: none;
+        }
+
+        .info-panel.visible {
+            display: block;
+        }
+
+        .info-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .info-header h3 {
+            font-size: 1.25rem;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-content {
+            padding: 1.5rem;
+        }
+
+        .pattern-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .pattern-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: var(--primary-500);
+        }
+
+        .pattern-id {
+            display: inline-block;
+            background: var(--primary-500);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 0.5rem;
+        }
+
+        .pattern-desc {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            line-height: 1.6;
+        }
+
+        .pattern-meta {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--gray-200);
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .pattern-tag {
+            display: inline-block;
+            background: var(--gray-200);
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .legend {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border: 1px solid var(--gray-200);
+            max-width: 250px;
+        }
+
+        .shortcuts-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shortcuts-modal.visible {
+            display: flex;
+        }
+
+        .shortcuts-content {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .shortcut-section h4 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-700);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-200);
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+        }
+
+        .shortcut-key {
+            background: var(--gray-100);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            border: 1px solid var(--gray-300);
+        }
+
+        .implementation-note {
+            background: var(--primary-50);
+            border-left: 4px solid var(--primary-500);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0.25rem;
+        }
+
+        .implementation-note h5 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--primary-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .code-example {
+            background: var(--gray-900);
+            color: var(--gray-100);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            margin-top: 0.75rem;
+            overflow-x: auto;
+        }
+
+        .pattern-relationship {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background: var(--gray-50);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .pattern-relationship-arrow {
+            color: var(--primary-500);
+            font-weight: 700;
+        }
+
+        .legend h4 {
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--gray-900);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 0.25rem;
+            margin-right: 0.5rem;
+            border: 1px solid var(--gray-300);
+        }
+
+        .stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-600);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .info-panel {
+                width: 100%;
+                height: 50vh;
+                border-left: none;
+                border-top: 1px solid var(--gray-200);
+            }
+
+            .main-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 CMS Editor - HCI Pattern Visualization</h1>
+        <p>Interactive demonstration of formal HCI patterns in a Content Management System based on specification v2.0</p>
+    </div>
+
+    <div class="controls">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <label>View:</label>
+            <div class="btn-group" id="viewButtons">
+                <button class="btn active" data-view="editor">Editor</button>
+                <button class="btn" data-view="media">Media Library</button>
+                <button class="btn" data-view="version">Version History</button>
+                <button class="btn" data-view="dashboard">Dashboard</button>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto; flex-wrap: wrap;">
+            <button class="toggle-btn" id="toggleShortcuts">⌨️ Shortcuts</button>
+            <button class="toggle-btn" id="toggleInfo">📊 Show Patterns</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="visualization-panel">
+            <div class="screenshot-container" id="screenshotContainer">
+                <!-- SVG will be inserted here -->
+            </div>
+        </div>
+
+        <div class="info-panel" id="infoPanel">
+            <div class="info-header">
+                <h3>Pattern Information</h3>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.5rem;">
+                    Hover over UI areas to see applied patterns
+                </p>
+            </div>
+            <div class="info-content" id="infoContent">
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="statConcepts">5</div>
+                        <div class="stat-label">Concepts</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statPatterns">30+</div>
+                        <div class="stat-label">Patterns</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="statFlows">6</div>
+                        <div class="stat-label">Flows</div>
+                    </div>
+                </div>
+                <div id="patternList" style="margin-top: 1.5rem;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h4>UI Hierarchy</h4>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(59, 130, 246, 0.2);"></div>
+            <span>Container (L1)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(16, 185, 129, 0.2);"></div>
+            <span>Region (L2)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(245, 158, 11, 0.2);"></div>
+            <span>Zone (L3)</span>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div class="shortcuts-modal" id="shortcutsModal">
+        <div class="shortcuts-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--gray-900);">⌨️ Keyboard Shortcuts</h2>
+                <button class="btn" onclick="document.getElementById('shortcutsModal').classList.remove('visible')" style="padding: 0.5rem 1rem;">✕ Close</button>
+            </div>
+            
+            <div class="shortcuts-grid">
+                <div class="shortcut-section">
+                    <h4>Global</h4>
+                    <div class="shortcut-item">
+                        <span>Command palette</span>
+                        <span class="shortcut-key">⌘K / Ctrl+K</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>New content</span>
+                        <span class="shortcut-key">⌘N / Ctrl+N</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Save</span>
+                        <span class="shortcut-key">⌘S / Ctrl+S</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Search</span>
+                        <span class="shortcut-key">⌘/ / Ctrl+/</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Undo</span>
+                        <span class="shortcut-key">⌘Z / Ctrl+Z</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Redo</span>
+                        <span class="shortcut-key">⌘⇧Z / Ctrl+Y</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-section">
+                    <h4>Editor</h4>
+                    <div class="shortcut-item">
+                        <span>Bold</span>
+                        <span class="shortcut-key">⌘B / Ctrl+B</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Italic</span>
+                        <span class="shortcut-key">⌘I / Ctrl+I</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Insert link</span>
+                        <span class="shortcut-key">⌘K / Ctrl+K</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Block menu</span>
+                        <span class="shortcut-key">/</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Heading levels</span>
+                        <span class="shortcut-key">⌘⌥1-6</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-section">
+                    <h4>Navigation</h4>
+                    <div class="shortcut-item">
+                        <span>Go to Dashboard</span>
+                        <span class="shortcut-key">G then H</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Go to Content</span>
+                        <span class="shortcut-key">G then C</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Go to Media</span>
+                        <span class="shortcut-key">G then M</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Go to Settings</span>
+                        <span class="shortcut-key">G then S</span>
+                    </div>
+                </div>
+
+                <div class="shortcut-section">
+                    <h4>Productivity</h4>
+                    <div class="shortcut-item">
+                        <span>Close modal</span>
+                        <span class="shortcut-key">Esc</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Settings</span>
+                        <span class="shortcut-key">⌘, / Ctrl+,</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span>Publish</span>
+                        <span class="shortcut-key">⌘⇧P</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--gray-200);">
+                <p style="font-size: 0.875rem; color: var(--gray-600);">
+                    <strong>Note:</strong> All shortcuts follow standard conventions. ⌘ (Command) on Mac, Ctrl on Windows/Linux.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // HCI Corpus Data (subset relevant to CMS Editor)
+        const HCI_CORPUS = {
+            'C1': {
+                name: 'Graph Structure',
+                category: 'concept',
+                definition: 'G = (N, E, λₙ, λₑ)',
+                description: 'Content model represented as nodes and edges with labeling functions. Enables powerful queries, dependency tracking, and content relationships.',
+                domains: ['Data Structures', 'Graph Theory'],
+                complexity: 'medium',
+                implementation: {
+                    components: {
+                        nodes: 'Content items (pages, posts, media, components)',
+                        edges: 'Relationships (parent-child, references, links, tags)',
+                        λₙ: 'Node labeling (type, metadata, content)',
+                        λₑ: 'Edge labeling (relationship type, constraints)'
+                    },
+                    codeExample: `interface ContentGraph {
+  nodes: Map<string, ContentNode>
+  edges: Map<string, ContentEdge>
+  
+  traverse(nodeId: string, depth: number): ContentNode[]
+  neighbors(nodeId: string): ContentNode[]
+  path(from: string, to: string): ContentNode[]
+}
+
+// Usage
+const relatedContent = graph.traverse(currentPage.id, 2)
+const backlinks = graph.neighbors(currentPage.id)
+const connectionPath = graph.path(pageA.id, pageB.id)`,
+                    operations: ['traverse(node, depth) - Navigate content tree', 'neighbors(node) - Get related items', 'path(A, B) - Find connection chain'],
+                    benefits: ['Powerful queries ("Find all pages referencing this image")', 'Circular dependency detection', 'Content reuse support', 'Automatic backlinks'],
+                    storage: 'Neo4j graph database (P19)'
+                },
+                relatedPatterns: ['P19', 'P3'],
+                references: ['UX/UI Spec §2.1.1', 'Tech Architecture §2', 'Quick Reference §1']
+            },
+            'C2': {
+                name: 'Document/Artifact',
+                category: 'concept',
+                definition: 'doc = (state, process, visualize, interact)',
+                description: 'Content items with versioning, metadata, and transformation capabilities. Core abstraction for all content types.',
+                domains: ['Data Structures', 'Formal Methods'],
+                complexity: 'medium',
+                implementation: {
+                    structure: {
+                        id: 'Unique identifier (UUID)',
+                        type: 'Content type (page, post, custom)',
+                        title: 'Document title',
+                        content: 'Block-based content array',
+                        metadata: 'Extensible metadata (C4)',
+                        version: 'Current version info',
+                        history: 'Version history (C5)',
+                        permissions: 'Access control rules'
+                    },
+                    codeExample: `interface Document {
+  id: string
+  type: 'page' | 'post' | 'custom'
+  title: string
+  content: Block[]
+  metadata: Metadata
+  version: Version
+  history: VersionHistory
+  permissions: Permissions
+}
+
+type Block = 
+  | { type: 'paragraph', content: RichText }
+  | { type: 'heading', level: 1..6, content: RichText }
+  | { type: 'image', src: string, alt: string }
+  | { type: 'code', language: string, code: string }
+  | { type: 'custom', component: string, props: any }
+
+// Usage
+const doc: Document = {
+  id: 'doc_123',
+  type: 'post',
+  title: 'My Blog Post',
+  content: [
+    { type: 'heading', level: 1, content: 'Title' },
+    { type: 'paragraph', content: 'Text...' }
+  ],
+  metadata: { tags: ['tech'], author: user },
+  version: { number: 5, timestamp: Date.now() },
+  history: versionHistory,
+  permissions: { read: ['public'], write: ['author'] }
+}`,
+                    properties: ['Immutable versions (P.C2.1)', 'Complete audit trail', 'Branching support', 'Rich metadata schema (C4)'],
+                    storage: 'PostgreSQL with JSONB for content blocks'
+                },
+                relatedPatterns: ['C4', 'C5', 'P20'],
+                references: ['UX/UI Spec §2.1.2', 'Tech Architecture §3', 'Quick Reference §2']
+            },
+            'C3': {
+                name: 'Symbolic Expression',
+                category: 'concept',
+                definition: 'T = (root, children)',
+                description: 'Tree-structured representation for rich text, formulas, and code blocks. Enables parsing, transformation, and rendering.',
+                domains: ['Formal Methods', 'Type Systems'],
+                complexity: 'medium'
+            },
+            'C4': {
+                name: 'Metadata Schema',
+                category: 'concept',
+                definition: 'M = (schema, data, validators)',
+                description: 'Extensible key-value pairs with type validation. Supports custom fields and content classification.',
+                domains: ['Metadata', 'Schema Design'],
+                complexity: 'medium'
+            },
+            'C5': {
+                name: 'Version History',
+                category: 'concept',
+                definition: 'H = (states, deltas, branches)',
+                description: 'Immutable change tracking with branching support. Enables time-travel, diff visualization, and audit trails.',
+                domains: ['Version Control', 'History Tracking'],
+                complexity: 'medium',
+                implementation: {
+                    components: {
+                        states: 'Immutable content snapshots',
+                        deltas: 'Changes between versions',
+                        branches: 'Parallel version trees'
+                    },
+                    codeExample: `interface VersionHistory {
+  states: VersionState[]
+  deltas: Delta[]
+  branches: BranchTree
+  
+  getVersion(versionId: string): VersionState
+  diff(v1: string, v2: string): Delta
+  restore(versionId: string): Promise<void>
+  branch(fromVersion: string, name: string): Branch
+}
+
+// Version state
+interface VersionState {
+  id: string
+  contentSnapshot: Content
+  author: User
+  timestamp: Date
+  message: string
+  tags: string[]
+}`,
+                    features: ['Linear history with branching', 'Merge conflict detection', 'Time-travel to any version', 'Diff visualization (side-by-side)', 'Blame/attribution tracking', 'Version tagging (v1.2-prod)'],
+                    ui: 'Timeline view with restore actions, side-by-side diff comparison',
+                    storage: 'PostgreSQL content_versions table with JSONB snapshots'
+                },
+                relatedPatterns: ['C2', 'P30', 'F5'],
+                references: ['UX/UI Spec §2.1.3, §5.1.3', 'Tech Architecture §3']
+            },
+            'P1': {
+                name: 'Canvas/Workspace',
+                category: 'pattern',
+                definition: 'Primary work area for content creation and manipulation',
+                description: 'Large, central area where users perform main editing tasks. Supports direct manipulation, real-time preview, and collaborative editing.',
+                domains: ['UI Layout', 'Interaction'],
+                complexity: 'low'
+            },
+            'P2': {
+                name: 'Command Palette',
+                category: 'pattern',
+                definition: 'Keyboard-driven action launcher (⌘K)',
+                description: 'Fuzzy search interface for all system actions. Provides keyboard shortcuts, recent commands, and contextual suggestions.',
+                domains: ['Interaction', 'Navigation'],
+                complexity: 'medium',
+                implementation: {
+                    trigger: '⌘K (Mac) / Ctrl+K (Windows/Linux)',
+                    features: ['Fuzzy search across all actions', 'Recent commands history', 'Keyboard shortcuts display', 'Contextual suggestions', 'Quick navigation to content'],
+                    codeExample: `interface CommandPaletteItem {
+  id: string
+  label: string
+  action: () => void
+  shortcut?: string
+  category: 'navigation' | 'edit' | 'create'
+}
+
+// Register commands
+commandPalette.register({
+  id: 'create-post',
+  label: 'Create new blog post',
+  action: () => navigate('/editor/new?type=post'),
+  shortcut: '⌘N',
+  category: 'create'
+})`,
+                    ui: 'Modal overlay with fuzzy search, categorized results, keyboard navigation',
+                    benefits: ['Power user efficiency', 'Discoverability', 'Reduced mouse dependence']
+                },
+                relatedPatterns: ['P8'],
+                references: ['UX/UI Spec §5.3.1']
+            },
+            'P3': {
+                name: 'Tree/Hierarchy Browser',
+                category: 'pattern',
+                definition: 'Hierarchical navigation structure',
+                description: 'Expandable tree for browsing nested content. Supports drag-drop reordering, multi-select, and context menus.',
+                domains: ['Navigation', 'Data Visualization'],
+                complexity: 'medium'
+            },
+            'P4': {
+                name: 'Inspector/Properties Panel',
+                category: 'pattern',
+                definition: 'Context-sensitive property editor',
+                description: 'Shows and edits properties of selected items. Dynamically updates based on selection type and provides validation feedback.',
+                domains: ['UI Layout', 'Forms'],
+                complexity: 'low'
+            },
+            'P5': {
+                name: 'Tab Interface',
+                category: 'pattern',
+                definition: 'Multiple document navigation',
+                description: 'Enables working with multiple documents simultaneously. Supports drag reordering, tab groups, and split views.',
+                domains: ['Navigation', 'Multi-tasking'],
+                complexity: 'low'
+            },
+            'P6': {
+                name: 'Palette/Toolbar',
+                category: 'pattern',
+                definition: 'Contextual action tools',
+                description: 'Provides quick access to frequently used actions. Context-aware based on selection and current mode.',
+                domains: ['UI Layout', 'Actions'],
+                complexity: 'low'
+            },
+            'P7': {
+                name: 'Breadcrumb Trail',
+                category: 'pattern',
+                definition: 'Navigation path indicator',
+                description: 'Shows current location in hierarchy. Each segment is clickable for quick navigation to parent levels.',
+                domains: ['Navigation', 'Context'],
+                complexity: 'low'
+            },
+            'P8': {
+                name: 'Search/Filter Interface',
+                category: 'pattern',
+                definition: 'Full-text search with filters',
+                description: 'Powerful search with faceted filtering, fuzzy matching, and saved searches. Supports real-time results and highlighting.',
+                domains: ['Search', 'Data Retrieval'],
+                complexity: 'medium'
+            },
+            'P10': {
+                name: 'Parser/Compiler Pipeline',
+                category: 'pattern',
+                definition: 'Content transformation pipeline',
+                description: 'Lexer → Parser → Validator → Transformer → Renderer. Handles markdown, HTML, and custom syntax transformation.',
+                domains: ['Compilation', 'Transformation'],
+                complexity: 'high',
+                implementation: {
+                    stages: ['Lexer (Tokenization)', 'Parser (AST Construction)', 'Validator (P11)', 'Transformer (Plugins)', 'Renderer (Output)'],
+                    codeExample: `class ContentPipeline {
+  async process(input: string): Promise<string> {
+    const tokens = this.lexer.tokenize(input)
+    const ast = this.parser.parse(tokens)
+    const validated = await this.validator.validate(ast)
+    const transformed = this.transformer.transform(validated)
+    return this.renderer.render(transformed, 'html')
+  }
+}`,
+                    useCases: ['Markdown to HTML conversion', 'Content export', 'Plugin transformation'],
+                    performance: 'Sub-200ms for typical documents'
+                },
+                relatedPatterns: ['P11', 'C3'],
+                references: ['Tech Architecture §4', 'Quick Reference §4']
+            },
+            'P11': {
+                name: 'Validator/Checker',
+                category: 'pattern',
+                definition: 'Multi-level validation system',
+                description: 'Validates syntax, semantics, business rules, and accessibility. Provides real-time feedback with auto-fix suggestions.',
+                domains: ['Validation', 'Quality Assurance'],
+                complexity: 'medium',
+                implementation: {
+                    levels: ['Syntax (Structure)', 'Semantic (Links/References)', 'Business (Required fields)', 'Accessibility (WCAG 2.1 AA)'],
+                    codeExample: `class ValidationPipeline {
+  async validate(content: Content): Promise<ValidationResult> {
+    const validators = [
+      new SyntaxValidator(),
+      new LinkValidator(), // Semantic
+      new BusinessRuleValidator(),
+      new AccessibilityValidator()
+    ]
+    
+    const results = await Promise.all(
+      validators.map(v => v.validate(content))
+    )
+    
+    return {
+      valid: results.every(r => r.errors.length === 0),
+      errors: results.flatMap(r => r.errors),
+      warnings: results.flatMap(r => r.warnings),
+      suggestions: results.flatMap(r => r.suggestions)
+    }
+  }
+}`,
+                    errorTypes: {
+                        blocking: 'Broken links, required fields missing',
+                        warning: 'Missing alt text, heading hierarchy',
+                        info: 'SEO recommendations, best practices'
+                    },
+                    autoFix: 'Generates AI-powered suggestions for common issues (P16)'
+                },
+                relatedPatterns: ['P10', 'P16', 'F1.1'],
+                references: ['UX/UI Spec §6.2', 'Tech Architecture §5']
+            },
+            'P13': {
+                name: 'Indexer/Query Engine',
+                category: 'pattern',
+                definition: 'Full-text search indexing',
+                description: 'Elasticsearch/Meilisearch integration for fast search. Supports facets, filters, sorting, and highlighted results.',
+                domains: ['Search', 'Indexing'],
+                complexity: 'high',
+                implementation: {
+                    engine: 'Meilisearch',
+                    features: ['Full-text search', 'Fuzzy matching', 'Tag/category filters', 'Date range filters', 'Author filters', 'Status filters', 'Faceted search', 'Highlighted results'],
+                    codeExample: `class SearchService {
+  async search(query: SearchQuery): Promise<SearchResults> {
+    const index = this.client.index('content')
+    
+    // Build filters
+    const filters = []
+    if (query.type) filters.push(\`type = \${query.type}\`)
+    if (query.status) filters.push(\`status = \${query.status}\`)
+    
+    // Search with highlighting
+    const results = await index.search(query.text, {
+      filter: filters.join(' AND '),
+      sort: [\`\${query.sort.field}:\${query.sort.order}\`],
+      attributesToHighlight: ['title', 'content'],
+      highlightPreTag: '<mark>',
+      highlightPostTag: '</mark>'
+    })
+    
+    return {
+      hits: results.hits,
+      total: results.estimatedTotalHits,
+      processingTime: results.processingTimeMs
+    }
+  }
+}`,
+                    searchableAttributes: ['title', 'content', 'tags', 'author'],
+                    performance: 'Sub-50ms search response time',
+                    ui: 'Real-time results, faceted filters, saved searches'
+                },
+                relatedPatterns: ['P8', 'C1'],
+                references: ['UX/UI Spec §4.3', 'Tech Architecture §8.6']
+            },
+            'P16': {
+                name: 'Suggestion/Recommendation',
+                category: 'pattern',
+                definition: 'AI-powered assistance',
+                description: 'Context-aware content suggestions, SEO improvements, accessibility fixes, and smart completions.',
+                domains: ['AI/ML', 'User Assistance'],
+                complexity: 'high',
+                implementation: {
+                    types: ['Content completions', 'SEO improvements', 'Accessibility fixes', 'Related content links', 'Image suggestions', 'Tag recommendations', 'Alt text generation'],
+                    codeExample: `interface SuggestionEngine {
+  suggest(context: EditContext): Suggestion[]
+  learn(feedback: UserFeedback): void
+}
+
+class AISuggestionService implements SuggestionEngine {
+  async suggest(context: EditContext): Promise<Suggestion[]> {
+    const suggestions: Suggestion[] = []
+    
+    // AI content completion
+    if (context.cursorPosition) {
+      const completion = await this.llm.complete(
+        context.content,
+        context.cursorPosition
+      )
+      suggestions.push({
+        type: 'completion',
+        text: completion,
+        confidence: 0.85
+      })
+    }
+    
+    // SEO analysis
+    if (!context.metadata.description) {
+      suggestions.push({
+        type: 'seo',
+        message: 'Add meta description for better SEO',
+        action: () => this.generateMetaDescription(context)
+      })
+    }
+    
+    return suggestions
+  }
+}`,
+                    features: ['Context-aware ML model', 'User feedback learning loop (F3.1)', 'Confidence scoring', 'Non-intrusive suggestions'],
+                    ui: 'Inline suggestions with accept/dismiss, suggestion panel'
+                },
+                relatedPatterns: ['P11', 'F3.1'],
+                references: ['UX/UI Spec §2.2.5']
+            },
+            'P19': {
+                name: 'Graph Database',
+                category: 'pattern',
+                definition: 'Content relationship storage',
+                description: 'Stores content as graph (C1). Enables relationship queries, backlinks, and circular dependency detection.',
+                domains: ['Storage', 'Graph Processing'],
+                complexity: 'high'
+            },
+            'P20': {
+                name: 'Document Store',
+                category: 'pattern',
+                definition: 'Flexible schema document storage',
+                description: 'NoSQL storage for content documents (C2). Supports rich queries, versioning, and metadata.',
+                domains: ['Storage', 'Databases'],
+                complexity: 'medium'
+            },
+            'P23': {
+                name: 'Real-Time Sync Protocol',
+                category: 'pattern',
+                definition: 'Collaborative editing sync',
+                description: 'Operational Transform for concurrent editing. Resolves conflicts automatically with sub-100ms latency.',
+                domains: ['Networking', 'Collaboration'],
+                complexity: 'high'
+            },
+            'P26': {
+                name: 'Status Indicator',
+                category: 'pattern',
+                definition: 'System state display',
+                description: 'Shows save status, word count, validation errors, connection state, and collaborator presence.',
+                domains: ['Feedback', 'UI'],
+                complexity: 'low'
+            },
+            'P27': {
+                name: 'Toast/Notification',
+                category: 'pattern',
+                definition: 'Non-blocking feedback messages',
+                description: 'Temporary notifications with auto-dismiss. Supports actions, queueing, and severity levels (info/success/warning/error).',
+                domains: ['Feedback', 'UI'],
+                complexity: 'low'
+            },
+            'P28': {
+                name: 'Progress Indicator',
+                category: 'pattern',
+                definition: 'Operation progress display',
+                description: 'Determinate/indeterminate progress bars, skeleton loaders, and ETA displays. Always cancelable.',
+                domains: ['Feedback', 'UI'],
+                complexity: 'low'
+            },
+            'P29': {
+                name: 'MVC/MVVM Architecture',
+                category: 'pattern',
+                definition: 'Separation of concerns',
+                description: 'Model-View-Controller pattern for editor state management. Enables reactive updates and testability.',
+                domains: ['Architecture', 'Design Patterns'],
+                complexity: 'medium'
+            },
+            'P30': {
+                name: 'Command Pattern',
+                category: 'pattern',
+                definition: 'Undoable actions',
+                description: 'All edits as commands with execute/undo/redo. Enables macro recording and complete history.',
+                domains: ['Architecture', 'Design Patterns'],
+                complexity: 'medium',
+                implementation: {
+                    interface: 'Command { execute(), undo(), redo(), validate() }',
+                    codeExample: `interface Command {
+  execute(): Promise<Result>
+  undo(): Promise<void>
+  redo(): Promise<void>
+}
+
+class InsertTextCommand implements Command {
+  constructor(
+    private editor: Editor,
+    private text: string,
+    private position: number
+  ) {}
+  
+  async execute() {
+    return this.editor.insertText(this.text, this.position)
+  }
+  
+  async undo() {
+    return this.editor.deleteText(
+      this.position, 
+      this.text.length
+    )
+  }
+  
+  async redo() {
+    return this.execute()
+  }
+}`,
+                    benefits: ['Complete undo/redo stack', 'Keyboard shortcut mapping (⌘Z/⌘⇧Z)', 'Macro recording', 'Command history'],
+                    usedIn: ['Editor toolbar actions', 'Text editing', 'Block manipulation', 'Media operations']
+                },
+                relatedPatterns: ['P29', 'P31', 'F1.1'],
+                references: ['UX/UI Spec §2.2.1', 'Quick Reference §3']
+            },
+            'P31': {
+                name: 'Observer Pattern',
+                category: 'pattern',
+                definition: 'Event-driven updates',
+                description: 'Subscribe to content changes. Enables real-time collaboration, auto-save, and reactive UI updates.',
+                domains: ['Architecture', 'Design Patterns'],
+                complexity: 'medium'
+            },
+            'F1.1': {
+                name: 'Input Capture Flow',
+                category: 'flow',
+                definition: 'source → validator → normalizer → store',
+                description: 'Captures user input, validates it, normalizes to internal format, and persists. Handles auto-save with exponential backoff.',
+                domains: ['Process Flow', 'Architecture'],
+                complexity: 'medium'
+            },
+            'F1.2': {
+                name: 'Data Import Flow',
+                category: 'flow',
+                definition: 'source → parser → transformer → integrator',
+                description: 'Imports external content (markdown, HTML, Word). Parses format, transforms to internal schema, and integrates.',
+                domains: ['Process Flow', 'Architecture'],
+                complexity: 'medium'
+            },
+            'F2.1': {
+                name: 'Processing Pipeline',
+                category: 'flow',
+                definition: 'stages → ir → compose',
+                description: 'Content transformation pipeline with multiple stages. Used for rendering, export, and plugin transformations.',
+                domains: ['Process Flow', 'Architecture'],
+                complexity: 'medium'
+            },
+            'F4.1': {
+                name: 'Interactive Display',
+                category: 'flow',
+                definition: 'render → interact → update',
+                description: 'Real-time preview with WYSIWYG editing. User interactions immediately reflected in display.',
+                domains: ['Process Flow', 'Interaction'],
+                complexity: 'medium'
+            },
+            'F5': {
+                name: 'Collaborative Editing',
+                category: 'flow',
+                definition: 'local_change → transform → broadcast → merge',
+                description: 'Real-time multi-user editing with Operational Transform. Shows cursors, resolves conflicts, and syncs changes.',
+                domains: ['Collaboration', 'Networking'],
+                complexity: 'high',
+                implementation: {
+                    algorithm: 'Operational Transform (OT)',
+                    codeExample: `class OTEngine {
+  transform(op1: Operation, op2: Operation): Operation {
+    // Transform op1 against op2 for concurrent edits
+    // Ensures convergence property
+  }
+  
+  apply(doc: Block[], op: Operation): Block[] {
+    // Apply operation to document
+  }
+}
+
+class CollaborationService {
+  private ws: WebSocket
+  private otEngine: OTEngine
+  
+  connect(documentId: string) {
+    this.ws = new WebSocket(\`wss://api.cms.com/collab/\${documentId}\`)
+    
+    this.ws.onmessage = (event) => {
+      const { type, operation } = JSON.parse(event.data)
+      
+      if (type === 'operation') {
+        this.handleRemoteOperation(operation)
+      }
+    }
+  }
+  
+  sendOperation(op: Operation) {
+    this.ws.send(JSON.stringify({
+      type: 'operation',
+      operation: op
+    }))
+  }
+}`,
+                    properties: ['Convergence: All clients reach same final state', 'Causality: Operations maintain order', 'Intention: User intent preserved'],
+                    latency: 'Sub-100ms sync (P23)',
+                    features: ['Real-time cursor positions', 'User presence indicators', 'Automatic conflict resolution', 'Manual 3-way merge for complex conflicts'],
+                    transport: 'WebSocket for bidirectional communication'
+                },
+                relatedPatterns: ['P23', 'P31', 'C5'],
+                references: ['UX/UI Spec §3.3.2', 'Tech Architecture §6', 'Quick Reference §5']
+            },
+            'F6': {
+                name: 'Error Recovery',
+                category: 'flow',
+                definition: 'detect → notify → recover → resume',
+                description: 'Handles network loss, validation errors, and conflicts. Provides offline mode and automatic sync on reconnection.',
+                domains: ['Error Handling', 'Resilience'],
+                complexity: 'high'
+            }
+        };
+
+        // View Definitions
+        const VIEWS = {
+            editor: {
+                name: 'Content Editor',
+                svgGenerator: () => `
+                    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                        <!-- Background -->
+                        <rect width="1920" height="1080" fill="#F9FAFB"/>
+                        
+                        <!-- Top Bar -->
+                        <rect x="0" y="0" width="1920" height="64" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="40" font-family="system-ui" font-size="18" font-weight="600" fill="#0EA5E9">📝 CMS Editor</text>
+                        <rect x="1600" y="18" width="140" height="28" rx="6" fill="#0EA5E9"/>
+                        <text x="1620" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="white">💾 Save</text>
+                        <rect x="1750" y="18" width="140" height="28" rx="6" fill="#10B981"/>
+                        <text x="1765" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="white">🚀 Publish</text>
+                        
+                        <!-- Search Bar -->
+                        <rect x="200" y="18" width="400" height="28" rx="14" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="220" y="37" font-family="system-ui" font-size="12" fill="#6B7280">🔍 Search or ⌘K for commands...</text>
+                        
+                        <!-- Breadcrumb -->
+                        <rect x="0" y="64" width="1920" height="40" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="88" font-family="system-ui" font-size="12" fill="#6B7280">Home / Content / Blog Posts</text>
+                        
+                        <!-- Left Sidebar -->
+                        <rect x="0" y="104" width="280" height="896" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="140" font-family="system-ui" font-size="14" font-weight="700" fill="#374151">📁 Content</text>
+                        
+                        <!-- Tree items -->
+                        <rect x="20" y="160" width="240" height="32" rx="4" fill="#F0F9FF"/>
+                        <text x="36" y="182" font-family="system-ui" font-size="13" fill="#0EA5E9">▼ Pages</text>
+                        
+                        <text x="52" y="214" font-family="system-ui" font-size="12" fill="#6B7280">📄 Home</text>
+                        <text x="52" y="242" font-family="system-ui" font-size="12" fill="#6B7280">📄 About</text>
+                        <text x="52" y="270" font-family="system-ui" font-size="12" fill="#6B7280">📄 Services</text>
+                        
+                        <text x="36" y="310" font-family="system-ui" font-size="13" fill="#4B5563">▶ Posts</text>
+                        <text x="36" y="342" font-family="system-ui" font-size="13" fill="#4B5563">▶ Media</text>
+                        
+                        <!-- Main Editor Area -->
+                        <rect x="280" y="104" width="1160" height="896" fill="white"/>
+                        
+                        <!-- Editor Toolbar -->
+                        <rect x="280" y="104" width="1160" height="48" fill="#FAFAFA" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="300" y="132" font-family="system-ui" font-size="13" fill="#6B7280">B I U 🔗 📷 ···</text>
+                        
+                        <!-- Editor Title -->
+                        <text x="320" y="200" font-family="system-ui" font-size="32" font-weight="700" fill="#111827">Welcome to Our Platform</text>
+                        
+                        <!-- Editor Content -->
+                        <rect x="320" y="240" width="1080" height="600" fill="white" stroke="#E5E7EB" stroke-width="1" stroke-dasharray="4,4"/>
+                        <text x="340" y="270" font-family="system-ui" font-size="15" fill="#6B7280">Start writing or press '/' for commands...</text>
+                        
+                        <!-- Block hints -->
+                        <text x="340" y="310" font-family="system-ui" font-size="14" fill="#111827">This is the introduction paragraph where you</text>
+                        <text x="340" y="335" font-family="system-ui" font-size="14" fill="#111827">can write content with rich formatting.</text>
+                        
+                        <rect x="320" y="360" width="1080" height="1" fill="#E5E7EB"/>
+                        <text x="340" y="395" font-family="system-ui" font-size="13" fill="#9CA3AF">+ Add block</text>
+                        
+                        <!-- Status Bar -->
+                        <rect x="280" y="952" width="1160" height="48" fill="#FAFAFA" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="300" y="980" font-family="system-ui" font-size="12" fill="#10B981">✓ Saved 2s ago</text>
+                        <text x="500" y="980" font-family="system-ui" font-size="12" fill="#6B7280">│ 234 words</text>
+                        <text x="650" y="980" font-family="system-ui" font-size="12" fill="#F59E0B">│ ⚠ 2 suggestions</text>
+                        <text x="850" y="980" font-family="system-ui" font-size="12" fill="#10B981">│ 🌐 Online</text>
+                        
+                        <!-- Right Panel -->
+                        <rect x="1440" y="104" width="480" height="896" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="1464" y="140" font-family="system-ui" font-size="14" font-weight="700" fill="#374151">⚙️ Properties</text>
+                        
+                        <!-- Properties content -->
+                        <text x="1464" y="180" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">STATUS</text>
+                        <rect x="1464" y="190" width="120" height="28" rx="4" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="1480" y="209" font-family="system-ui" font-size="12" fill="#6B7280">Draft ▼</text>
+                        
+                        <text x="1464" y="250" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">AUTHOR</text>
+                        <text x="1464" y="270" font-family="system-ui" font-size="13" fill="#111827">Sarah Johnson</text>
+                        
+                        <text x="1464" y="310" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">TAGS</text>
+                        <rect x="1464" y="320" width="60" height="24" rx="4" fill="#E0F2FE"/>
+                        <text x="1474" y="337" font-family="system-ui" font-size="11" fill="#0369A1">Tech</text>
+                        <rect x="1530" y="320" width="80" height="24" rx="4" fill="#E0F2FE"/>
+                        <text x="1540" y="337" font-family="system-ui" font-size="11" fill="#0369A1">Tutorial</text>
+                        
+                        <text x="1464" y="380" font-family="system-ui" font-size="12" font-weight="600" fill="#6B7280">SEO</text>
+                        <text x="1464" y="400" font-family="system-ui" font-size="11" fill="#6B7280">Meta description</text>
+                        <rect x="1464" y="410" width="400" height="60" rx="4" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1"/>
+                    </svg>
+                `,
+                areas: [
+                    { id: 'top-bar', bounds: { left: 0, top: 0, width: 100, height: 5.9 }, label: 'Top Bar', patterns: ['P2', 'P6', 'P26'] },
+                    { id: 'breadcrumb', bounds: { left: 0, top: 5.9, width: 100, height: 3.7 }, label: 'Breadcrumb', patterns: ['P7'] },
+                    { id: 'sidebar', bounds: { left: 0, top: 9.6, width: 14.6, height: 83 }, label: 'Content Tree', patterns: ['P3', 'C1', 'P19'] },
+                    { id: 'editor-toolbar', bounds: { left: 14.6, top: 9.6, width: 60.4, height: 4.4 }, label: 'Editor Toolbar', patterns: ['P6', 'P30'] },
+                    { id: 'editor-canvas', bounds: { left: 14.6, top: 14, width: 60.4, height: 74.2 }, label: 'Editor Canvas', patterns: ['P1', 'C2', 'C3', 'F1.1', 'P10', 'P11', 'P16', 'P23', 'P29', 'P30', 'P31', 'F4.1', 'F5'] },
+                    { id: 'status-bar', bounds: { left: 14.6, top: 88.2, width: 60.4, height: 4.4 }, label: 'Status Bar', patterns: ['P26', 'P27'] },
+                    { id: 'properties', bounds: { left: 75, top: 9.6, width: 25, height: 83 }, label: 'Properties Panel', patterns: ['P4', 'C4'] }
+                ]
+            },
+            media: {
+                name: 'Media Library',
+                svgGenerator: () => `
+                    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                        <rect width="1920" height="1080" fill="#F9FAFB"/>
+                        
+                        <!-- Top Bar -->
+                        <rect x="0" y="0" width="1920" height="64" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="40" font-family="system-ui" font-size="18" font-weight="600" fill="#0EA5E9">🖼️ Media Library</text>
+                        <rect x="1600" y="18" width="140" height="28" rx="6" fill="#0EA5E9"/>
+                        <text x="1620" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="white">📤 Upload</text>
+                        <rect x="1750" y="18" width="140" height="28" rx="6" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="1765" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="#6B7280">📁 New Folder</text>
+                        
+                        <!-- Left Sidebar -->
+                        <rect x="0" y="64" width="280" height="1016" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="100" font-family="system-ui" font-size="14" font-weight="700" fill="#374151">📁 Folders</text>
+                        
+                        <rect x="20" y="120" width="240" height="32" rx="4" fill="#F0F9FF"/>
+                        <text x="36" y="142" font-family="system-ui" font-size="13" fill="#0EA5E9">📂 All Media</text>
+                        <text x="36" y="182" font-family="system-ui" font-size="13" fill="#6B7280">🖼️ Images</text>
+                        <text x="36" y="214" font-family="system-ui" font-size="13" fill="#6B7280">🎥 Videos</text>
+                        <text x="36" y="246" font-family="system-ui" font-size="13" fill="#6B7280">📄 Documents</text>
+                        <text x="36" y="278" font-family="system-ui" font-size="13" fill="#6B7280">⭐ Recent</text>
+                        
+                        <text x="24" y="330" font-family="system-ui" font-size="14" font-weight="700" fill="#374151">🏷️ Tags</text>
+                        <text x="36" y="360" font-family="system-ui" font-size="12" fill="#6B7280">☐ Logo (12)</text>
+                        <text x="36" y="388" font-family="system-ui" font-size="12" fill="#6B7280">☐ Hero (8)</text>
+                        <text x="36" y="416" font-family="system-ui" font-size="12" fill="#6B7280">☐ Icons (24)</text>
+                        
+                        <!-- Main Area -->
+                        <rect x="280" y="64" width="1640" height="1016" fill="white"/>
+                        
+                        <!-- Toolbar -->
+                        <rect x="280" y="64" width="1640" height="56" fill="#FAFAFA" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="300" y="98" font-family="system-ui" font-size="13" fill="#6B7280">🔲 Grid</text>
+                        <text x="380" y="98" font-family="system-ui" font-size="13" fill="#9CA3AF">📋 List</text>
+                        
+                        <rect x="1000" y="78" width="300" height="28" rx="14" fill="white" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="1020" y="97" font-family="system-ui" font-size="12" fill="#6B7280">🔍 Search files...</text>
+                        
+                        <text x="1600" y="98" font-family="system-ui" font-size="13" fill="#6B7280">Sort: Name ▼</text>
+                        
+                        <!-- Grid of Images -->
+                        <rect x="320" y="160" width="220" height="220" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="370" y="280" font-family="system-ui" font-size="48" fill="#9CA3AF">🖼️</text>
+                        <text x="330" y="360" font-family="system-ui" font-size="12" fill="#111827">image1.jpg</text>
+                        <text x="330" y="375" font-family="system-ui" font-size="10" fill="#9CA3AF">1.2 MB</text>
+                        
+                        <rect x="560" y="160" width="220" height="220" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="610" y="280" font-family="system-ui" font-size="48" fill="#9CA3AF">🖼️</text>
+                        <text x="570" y="360" font-family="system-ui" font-size="12" fill="#111827">image2.jpg</text>
+                        <text x="570" y="375" font-family="system-ui" font-size="10" fill="#9CA3AF">800 KB</text>
+                        
+                        <rect x="800" y="160" width="220" height="220" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="850" y="280" font-family="system-ui" font-size="48" fill="#9CA3AF">🎥</text>
+                        <text x="810" y="360" font-family="system-ui" font-size="12" fill="#111827">video1.mp4</text>
+                        <text x="810" y="375" font-family="system-ui" font-size="10" fill="#9CA3AF">24.5 MB</text>
+                        
+                        <rect x="1040" y="160" width="220" height="220" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="1090" y="280" font-family="system-ui" font-size="48" fill="#9CA3AF">🖼️</text>
+                        <text x="1050" y="360" font-family="system-ui" font-size="12" fill="#111827">image3.jpg</text>
+                        <text x="1050" y="375" font-family="system-ui" font-size="10" fill="#9CA3AF">2.1 MB</text>
+                        
+                        <!-- Pagination -->
+                        <text x="320" y="440" font-family="system-ui" font-size="12" fill="#6B7280">Showing 1-20 of 245 items</text>
+                        <text x="1600" y="440" font-family="system-ui" font-size="12" fill="#0EA5E9">1 2 3 ... 13 Next ›</text>
+                    </svg>
+                `,
+                areas: [
+                    { id: 'media-top', bounds: { left: 0, top: 0, width: 100, height: 5.9 }, label: 'Media Header', patterns: ['P6', 'P28'] },
+                    { id: 'media-sidebar', bounds: { left: 0, top: 5.9, width: 14.6, height: 94.1 }, label: 'Folders & Tags', patterns: ['P3', 'P8'] },
+                    { id: 'media-toolbar', bounds: { left: 14.6, top: 5.9, width: 85.4, height: 5.2 }, label: 'View Controls', patterns: ['P6', 'P8'] },
+                    { id: 'media-grid', bounds: { left: 14.6, top: 11.1, width: 85.4, height: 88.9 }, label: 'Media Grid', patterns: ['P1', 'F1.2', 'P28', 'C4'] }
+                ]
+            },
+            version: {
+                name: 'Version History',
+                svgGenerator: () => `
+                    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                        <rect width="1920" height="1080" fill="#F9FAFB"/>
+                        
+                        <!-- Top Bar -->
+                        <rect x="0" y="0" width="1920" height="64" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="40" font-family="system-ui" font-size="18" font-weight="600" fill="#0EA5E9">🕐 Version History</text>
+                        <text x="400" y="40" font-family="system-ui" font-size="14" fill="#6B7280">› Welcome to Our Platform</text>
+                        <rect x="1750" y="18" width="140" height="28" rx="6" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="1775" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="#6B7280">✕ Close</text>
+                        
+                        <!-- Timeline Panel -->
+                        <rect x="0" y="64" width="480" height="1016" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="100" font-family="system-ui" font-size="14" font-weight="700" fill="#374151">Timeline</text>
+                        
+                        <rect x="300" y="80" width="80" height="28" rx="4" fill="#F3F4F6"/>
+                        <text x="310" y="99" font-family="system-ui" font-size="11" fill="#6B7280">Timeline</text>
+                        <rect x="385" y="80" width="60" height="28" rx="4" fill="white" stroke="#D1D5DB" stroke-width="1"/>
+                        <text x="395" y="99" font-family="system-ui" font-size="11" fill="#6B7280">Tree</text>
+                        
+                        <!-- Timeline Items -->
+                        <circle cx="40" cy="160" r="8" fill="#0EA5E9"/>
+                        <text x="60" y="165" font-family="system-ui" font-size="13" font-weight="600" fill="#111827">Now (Editing)</text>
+                        <line x1="40" y1="168" x2="40" y2="210" stroke="#D1D5DB" stroke-width="2"/>
+                        
+                        <circle cx="40" cy="220" r="6" fill="#10B981"/>
+                        <text x="60" y="225" font-family="system-ui" font-size="12" fill="#111827">2 minutes ago - Auto-saved</text>
+                        <text x="60" y="242" font-family="system-ui" font-size="11" fill="#6B7280">You: Added image to introduction</text>
+                        <text x="60" y="256" font-family="system-ui" font-size="10" fill="#9CA3AF">234 chars added, 12 deleted</text>
+                        <line x1="40" y1="228" x2="40" y2="280" stroke="#D1D5DB" stroke-width="2"/>
+                        
+                        <circle cx="40" cy="290" r="6" fill="#10B981"/>
+                        <text x="60" y="295" font-family="system-ui" font-size="12" fill="#111827">15 minutes ago - Saved</text>
+                        <text x="60" y="312" font-family="system-ui" font-size="11" fill="#6B7280">Alex: Updated heading structure</text>
+                        <rect x="60" y="320" width="50" height="22" rx="4" fill="#E0F2FE"/>
+                        <text x="68" y="335" font-family="system-ui" font-size="10" fill="#0369A1">View</text>
+                        <rect x="115" y="320" width="65" height="22" rx="4" fill="#F0FDF4"/>
+                        <text x="123" y="335" font-family="system-ui" font-size="10" fill="#15803D">Restore</text>
+                        <line x1="40" y1="298" x2="40" y2="360" stroke="#D1D5DB" stroke-width="2"/>
+                        
+                        <circle cx="40" cy="370" r="6" fill="#F59E0B"/>
+                        <text x="60" y="375" font-family="system-ui" font-size="12" fill="#111827">1 hour ago - Published</text>
+                        <text x="60" y="392" font-family="system-ui" font-size="11" fill="#6B7280">You: Published version 1.2</text>
+                        <rect x="60" y="400" width="80" height="20" rx="4" fill="#FEF3C7"/>
+                        <text x="68" y="414" font-family="system-ui" font-size="10" fill="#92400E">🏷️ v1.2-prod</text>
+                        <line x1="40" y1="378" x2="40" y2="440" stroke="#D1D5DB" stroke-width="2"/>
+                        
+                        <circle cx="40" cy="450" r="6" fill="#10B981"/>
+                        <text x="60" y="455" font-family="system-ui" font-size="12" fill="#111827">Yesterday - Major revision</text>
+                        <text x="60" y="472" font-family="system-ui" font-size="11" fill="#6B7280">Sarah: Rewrote section 3</text>
+                        <rect x="60" y="480" width="50" height="22" rx="4" fill="#E0F2FE"/>
+                        <text x="68" y="495" font-family="system-ui" font-size="10" fill="#0369A1">View</text>
+                        
+                        <!-- Diff View -->
+                        <rect x="480" y="64" width="1440" height="1016" fill="white"/>
+                        
+                        <rect x="480" y="64" width="720" height="48" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1"/>
+                        <text x="500" y="93" font-family="system-ui" font-size="14" font-weight="600" fill="#92400E">Version 1.1 (Yesterday)</text>
+                        
+                        <rect x="1200" y="64" width="720" height="48" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+                        <text x="1220" y="93" font-family="system-ui" font-size="14" font-weight="600" fill="#065F46">Version 1.2 (Current)</text>
+                        
+                        <!-- Left side (old) -->
+                        <text x="500" y="150" font-family="system-ui" font-size="20" font-weight="700" fill="#111827"># Introduction</text>
+                        <text x="500" y="190" font-family="system-ui" font-size="14" fill="#6B7280">This is the old text that was here</text>
+                        <text x="500" y="210" font-family="system-ui" font-size="14" fill="#6B7280">before the recent changes.</text>
+                        
+                        <rect x="500" y="225" width="650" height="40" fill="#FEE2E2" opacity="0.5"/>
+                        <text x="500" y="245" font-family="system-ui" font-size="14" fill="#991B1B" text-decoration="line-through">This paragraph was removed in the</text>
+                        <text x="500" y="260" font-family="system-ui" font-size="14" fill="#991B1B" text-decoration="line-through">new version of the document.</text>
+                        
+                        <!-- Right side (new) -->
+                        <text x="1220" y="150" font-family="system-ui" font-size="20" font-weight="700" fill="#111827"># Introduction</text>
+                        <text x="1220" y="190" font-family="system-ui" font-size="14" fill="#6B7280">This is the new text that replaces</text>
+                        <text x="1220" y="210" font-family="system-ui" font-size="14" fill="#6B7280">the previous version.</text>
+                        
+                        <rect x="1220" y="225" width="650" height="60" fill="#D1FAE5" opacity="0.5"/>
+                        <text x="1220" y="245" font-family="system-ui" font-size="14" fill="#065F46">This is a new paragraph that was added</text>
+                        <text x="1220" y="260" font-family="system-ui" font-size="14" fill="#065F46">to provide more context and details</text>
+                        <text x="1220" y="275" font-family="system-ui" font-size="14" fill="#065F46">about the topic.</text>
+                        
+                        <!-- Legend -->
+                        <rect x="480" y="950" width="1440" height="48" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1"/>
+                        <rect x="500" y="965" width="20" height="20" fill="#FEE2E2" stroke="#991B1B" stroke-width="1"/>
+                        <text x="528" y="980" font-family="system-ui" font-size="12" fill="#6B7280">Removed</text>
+                        <rect x="650" y="965" width="20" height="20" fill="#D1FAE5" stroke="#065F46" stroke-width="1"/>
+                        <text x="678" y="980" font-family="system-ui" font-size="12" fill="#6B7280">Added</text>
+                        <rect x="780" y="965" width="20" height="20" fill="#FEF3C7" stroke="#92400E" stroke-width="1"/>
+                        <text x="808" y="980" font-family="system-ui" font-size="12" fill="#6B7280">Modified</text>
+                    </svg>
+                `,
+                areas: [
+                    { id: 'version-top', bounds: { left: 0, top: 0, width: 100, height: 5.9 }, label: 'Version Header', patterns: [] },
+                    { id: 'timeline', bounds: { left: 0, top: 5.9, width: 25, height: 94.1 }, label: 'Timeline View', patterns: ['C5', 'P21'] },
+                    { id: 'diff-view', bounds: { left: 25, top: 5.9, width: 75, height: 94.1 }, label: 'Diff Comparison', patterns: ['C5', 'F2.1'] }
+                ]
+            },
+            dashboard: {
+                name: 'Dashboard',
+                svgGenerator: () => `
+                    <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" class="screenshot">
+                        <rect width="1920" height="1080" fill="#F9FAFB"/>
+                        
+                        <!-- Top Bar -->
+                        <rect x="0" y="0" width="1920" height="64" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="24" y="40" font-family="system-ui" font-size="18" font-weight="600" fill="#0EA5E9">🏠 Dashboard</text>
+                        <rect x="1600" y="18" width="140" height="28" rx="6" fill="#0EA5E9"/>
+                        <text x="1615" y="37" font-family="system-ui" font-size="13" font-weight="600" fill="white">+ New Content</text>
+                        
+                        <!-- Main Content -->
+                        <rect x="40" y="100" width="1840" height="920" fill="white" rx="12"/>
+                        
+                        <!-- Stats Cards -->
+                        <rect x="80" y="140" width="540" height="140" rx="8" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="2"/>
+                        <text x="100" y="170" font-family="system-ui" font-size="14" font-weight="600" fill="#0369A1">Page Views</text>
+                        <text x="100" y="220" font-family="system-ui" font-size="48" font-weight="700" fill="#0EA5E9">12,345</text>
+                        <text x="100" y="255" font-family="system-ui" font-size="13" fill="#10B981">↑ +15% from last month</text>
+                        
+                        <rect x="660" y="140" width="540" height="140" rx="8" fill="#F0FDF4" stroke="#BBF7D0" stroke-width="2"/>
+                        <text x="680" y="170" font-family="system-ui" font-size="14" font-weight="600" fill="#065F46">New Content</text>
+                        <text x="680" y="220" font-family="system-ui" font-size="48" font-weight="700" fill="#10B981">45</text>
+                        <text x="680" y="255" font-family="system-ui" font-size="13" fill="#10B981">↑ +2 this week</text>
+                        
+                        <rect x="1240" y="140" width="540" height="140" rx="8" fill="#FEF3C7" stroke="#FDE68A" stroke-width="2"/>
+                        <text x="1260" y="170" font-family="system-ui" font-size="14" font-weight="600" fill="#92400E">Active Users</text>
+                        <text x="1260" y="220" font-family="system-ui" font-size="48" font-weight="700" fill="#F59E0B">12</text>
+                        <text x="1260" y="255" font-family="system-ui" font-size="13" fill="#EF4444">↓ -3 from last week</text>
+                        
+                        <!-- Recent Activity -->
+                        <text x="80" y="340" font-family="system-ui" font-size="18" font-weight="700" fill="#111827">Recent Activity</text>
+                        
+                        <rect x="80" y="360" width="880" height="60" rx="6" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="100" y="385" font-family="system-ui" font-size="14" fill="#111827">📝 Blog Post "New Features" updated</text>
+                        <text x="100" y="405" font-family="system-ui" font-size="12" fill="#9CA3AF">by Sarah Johnson · 2 minutes ago</text>
+                        
+                        <rect x="80" y="430" width="880" height="60" rx="6" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="100" y="455" font-family="system-ui" font-size="14" fill="#111827">🖼️ Image "hero-banner.jpg" uploaded</text>
+                        <text x="100" y="475" font-family="system-ui" font-size="12" fill="#9CA3AF">by Alex Chen · 15 minutes ago</text>
+                        
+                        <rect x="80" y="500" width="880" height="60" rx="6" fill="white" stroke="#E5E7EB" stroke-width="1"/>
+                        <text x="100" y="525" font-family="system-ui" font-size="14" fill="#111827">🚀 Page "About Us" published</text>
+                        <text x="100" y="545" font-family="system-ui" font-size="12" fill="#9CA3AF">by You · 1 hour ago</text>
+                        
+                        <!-- Content Graph -->
+                        <text x="1000" y="340" font-family="system-ui" font-size="18" font-weight="700" fill="#111827">Content Relationships</text>
+                        
+                        <rect x="1000" y="360" width="780" height="600" rx="8" fill="#F9FAFB" stroke="#E5E7EB" stroke-width="1"/>
+                        
+                        <!-- Graph nodes -->
+                        <circle cx="1390" cy="500" r="40" fill="#0EA5E9"/>
+                        <text x="1375" y="508" font-family="system-ui" font-size="18" fill="white">🏠</text>
+                        
+                        <circle cx="1200" cy="620" r="30" fill="#10B981"/>
+                        <text x="1190" y="628" font-family="system-ui" font-size="14" fill="white">📄</text>
+                        
+                        <circle cx="1580" cy="620" r="30" fill="#10B981"/>
+                        <text x="1570" y="628" font-family="system-ui" font-size="14" fill="white">📄</text>
+                        
+                        <circle cx="1390" cy="740" r="25" fill="#F59E0B"/>
+                        <text x="1382" y="748" font-family="system-ui" font-size="12" fill="white">🖼️</text>
+                        
+                        <!-- Graph edges -->
+                        <line x1="1390" y1="540" x2="1230" y2="600" stroke="#D1D5DB" stroke-width="2"/>
+                        <line x1="1390" y1="540" x2="1550" y2="600" stroke="#D1D5DB" stroke-width="2"/>
+                        <line x1="1220" y1="640" x2="1380" y2="720" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="4,4"/>
+                        <line x1="1560" y1="640" x2="1400" y2="720" stroke="#D1D5DB" stroke-width="2" stroke-dasharray="4,4"/>
+                        
+                        <text x="1000" y="980" font-family="system-ui" font-size="11" fill="#6B7280">● Pages  ● Posts  ● Media</text>
+                    </svg>
+                `,
+                areas: [
+                    { id: 'dash-top', bounds: { left: 0, top: 0, width: 100, height: 5.9 }, label: 'Dashboard Header', patterns: ['P6'] },
+                    { id: 'stats', bounds: { left: 4.2, top: 13, width: 91.6, height: 13 }, label: 'Analytics Stats', patterns: ['P26'] },
+                    { id: 'activity', bounds: { left: 4.2, top: 33.3, width: 45.8, height: 52 }, label: 'Recent Activity', patterns: ['C5', 'P31'] },
+                    { id: 'graph', bounds: { left: 52.1, top: 33.3, width: 40.6, height: 55.6 }, label: 'Content Graph', patterns: ['C1', 'P19', 'P1'] }
+                ]
+            }
+        };
+
+        // State
+        let currentView = 'editor';
+        let infoPanelVisible = false;
+        let selectedArea = null;
+
+        // Initialize
+        function init() {
+            console.log('🚀 CMS Editor Pattern Visualization initialized');
+            setupEventListeners();
+            renderView(currentView);
+        }
+
+        function setupEventListeners() {
+            // View buttons
+            document.querySelectorAll('#viewButtons .btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('#viewButtons .btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    currentView = e.target.dataset.view;
+                    renderView(currentView);
+                });
+            });
+
+            // Toggle info panel
+            document.getElementById('toggleInfo').addEventListener('click', (e) => {
+                infoPanelVisible = !infoPanelVisible;
+                e.target.classList.toggle('active');
+                document.getElementById('infoPanel').classList.toggle('visible');
+                e.target.textContent = infoPanelVisible ? '📊 Hide Patterns' : '📊 Show Patterns';
+            });
+
+            // Toggle shortcuts modal
+            document.getElementById('toggleShortcuts').addEventListener('click', () => {
+                document.getElementById('shortcutsModal').classList.add('visible');
+            });
+
+            // Close shortcuts modal on overlay click
+            document.getElementById('shortcutsModal').addEventListener('click', (e) => {
+                if (e.target.id === 'shortcutsModal') {
+                    e.target.classList.remove('visible');
+                }
+            });
+
+            // Close shortcuts with Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.getElementById('shortcutsModal').classList.remove('visible');
+                }
+            });
+        }
+
+        function renderView(viewName) {
+            const view = VIEWS[viewName];
+            if (!view) return;
+
+            const container = document.getElementById('screenshotContainer');
+            container.innerHTML = '';
+
+            // Create SVG
+            const svgWrapper = document.createElement('div');
+            svgWrapper.innerHTML = view.svgGenerator();
+            container.appendChild(svgWrapper.firstElementChild);
+
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            container.appendChild(overlay);
+
+            // Add areas
+            view.areas.forEach(area => {
+                const areaDiv = createAreaElement(area);
+                overlay.appendChild(areaDiv);
+            });
+
+            console.log(`✓ Rendered view: ${view.name} with ${view.areas.length} areas`);
+        }
+
+        function createAreaElement(area) {
+            const div = document.createElement('div');
+            div.className = 'area';
+            div.dataset.areaId = area.id;
+            
+            // Position
+            div.style.left = `${area.bounds.left}%`;
+            div.style.top = `${area.bounds.top}%`;
+            div.style.width = `${area.bounds.width}%`;
+            div.style.height = `${area.bounds.height}%`;
+
+            // Label
+            const label = document.createElement('div');
+            label.className = 'area-label';
+            label.textContent = area.label;
+            label.style.top = '-25px';
+            label.style.left = '5px';
+            div.appendChild(label);
+
+            // Events
+            div.addEventListener('mouseenter', () => {
+                div.classList.add('highlighted');
+                showAreaInfo(area);
+            });
+
+            div.addEventListener('mouseleave', () => {
+                if (selectedArea !== area) {
+                    div.classList.remove('highlighted');
+                }
+            });
+
+            div.addEventListener('click', () => {
+                // Remove previous selection
+                document.querySelectorAll('.area').forEach(a => {
+                    if (a !== div) a.classList.remove('highlighted');
+                });
+                
+                selectedArea = area;
+                div.classList.add('highlighted');
+                showAreaInfo(area);
+                
+                // Show info panel if hidden
+                if (!infoPanelVisible) {
+                    document.getElementById('toggleInfo').click();
+                }
+            });
+
+            return div;
+        }
+
+        function showAreaInfo(area) {
+            const patternList = document.getElementById('patternList');
+            patternList.innerHTML = '';
+
+            // Add header
+            const header = document.createElement('div');
+            header.innerHTML = `
+                <h4 style="font-size: 1.1rem; font-weight: 700; color: var(--gray-900); margin-bottom: 1rem;">
+                    ${area.label}
+                </h4>
+                <p style="font-size: 0.875rem; color: var(--gray-600); margin-bottom: 1rem;">
+                    ${area.patterns.length} patterns applied to this component
+                </p>
+            `;
+            patternList.appendChild(header);
+
+            // Add pattern cards
+            area.patterns.forEach(patternId => {
+                const pattern = HCI_CORPUS[patternId];
+                if (!pattern) {
+                    console.warn(`Pattern ${patternId} not found in corpus`);
+                    return;
+                }
+
+                const card = createPatternCard(patternId, pattern);
+                patternList.appendChild(card);
+            });
+        }
+
+        function createPatternCard(id, pattern) {
+            const card = document.createElement('div');
+            card.className = 'pattern-card';
+            
+            let html = `
+                <div class="pattern-id">${id}</div>
+                <div class="pattern-name">${pattern.name}</div>
+                <div class="pattern-desc">${pattern.description}</div>
+                <div class="pattern-meta">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Category:</strong> ${pattern.category}
+                    </div>
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Complexity:</strong> ${pattern.complexity}
+                    </div>
+                    ${pattern.definition ? `
+                        <div style="margin-bottom: 0.5rem; font-family: monospace; background: var(--gray-100); padding: 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${pattern.definition}
+                        </div>
+                    ` : ''}
+                    <div style="margin-top: 0.5rem;">
+                        ${pattern.domains.map(d => `<span class="pattern-tag">${d}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            // Add implementation details if available
+            if (pattern.implementation) {
+                const impl = pattern.implementation;
+                html += `
+                    <div class="implementation-note">
+                        <h5>💡 Implementation Details</h5>
+                `;
+                
+                if (impl.components) {
+                    html += '<div style="margin-top: 0.5rem; font-size: 0.75rem;">';
+                    Object.entries(impl.components).forEach(([key, value]) => {
+                        html += `<div style="margin-bottom: 0.25rem;"><strong>${key}:</strong> ${value}</div>`;
+                    });
+                    html += '</div>';
+                }
+                
+                if (impl.stages) {
+                    html += `<div style="margin-top: 0.5rem; font-size: 0.75rem;"><strong>Stages:</strong> ${impl.stages.join(' → ')}</div>`;
+                }
+                
+                if (impl.levels) {
+                    html += `<div style="margin-top: 0.5rem; font-size: 0.75rem;"><strong>Levels:</strong> ${impl.levels.join(', ')}</div>`;
+                }
+                
+                if (impl.features) {
+                    html += `<div style="margin-top: 0.5rem; font-size: 0.75rem;"><strong>Features:</strong> ${impl.features.join(', ')}</div>`;
+                }
+                
+                if (impl.benefits) {
+                    html += `<div style="margin-top: 0.5rem; font-size: 0.75rem;"><strong>Benefits:</strong> ${Array.isArray(impl.benefits) ? impl.benefits.join(', ') : impl.benefits}</div>`;
+                }
+                
+                html += '</div>';
+                
+                // Add code example if available
+                if (impl.codeExample) {
+                    html += `
+                        <div class="code-example">${escapeHtml(impl.codeExample).replace(/\n/g, '<br>')}</div>
+                    `;
+                }
+            }
+
+            // Add related patterns if available
+            if (pattern.relatedPatterns && pattern.relatedPatterns.length > 0) {
+                html += `
+                    <div class="pattern-relationship">
+                        <strong style="color: var(--gray-700);">Related:</strong>
+                        ${pattern.relatedPatterns.map(p => `<span class="pattern-tag">${p}</span>`).join('')}
+                    </div>
+                `;
+            }
+
+            // Add references if available
+            if (pattern.references && pattern.references.length > 0) {
+                html += `
+                    <div style="margin-top: 0.75rem; font-size: 0.7rem; color: var(--gray-500);">
+                        <strong>References:</strong> ${pattern.references.join(' • ')}
+                    </div>
+                `;
+            }
+            
+            card.innerHTML = html;
+            return card;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Start application
+        init();
+    </script>
+</body>
+</html>
+

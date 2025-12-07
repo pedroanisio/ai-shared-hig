@@ -486,3 +486,5 @@ def calculate_compression_ratio(full_jsonl: str, compact_jsonl: str) -> Dict[str
         "compression_ratio": round(full_size / compact_size, 2) if compact_size > 0 else 0
     }
 
+
+
