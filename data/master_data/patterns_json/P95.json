@@ -1,0 +1,196 @@
+{
+  "id": "P95",
+  "v": "1.1",
+  "name": "Multi-Step Progress",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "Progress",
+    "Feedback"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P_{multi} = (Steps, Current, Completed, Remaining) : Workflow \\to Progress_{visual}$",
+  "desc": "Responsive image pattern delivers optimized images based on device capabilities.",
+  "comps": [
+    {
+      "n": "Steps",
+      "t": "Sequence⟨Step⟩",
+      "d": "Ordered sequence of workflow steps to be completed",
+      "nota": "Steps"
+    },
+    {
+      "n": "Current",
+      "t": "ℕ",
+      "d": "Index of currently executing step (0-based)",
+      "nota": "Current"
+    },
+    {
+      "n": "Completed",
+      "t": "Set⟨ℕ⟩",
+      "d": "Set of indices for completed steps",
+      "nota": "Completed"
+    },
+    {
+      "n": "Remaining",
+      "t": "Set⟨ℕ⟩",
+      "d": "Set of indices for steps yet to be started",
+      "nota": "Remaining"
+    }
+  ],
+  "types": [
+    {
+      "n": "ResponsiveImage",
+      "def": "(sources: Set⟨ImageSource⟩, alt: String)",
+      "d": "Responsive image"
+    },
+    {
+      "n": "ImageSource",
+      "def": "(url: URL, width: ℕ, min_width: ℕ, max_width: ℕ)",
+      "d": "Image source variant"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P95.1",
+      "n": "Resolution Matching",
+      "spec": "image\\_resolution matches\\_display",
+      "d": "Image resolution matches display",
+      "inv": [
+        "optimal\\_resolution"
+      ]
+    },
+    {
+      "id": "P.P95.2",
+      "n": "Bandwidth Optimization",
+      "spec": "minimizes\\_data\\_transfer",
+      "d": "Minimizes data transfer",
+      "inv": [
+        "efficient\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P95.3",
+      "n": "Retina Support",
+      "spec": "supports\\_high\\_dpi",
+      "d": "Supports high-DPI displays",
+      "inv": [
+        "dpi\\_aware"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Select Source",
+      "sig": "select(image: ResponsiveImage, viewport: Viewport) → URL",
+      "def": "$select(image: ResponsiveImage, viewport: Viewport) → URL = candidates := image.sources; filtered := {src ∈ candidates : src.min\\_width ≤ viewport.width ≤ src.max\\_width}; optimal := arg\\_min_{src ∈ filtered}(|src.width - viewport.width|); return optimal.url$",
+      "pre": [
+        "|image.sources| > 0"
+      ],
+      "post": [
+        "optimal\\_for\\_viewport(result)"
+      ],
+      "fx": [
+        "Filters by viewport size",
+        "Selects optimal source"
+      ]
+    },
+    {
+      "n": "Generate Srcset",
+      "sig": "srcset(sources: Set⟨ImageSource⟩) → String",
+      "def": "$srcset(sources: Set⟨ImageSource⟩) → String = entries := {s.url + \" \" + s.width + \"w\" : s ∈ sources}; return join(entries, \", \")$",
+      "pre": [
+        "|sources| > 0"
+      ],
+      "post": [
+        "valid\\_srcset(result)"
+      ],
+      "fx": [
+        "Formats sources as srcset string"
+      ]
+    },
+    {
+      "n": "Load Optimal",
+      "sig": "load(image: ResponsiveImage) → Effect",
+      "def": "$load(image: ResponsiveImage) → Effect = viewport := detect\\_viewport(); source := select(image, viewport); load\\_image(source); observe\\_viewport\\_changes()$",
+      "pre": [
+        "image ≠ null"
+      ],
+      "post": [
+        "loaded\\_optimal\\_source"
+      ],
+      "fx": [
+        "Detects viewport",
+        "Selects source",
+        "Loads image",
+        "Observes viewport changes"
+      ]
+    },
+    {
+      "n": "AdvanceStep",
+      "sig": "advance() → Effect",
+      "def": "advance() = Completed := Completed ∪ {Current}; Current := Current + 1; Remaining := Remaining \\\\ {Current}",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetProgress",
+      "sig": "get_progress() → [0,1]",
+      "def": "get_progress() = |Completed| / |Steps|",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "GetStepStatus",
+      "sig": "status(i: ℕ) → StepStatus",
+      "def": "status(i) = if i ∈ Completed then Done else if i = Current then InProgress else Pending",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Progress implementation",
+      "d": "Applied in ai, progress systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

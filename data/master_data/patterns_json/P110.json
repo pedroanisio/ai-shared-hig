@@ -1,0 +1,237 @@
+{
+  "id": "P110",
+  "v": "1.1",
+  "name": "Collaborative Document Intelligence",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{collab} = (Agents, Document, Contributions, Coordination) : (\\text{Agents}, \\text{Doc}) \\to \\text{Doc}'$",
+  "desc": "Collaborative document intelligence provides AI-powered insights for multi-user document editing.",
+  "comps": [
+    {
+      "n": "Agents",
+      "t": "Set⟨Agent⟩",
+      "d": "multiple AI agents collaborating on document",
+      "nota": "Agents"
+    },
+    {
+      "n": "Document",
+      "t": "SharedDocument",
+      "d": "shared document state with version control",
+      "nota": "Document"
+    },
+    {
+      "n": "Contributions",
+      "t": "Seq⟨Contribution⟩",
+      "d": "ordered sequence of agent contributions",
+      "nota": "Contributions"
+    },
+    {
+      "n": "Coordination",
+      "t": "Agent × Agent → Protocol",
+      "d": "coordination mechanism between agents",
+      "nota": "Coordination"
+    }
+  ],
+  "types": [
+    {
+      "n": "EditHistory",
+      "def": "Sequence⟨Edit⟩ with timestamps",
+      "d": "Chronological sequence of edits"
+    },
+    {
+      "n": "Insights",
+      "def": "(patterns: Set⟨Pattern⟩, conflicts: Set⟨Conflict⟩, suggestions: Set⟨Suggestion⟩)",
+      "d": "AI-generated collaboration insights"
+    },
+    {
+      "n": "PotentialConflict",
+      "def": "((edit1, edit2), likelihood: ℝ)",
+      "d": "Predicted future conflict"
+    },
+    {
+      "n": "Agent",
+      "def": "$\\text{Agent} = (\\text{id}, \\text{role}, \\text{capabilities}, \\text{state})$",
+      "d": "AI agent identity, role, and state"
+    },
+    {
+      "n": "Contribution",
+      "def": "$\\text{Contribution} = (\\text{agent\\_id}, \\text{edit}, \\text{timestamp}, \\text{rationale})$",
+      "d": "Recorded edit contribution with rationale"
+    },
+    {
+      "n": "Protocol",
+      "def": "$\\text{Protocol} = \\{\\text{sequential}, \\text{parallel}, \\text{consensus}, \\text{leader-follower}\\}$",
+      "d": "Coordination protocol among agents"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P110.1",
+      "n": "Proactive Assistance",
+      "spec": "conflict\\_likely ⇒ warn\\_before\\_occurrence",
+      "d": "System warns users before conflicts occur",
+      "inv": [
+        "predictive\\_warnings"
+      ]
+    },
+    {
+      "id": "P.P110.2",
+      "n": "Context Awareness",
+      "spec": "∀suggestion: contextually\\_relevant(suggestion, current\\_state)",
+      "d": "Suggestions are contextually relevant",
+      "inv": [
+        "context\\_aware"
+      ]
+    },
+    {
+      "id": "P.P110.3",
+      "n": "Privacy Preservation",
+      "spec": "¬reveals\\_private\\_edits(insights)",
+      "d": "Insights don't reveal private editing activity",
+      "inv": [
+        "privacy\\_preserving"
+      ]
+    },
+    {
+      "id": "P.P110.4",
+      "n": "Attribution Transparency",
+      "spec": "$\\forall span \\in Document : \\exists c \\in Contributions : c.edit.span = span$ (traceable authorship)",
+      "d": "Each document span is attributable to a contribution",
+      "inv": [
+        "traceable_authorship"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Analyze Collaboration",
+      "sig": "analyze(document: Document, history: EditHistory) → Insights",
+      "def": "$analyze(document: Document, history: EditHistory) → Insights = patterns := detect\\_edit\\_patterns(history); conflicts := identify\\_conflict\\_areas(history); suggestions := generate\\_collaboration\\_tips(patterns, conflicts); return Insights(patterns, conflicts, suggestions)$",
+      "pre": [
+        "|history| > 0"
+      ],
+      "post": [
+        "actionable(result)"
+      ],
+      "fx": [
+        "Detects editing patterns",
+        "Identifies conflict areas",
+        "Generates suggestions"
+      ]
+    },
+    {
+      "n": "Suggest Coordination",
+      "sig": "suggest_coordination(users: Set⟨User⟩, activity: Activity) → Set⟨Suggestion⟩",
+      "def": "$suggest\\_coordination(users: Set⟨User⟩, activity: Activity) → Set⟨Suggestion⟩ = overlaps := find\\_overlapping\\_edits(activity); suggestions := ∅; for overlap in overlaps: suggestions := suggestions ∪ {suggest\\_coordination\\_strategy(overlap)}; return suggestions$",
+      "pre": [
+        "|users| ≥ 2"
+      ],
+      "post": [
+        "∀s ∈ result: reduces\\_conflicts(s)"
+      ],
+      "fx": [
+        "Finds overlapping edits",
+        "Suggests coordination strategies"
+      ]
+    },
+    {
+      "n": "Predict Conflicts",
+      "sig": "predict(current_edits: Set⟨Edit⟩) → Set⟨PotentialConflict⟩",
+      "def": "$predict(current\\_edits: Set⟨Edit⟩) → Set⟨PotentialConflict⟩ = pairs := {(e1,e2) : e1,e2 ∈ current\\_edits, may\\_conflict(e1, e2)}; return {PotentialConflict(p, likelihood(p)) : p ∈ pairs}$",
+      "pre": [
+        "|current\\_edits| ≥ 2"
+      ],
+      "post": [
+        "∀c ∈ result: 0 ≤ c.likelihood ≤ 1"
+      ],
+      "fx": [
+        "Identifies edit pairs",
+        "Estimates conflict likelihood"
+      ]
+    },
+    {
+      "n": "Coordinate Agents",
+      "sig": "coordinate: Set⟨Agent⟩ × Task → Seq⟨Contribution⟩",
+      "def": "$\\text{coordinate}(A, task) = \\text{contributions}$where$\\text{protocol} = Coordination(a_1, a_2)$$\\text{contributions} = \\text{execute}(A, task, \\text{protocol})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Merge Contributions",
+      "sig": "merge: Seq⟨Contribution⟩ → Document",
+      "def": "$\\text{merge}(C) = \\text{fold}(\\text{apply}, Document_0, C)$where$\\text{apply}(doc, c) = \\text{applyEdit}(doc, c.edit)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Resolve Conflict",
+      "sig": "resolve: Contribution × Contribution → Contribution",
+      "def": "$\\text{resolve}(c_1, c_2) = c_{merged}$where$c_{merged}.edit = \\text{consensus}([c_1.edit, c_2.edit])$$c_{merged}.rationale = c_1.rationale \\oplus c_2.rationale$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P14"
+    ],
+    "use": [
+      "F5",
+      "P135"
+    ]
+  },
+  "manif": [
+    {
+      "n": "MetaGPT multi-agent document generation",
+      "d": "specialized agents collaboratively create documents"
+    },
+    {
+      "n": "AgentVerse collaborative writing",
+      "d": "agent team coordination for content creation"
+    },
+    {
+      "n": "Google Docs with AI collaborators",
+      "d": "multiple AI agents suggesting and editing simultaneously"
+    },
+    {
+      "n": "CrewAI document workflows",
+      "d": "role-based agent collaboration on documents"
+    }
+  ]
+}

@@ -1,0 +1,215 @@
+{
+  "id": "P16",
+  "v": "1.1",
+  "name": "Suggestion/Recommendation System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$ss = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Suggestion and recommendation systems analyze context to provide relevant suggestions to users.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to suggestion/recommendation system",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from suggestion/recommendation system",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Suggestion",
+      "def": "(action: Action, confidence: ℝ, features: Features)",
+      "d": "Single suggestion with metadata"
+    },
+    {
+      "n": "Feedback",
+      "def": "Accepted | Rejected | Modified(Alternative)",
+      "d": "User feedback on suggestion"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "User context, history, and current task"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Suggested items or actions"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Recommendation model state and feedback history"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P16.1",
+      "n": "Relevance",
+      "spec": "∀suggestion: relevant(suggestion, context)",
+      "d": "Suggestions are contextually relevant",
+      "inv": [
+        "contextual\\_relevance"
+      ]
+    },
+    {
+      "id": "P.P16.2",
+      "n": "Personalization",
+      "spec": "suggestions adapt to user\\_preferences",
+      "d": "Suggestions personalize to user",
+      "inv": [
+        "personalized\\_suggestions"
+      ]
+    },
+    {
+      "id": "P.P16.3",
+      "n": "Diversity",
+      "spec": "suggestions contain diverse options",
+      "d": "Suggestions offer diversity",
+      "inv": [
+        "diverse\\_suggestions"
+      ]
+    },
+    {
+      "id": "P.P16.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Suggestions are easy to act on and dismiss",
+      "inv": [
+        "low\\_friction\\_feedback"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(user: User) → Suggestions",
+      "def": "$process(user: User) → Suggestions = profile := get\\_profile(user) candidates := generate\\_candidates(profile) ranked := rank(candidates, profile) return top\\_k(ranked, k)$",
+      "pre": [
+        "user \\neq null"
+      ],
+      "post": [
+        "|result| \\leq k"
+      ],
+      "fx": [
+        "Generates personalized suggestions",
+        "Ranks by relevance"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(suggestions: Suggestions) → Effect",
+      "def": "$display(suggestions: Suggestions) → Effect = formatted := format(suggestions) render(formatted)$",
+      "pre": [
+        "suggestions \\neq \\emptyset"
+      ],
+      "post": [
+        "visible(suggestions)"
+      ],
+      "fx": [
+        "Shows suggestions to user",
+        "Formats for display"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(feedback: Feedback) → Effect",
+      "def": "$update(feedback: Feedback) → Effect = model := get\\_model() updated := train(model, feedback) save(updated)$",
+      "pre": [
+        "feedback.valid = true"
+      ],
+      "post": [
+        "model\\_improved = true"
+      ],
+      "fx": [
+        "Updates recommendation model",
+        "Learns from feedback"
+      ]
+    },
+    {
+      "n": "Generate Suggestions",
+      "sig": "suggest(context: Context, history: UserHistory) → Set⟨Suggestion⟩",
+      "def": "$suggest(context: Context, history: UserHistory) → Set⟨Suggestion⟩ = candidates := generate\\_candidates(context); preferences := infer\\_preferences(history); scored := {(s, score(s, preferences, context)) : s ∈ candidates}; return top\\_k(scored, k)$",
+      "pre": [
+        "context ≠ null"
+      ],
+      "post": [
+        "|result| ≤ k"
+      ],
+      "fx": [
+        "Generates candidate suggestions",
+        "Infers user preferences",
+        "Scores and ranks candidates"
+      ]
+    },
+    {
+      "n": "Learn From Feedback",
+      "sig": "learn(suggestion: Suggestion, feedback: Feedback) → Effect",
+      "def": "$learn(suggestion: Suggestion, feedback: Feedback) → Effect = update\\_weights(suggestion.features, feedback); retrain\\_if\\_needed(); adjust\\_personalization()$",
+      "pre": [
+        "valid\\_feedback(feedback)"
+      ],
+      "post": [
+        "model\\_updated"
+      ],
+      "fx": [
+        "Updates feature weights",
+        "Retrains model if needed",
+        "Adjusts personalization"
+      ]
+    },
+    {
+      "n": "Explain Suggestion",
+      "sig": "explain(suggestion: Suggestion) → Explanation",
+      "def": "$explain(suggestion: Suggestion) → Explanation = factors := extract\\_factors(suggestion); rationale := generate\\_rationale(factors); alternatives := find\\_alternatives(suggestion); return Explanation(rationale, factors, alternatives)$",
+      "pre": [
+        "suggestion ≠ null"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Extracts decision factors",
+        "Generates rationale",
+        "Finds alternatives"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Suggestion/Recommendation System in modern applications",
+      "d": "implements suggestion/recommendation system pattern"
+    },
+    {
+      "n": "Web-based suggestion/recommendation system",
+      "d": "browser implementation of suggestion/recommendation system"
+    },
+    {
+      "n": "Mobile suggestion/recommendation system",
+      "d": "mobile app implementation"
+    }
+  ]
+}

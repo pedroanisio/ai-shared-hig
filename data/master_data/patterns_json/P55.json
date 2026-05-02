@@ -1,0 +1,244 @@
+{
+  "id": "P55",
+  "v": "1.1",
+  "name": "Virtualization Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V = (data, viewport, item\\_height, buffer, visible)$",
+  "desc": "Virtualization pattern renders only visible items for efficient handling of large lists.",
+  "comps": [
+    {
+      "n": "data",
+      "t": "Sequence⟨Item⟩",
+      "d": "full dataset",
+      "nota": "data"
+    },
+    {
+      "n": "viewport",
+      "t": "Rectangle",
+      "d": "visible area",
+      "nota": "viewport"
+    },
+    {
+      "n": "item\\_height",
+      "t": "Item → ℝ",
+      "d": "calculates item height",
+      "nota": "item\\_height"
+    },
+    {
+      "n": "buffer",
+      "t": "ℕ",
+      "d": "number of items to pre-render beyond viewport",
+      "nota": "buffer"
+    },
+    {
+      "n": "visible",
+      "t": "Sequence⟨Item⟩",
+      "d": "currently rendered items",
+      "nota": "visible"
+    }
+  ],
+  "types": [
+    {
+      "n": "VirtualList",
+      "def": "(items: Sequence⟨Item⟩, item_height: ℝ, viewport: Viewport)",
+      "d": "Virtualized list"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P55.1",
+      "n": "Constant Memory",
+      "spec": "memory\\_usage independent of total\\_items",
+      "d": "Memory usage is constant",
+      "inv": [
+        "bounded\\_memory"
+      ]
+    },
+    {
+      "id": "P.P55.2",
+      "n": "Smooth Scrolling",
+      "spec": "scroll\\_fps ≥ target\\_fps",
+      "d": "Scrolling is smooth",
+      "inv": [
+        "performant\\_scrolling"
+      ]
+    },
+    {
+      "id": "P.P55.3",
+      "n": "Accurate Scrollbar",
+      "spec": "scrollbar\\_size represents total\\_content",
+      "d": "Scrollbar accurately represents total",
+      "inv": [
+        "accurate\\_scrollbar"
+      ]
+    },
+    {
+      "id": "P.P55.4",
+      "n": "Content Height",
+      "spec": "total_height = ∑_{item ∈ data} item_height(item)",
+      "d": "Total scroll height matches the sum of item heights",
+      "inv": [
+        "accurate\\_virtual\\_height"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Handle Variable Heights",
+      "sig": "virtualize_variable(items: Sequence⟨Item⟩, viewport: Viewport) → Sequence⟨Item⟩",
+      "def": "$virtualize\\_variable(items: Sequence⟨Item⟩, viewport: Viewport) → Sequence⟨Item⟩ = calculate heights; find visible range; render visible$",
+      "pre": [
+        "|items| > 0 \\wedge viewport \\neq null",
+        "viewport.height > 0"
+      ],
+      "post": [
+        "result \\subseteq items",
+        "\\forall i \\in result: visible\\_in\\_viewport(i, viewport)"
+      ],
+      "fx": [
+        "Renders only visible items with varying heights",
+        "Dynamically adjusts based on measured heights"
+      ]
+    },
+    {
+      "n": "Variable Height (Estimated)",
+      "sig": "estimate_height(item: Item) → ℕ",
+      "def": "$estimate\\_height(item: Item) → ℕ = default\\_height + estimate\\_content(item)$",
+      "pre": [
+        "item \\neq null"
+      ],
+      "post": [
+        "result > 0",
+        "result \\approx actual\\_height(item)"
+      ],
+      "fx": [
+        "Provides initial height estimate",
+        "Used before item renders"
+      ]
+    },
+    {
+      "n": "Dynamic Height",
+      "sig": "measure_height(rendered: Element) → ℕ",
+      "def": "$measure\\_height(rendered: Element) → ℕ = rendered.getBoundingClientRect().height$",
+      "pre": [
+        "rendered \\neq null \\wedge rendered.mounted = true"
+      ],
+      "post": [
+        "result = rendered.offsetHeight",
+        "result > 0"
+      ],
+      "fx": [
+        "Measures actual rendered height",
+        "Updates virtual scroll calculations"
+      ]
+    },
+    {
+      "n": "Calculate Visible Items",
+      "sig": "calculate_visible(scroll_top: ℝ) → (start: ℕ, end: ℕ)",
+      "def": "$calculate_visible(scroll_top: ℝ) → (start: ℕ, end: ℕ) = start_idx := binary_search(data, λi: cumulative_height(data[0:i]) ≥ scroll_top - buffer_height ) end_idx := binary_search(data, λi: cumulative_height(data[0:i]) ≥ scroll_top + viewport.height + buffer_height ) return (start_idx, end_idx)$",
+      "pre": [
+        "scroll\\_top \\geq 0",
+        "items\\_loaded = true"
+      ],
+      "post": [
+        "0 \\leq result.start \\leq result.end < |items|",
+        "items[result.start : result.end] \\text{ fit in viewport}"
+      ],
+      "fx": [
+        "Computes visible item range",
+        "Based on scroll position and item heights"
+      ]
+    },
+    {
+      "n": "Update On Scroll",
+      "sig": "on_scroll(scroll_top: ℝ) → Effect",
+      "def": "$on_scroll(scroll_top: ℝ) → Effect = (start, end) := calculate_visible(scroll_top) visible := data[start:end] offset := cumulative_height(data[0:start]) render(visible, offset)$",
+      "pre": [
+        "scroll\\_top \\geq 0"
+      ],
+      "post": [
+        "visible\\_range' = calculate\\_visible(scroll\\_top)",
+        "dom\\_updated = true"
+      ],
+      "fx": [
+        "Updates rendered items on scroll",
+        "Maintains smooth scrolling experience"
+      ]
+    },
+    {
+      "n": "Calculate Visible Range",
+      "sig": "visible() → (ℕ, ℕ)",
+      "def": "$visible() → (ℕ, ℕ) = scroll\\_top := viewport.scrollTop; start\\_index := ⌊scroll\\_top / item\\_height⌋; visible\\_count := ⌈viewport.height / item\\_height⌉; end\\_index := start\\_index + visible\\_count + buffer; return (start\\_index, end\\_index)$",
+      "pre": [
+        "item\\_height > 0"
+      ],
+      "post": [
+        "0 ≤ start ≤ end ≤ total\\_items"
+      ],
+      "fx": [
+        "Calculates scroll position",
+        "Determines visible range",
+        "Adds buffer"
+      ]
+    },
+    {
+      "n": "Render Visible",
+      "sig": "render(start: ℕ, end: ℕ) → Effect",
+      "def": "$render(start: ℕ, end: ℕ) → Effect = items\\_to\\_render := items[start:end]; render\\_items(items\\_to\\_render); update\\_spacers(start, end)$",
+      "pre": [
+        "start ≤ end"
+      ],
+      "post": [
+        "rendered\\_count = end - start"
+      ],
+      "fx": [
+        "Renders visible items",
+        "Updates spacers"
+      ]
+    },
+    {
+      "n": "Handle Scroll",
+      "sig": "scroll() → Effect",
+      "def": "$scroll() → Effect = (start, end) := visible(); if range\\_changed(start, end): render(start, end)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "showing\\_visible\\_items"
+      ],
+      "fx": [
+        "Calculates visible range",
+        "Renders if changed"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Large lists",
+      "d": "1000+ items"
+    },
+    {
+      "n": "Data grids",
+      "d": "Virtualized rows for large tables"
+    },
+    {
+      "n": "Feed viewers",
+      "d": "social media"
+    },
+    {
+      "n": "Log viewers",
+      "d": "Streams of log entries with virtual scroll"
+    },
+    {
+      "n": "File explorers",
+      "d": "Large directories rendered efficiently"
+    }
+  ]
+}

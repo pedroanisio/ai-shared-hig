@@ -1,0 +1,145 @@
+{
+  "id": "P91",
+  "v": "1.1",
+  "name": "Intervention Request",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Intervention",
+    "Human-in-Loop"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{int} = (D_{stuck}, R_{help}, Prov_{ctx}, Resp_{human}) : Stuck \\to Help_{request}$",
+  "desc": "Accordion pattern displays collapsible content sections with expand/collapse controls.",
+  "comps": [
+    {
+      "n": "D_{stuck}",
+      "t": "Component",
+      "d": "Component implementing Intervention Request functionality",
+      "nota": "D_{stuck}"
+    },
+    {
+      "n": "R_{help}",
+      "t": "Component",
+      "d": "Component implementing Intervention Request functionality",
+      "nota": "R_{help}"
+    },
+    {
+      "n": "Prov_{ctx}",
+      "t": "Component",
+      "d": "Context container holding current application state for Intervention Request",
+      "nota": "Prov_{ctx}"
+    },
+    {
+      "n": "Resp_{human}",
+      "t": "Component",
+      "d": "Component implementing Intervention Request functionality",
+      "nota": "Resp_{human}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Accordion",
+      "def": "(sections: Sequence⟨Section⟩, single_expand: 𝔹)",
+      "d": "Accordion component"
+    },
+    {
+      "n": "Section",
+      "def": "(header: Content, content: Content, expanded: 𝔹)",
+      "d": "Accordion section"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P91.1",
+      "n": "Smooth Animation",
+      "spec": "expand/collapse animated",
+      "d": "Expand/collapse is animated",
+      "inv": [
+        "smooth\\_transitions"
+      ]
+    },
+    {
+      "id": "P.P91.2",
+      "n": "Single Expand Mode",
+      "spec": "optional\\_single\\_expand",
+      "d": "Optionally allow only one expanded",
+      "inv": [
+        "configurable\\_mode"
+      ]
+    },
+    {
+      "id": "P.P91.3",
+      "n": "Keyboard Navigation",
+      "spec": "keyboard\\_accessible",
+      "d": "Keyboard accessible",
+      "inv": [
+        "accessible\\_controls"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Accordion",
+      "sig": "create(sections: Sequence⟨Section⟩) → Accordion",
+      "def": "$create(sections: Sequence⟨Section⟩) → Accordion = accordion := Accordion(sections); for section in sections: section.expanded := false; return accordion$",
+      "pre": [
+        "|sections| > 0"
+      ],
+      "post": [
+        "∀section: ¬section.expanded"
+      ],
+      "fx": [
+        "Creates accordion",
+        "Collapses all sections"
+      ]
+    },
+    {
+      "n": "Toggle Section",
+      "sig": "toggle(accordion: Accordion, section_index: ℕ) → Effect",
+      "def": "$toggle(accordion: Accordion, section\\_index: ℕ) → Effect = section := accordion.sections[section\\_index]; if accordion.single\\_expand: collapse\\_all\\_others(accordion, section\\_index); section.expanded := ¬section.expanded; animate\\_transition(section)$",
+      "pre": [
+        "0 ≤ section\\_index < |accordion.sections|"
+      ],
+      "post": [
+        "section.expanded = ¬old\\_expanded"
+      ],
+      "fx": [
+        "Collapses others if single-expand",
+        "Toggles section",
+        "Animates"
+      ]
+    },
+    {
+      "n": "Expand All",
+      "sig": "expand_all(accordion: Accordion) → Effect",
+      "def": "$expand\\_all(accordion: Accordion) → Effect = for section in accordion.sections: section.expanded := true; reflow()$",
+      "pre": [
+        "¬accordion.single\\_expand"
+      ],
+      "post": [
+        "∀section: section.expanded"
+      ],
+      "fx": [
+        "Expands all sections",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Intervention implementation",
+      "d": "Applied in ai, intervention systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

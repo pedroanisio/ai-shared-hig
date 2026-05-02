@@ -1,0 +1,145 @@
+{
+  "id": "P89",
+  "v": "1.1",
+  "name": "Confidence Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Confidence",
+    "Transparency"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{conf} = (Score_{conf}, V_{vis}, Alert_{threshold}, Link_{explain}) : Decision \\to Confidence \\in [0,1]$",
+  "desc": "Stepper navigation guides users through multi-step processes with progress indication.",
+  "comps": [
+    {
+      "n": "Score_{conf}",
+      "t": "Component",
+      "d": "Component implementing Confidence Indicator functionality",
+      "nota": "Score_{conf}"
+    },
+    {
+      "n": "V_{vis}",
+      "t": "Component",
+      "d": "Component implementing Confidence Indicator functionality",
+      "nota": "V_{vis}"
+    },
+    {
+      "n": "Alert_{threshold}",
+      "t": "Component",
+      "d": "Component implementing Confidence Indicator functionality",
+      "nota": "Alert_{threshold}"
+    },
+    {
+      "n": "Link_{explain}",
+      "t": "Component",
+      "d": "Component implementing Confidence Indicator functionality",
+      "nota": "Link_{explain}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Stepper",
+      "def": "(steps: Sequence⟨Step⟩, current: ℕ)",
+      "d": "Step navigation"
+    },
+    {
+      "n": "Step",
+      "def": "(label: String, content: Content, valid: 𝔹)",
+      "d": "Single step"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P89.1",
+      "n": "Progress Visibility",
+      "spec": "progress clearly\\_displayed",
+      "d": "Progress is clearly displayed",
+      "inv": [
+        "visible\\_progress"
+      ]
+    },
+    {
+      "id": "P.P89.2",
+      "n": "Step Labels",
+      "spec": "∀step: labeled\\_and\\_numbered",
+      "d": "Steps are labeled and numbered",
+      "inv": [
+        "clear\\_labels"
+      ]
+    },
+    {
+      "id": "P.P89.3",
+      "n": "Validation",
+      "spec": "next ⇒ current\\_step\\_valid",
+      "d": "Can't proceed without valid current step",
+      "inv": [
+        "step\\_validation"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Stepper",
+      "sig": "create(steps: Sequence⟨Step⟩) → Stepper",
+      "def": "$create(steps: Sequence⟨Step⟩) → Stepper = stepper := Stepper(steps, current=0); return stepper$",
+      "pre": [
+        "|steps| > 0"
+      ],
+      "post": [
+        "stepper.current = 0"
+      ],
+      "fx": [
+        "Creates stepper with steps"
+      ]
+    },
+    {
+      "n": "Next Step",
+      "sig": "next(stepper: Stepper) → Effect",
+      "def": "$next(stepper: Stepper) → Effect = if stepper.current < |stepper.steps| - 1: stepper.current := stepper.current + 1; update\\_progress(); render\\_step(stepper.steps[stepper.current])$",
+      "pre": [
+        "¬on\\_last\\_step(stepper)"
+      ],
+      "post": [
+        "stepper.current = old\\_current + 1"
+      ],
+      "fx": [
+        "Advances to next step",
+        "Updates progress",
+        "Renders new step"
+      ]
+    },
+    {
+      "n": "Previous Step",
+      "sig": "previous(stepper: Stepper) → Effect",
+      "def": "$previous(stepper: Stepper) → Effect = if stepper.current > 0: stepper.current := stepper.current - 1; update\\_progress(); render\\_step(stepper.steps[stepper.current])$",
+      "pre": [
+        "¬on\\_first\\_step(stepper)"
+      ],
+      "post": [
+        "stepper.current = old\\_current - 1"
+      ],
+      "fx": [
+        "Goes back to previous step",
+        "Updates progress",
+        "Renders step"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Confidence implementation",
+      "d": "Applied in ai, confidence systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

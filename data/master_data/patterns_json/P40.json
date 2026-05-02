@@ -1,0 +1,175 @@
+{
+  "id": "P40",
+  "v": "1.1",
+  "name": "Mode Toggle System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T = (M, m_0, \\delta_{40}, \\phi_{40}, \\iota_{40})$",
+  "desc": "Mode toggle systems switch between different operational modes with distinct behaviors.",
+  "comps": [
+    {
+      "n": "\\delta_{40}",
+      "t": "M \\times M → \\{\\text{allowed}, \\text{forbidden}\\}",
+      "d": "**transition function**",
+      "nota": "\\delta_{40}"
+    },
+    {
+      "n": "\\phi_{40}",
+      "t": "M → UIConfig",
+      "d": "maps mode to **UI configuration**",
+      "nota": "\\phi_{40}"
+    },
+    {
+      "n": "\\iota_{40}",
+      "t": "M → Indicator",
+      "d": "provides **visual indicators**",
+      "nota": "\\iota_{40}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Mode",
+      "def": "Named operational mode",
+      "d": "System mode"
+    },
+    {
+      "n": "ModeHandler",
+      "def": "(enter: () → Effect, exit: () → Effect)",
+      "d": "Mode lifecycle handlers"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P40.1",
+      "n": "Exclusive Modes",
+      "spec": "only\\_one\\_mode\\_active",
+      "d": "Only one mode active at a time",
+      "inv": [
+        "mutually\\_exclusive"
+      ]
+    },
+    {
+      "id": "P.P40.2",
+      "n": "Valid Transitions",
+      "spec": "∀transition: valid\\_or\\_rejected",
+      "d": "Invalid transitions are rejected",
+      "inv": [
+        "controlled\\_transitions"
+      ]
+    },
+    {
+      "id": "P.P40.3",
+      "n": "Visual Indication",
+      "spec": "current\\_mode visually\\_indicated",
+      "d": "Current mode is visually indicated",
+      "inv": [
+        "clear\\_mode\\_indication"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Switch Mode",
+      "sig": "switch(new_mode: Mode) → Effect",
+      "def": "$switch(new\\_mode: Mode) → Effect = validate\\_transition(current\\_mode, new\\_mode); exit\\_mode(current\\_mode); current\\_mode := new\\_mode; enter\\_mode(new\\_mode); notify\\_listeners()$",
+      "pre": [
+        "valid\\_mode(new\\_mode) ∧ allowed\\_transition(current\\_mode, new\\_mode)"
+      ],
+      "post": [
+        "current\\_mode = new\\_mode"
+      ],
+      "fx": [
+        "Validates transition",
+        "Exits current mode",
+        "Enters new mode",
+        "Notifies listeners"
+      ]
+    },
+    {
+      "n": "Get Current Mode",
+      "sig": "get_mode() → Mode",
+      "def": "$get\\_mode() → Mode = return current\\_mode$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "result = current\\_mode"
+      ],
+      "fx": [
+        "Returns current mode"
+      ]
+    },
+    {
+      "n": "Register Mode Handler",
+      "sig": "register(mode: Mode, handler: ModeHandler) → Effect",
+      "def": "$register(mode: Mode, handler: ModeHandler) → Effect = mode\\_handlers[mode] := handler$",
+      "pre": [
+        "valid\\_mode(mode)"
+      ],
+      "post": [
+        "mode ∈ mode\\_handlers"
+      ],
+      "fx": [
+        "Registers mode handler"
+      ]
+    },
+    {
+      "n": "Toggle Mode",
+      "sig": "toggle(m_target: Mode) → Effect",
+      "def": "$toggle(m_target: Mode) → Effect = if δ₄₀(m_current, m_target) = allowed: save_state(m_current) m_current := m_target apply_ui(φ₄₀(m_target)) restore_state(m_target)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Cycle Modes",
+      "sig": "cycle() → Effect",
+      "def": "$cycle() → Effect = index := indexOf(M, m_current) toggle(M[(index + 1) mod |M|])$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Auto-scroll toggle",
+      "d": "switch between follow mode and manual scrolling"
+    },
+    {
+      "n": "Edit vs Preview",
+      "d": "toggle between editing and preview modes"
+    },
+    {
+      "n": "Tool modes",
+      "d": "select tool modes like select, draw, or erase"
+    },
+    {
+      "n": "View modes",
+      "d": "switch between list, grid, or detail views"
+    }
+  ]
+}

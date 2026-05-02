@@ -1,0 +1,156 @@
+{
+  "id": "P45",
+  "v": "1.1",
+  "name": "Drag and Drop Interaction",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D = (S, T, G, F, \\phi_{45}, \\psi_{45})$",
+  "desc": "Drag and drop interaction enables intuitive manipulation of UI elements through mouse gestures.",
+  "comps": [
+    {
+      "n": "G",
+      "t": "S → Ghost",
+      "d": "**ghost element function**",
+      "nota": "G"
+    },
+    {
+      "n": "F",
+      "t": "S \\times T → \\{\\text{accept}, \\text{reject}\\}",
+      "d": "**acceptance predicate**",
+      "nota": "F"
+    },
+    {
+      "n": "\\phi_{45}",
+      "t": "S \\times T → Effect",
+      "d": "**drop handler**",
+      "nota": "\\phi_{45}"
+    }
+  ],
+  "types": [
+    {
+      "n": "DragOperation",
+      "def": "(element: Element, start_position: Point, ghost: Element)",
+      "d": "Active drag operation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P45.1",
+      "n": "Visual Feedback",
+      "spec": "∀drag: visual\\_indication(drag\\_state)",
+      "d": "Provides visual feedback during drag",
+      "inv": [
+        "clear\\_feedback"
+      ]
+    },
+    {
+      "id": "P.P45.2",
+      "n": "Valid Drop Zones",
+      "spec": "only\\_valid\\_targets highlighted",
+      "d": "Only valid drop zones are highlighted",
+      "inv": [
+        "valid\\_targets\\_only"
+      ]
+    },
+    {
+      "id": "P.P45.3",
+      "n": "Undo Support",
+      "spec": "drop\\_operations undoable",
+      "d": "Drop operations can be undone",
+      "inv": [
+        "reversible\\_drops"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Start Drag",
+      "sig": "start(element: Element, position: Point) → DragOperation",
+      "def": "$start(element: Element, position: Point) → DragOperation = if draggable(element): drag := DragOperation(element, position); create\\_ghost(element); cursor\\_style := \"grabbing\"; return drag else: return null$",
+      "pre": [
+        "draggable(element)"
+      ],
+      "post": [
+        "dragging(element)"
+      ],
+      "fx": [
+        "Creates drag operation",
+        "Creates ghost element",
+        "Changes cursor"
+      ]
+    },
+    {
+      "n": "During Drag",
+      "sig": "move(drag: DragOperation, position: Point) → Effect",
+      "def": "$move(drag: DragOperation, position: Point) → Effect = update\\_ghost\\_position(position); potential\\_target := find\\_drop\\_target(position); if potential\\_target: highlight(potential\\_target)$",
+      "pre": [
+        "drag ≠ null"
+      ],
+      "post": [
+        "ghost\\_position = position"
+      ],
+      "fx": [
+        "Updates ghost position",
+        "Finds drop target",
+        "Highlights if valid"
+      ]
+    },
+    {
+      "n": "End Drag",
+      "sig": "end(drag: DragOperation, position: Point) → Effect",
+      "def": "$end(drag: DragOperation, position: Point) → Effect = target := find\\_drop\\_target(position); if valid\\_drop(drag.element, target): perform\\_drop(drag.element, target) else: animate\\_snap\\_back(); remove\\_ghost(); reset\\_cursor()$",
+      "pre": [
+        "drag ≠ null"
+      ],
+      "post": [
+        "¬dragging(element)"
+      ],
+      "fx": [
+        "Finds drop target",
+        "Performs drop or snaps back",
+        "Cleans up"
+      ]
+    },
+    {
+      "n": "Drop",
+      "sig": "drop(s: Source, t: Target) → Effect",
+      "def": "$drop(s: Source, t: Target) → Effect = if F(s, t) = accept: φ₄₅(s, t) commit() ψ₄₅ := idle$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Reorder tabs",
+      "d": "drag tabs to change their order"
+    },
+    {
+      "n": "Move files",
+      "d": "drag files into folders to relocate them"
+    },
+    {
+      "n": "Drag blocks to reorder",
+      "d": "rearrange list or content blocks by dragging"
+    },
+    {
+      "n": "Kanban cards",
+      "d": "drag cards between columns"
+    }
+  ]
+}

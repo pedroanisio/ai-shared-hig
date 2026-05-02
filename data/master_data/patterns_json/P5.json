@@ -1,0 +1,369 @@
+{
+  "id": "P5",
+  "v": "1.2",
+  "name": "Tabbed Workspace",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-01-13",
+  "def": "$W = (tabs, active, buffers, state)$",
+  "desc": "Tabbed workspaces organize content into switchable tabs for efficient multi-tasking.",
+  
+  "applicability": {
+    "version": "1.0",
+    "description": "Computable conditions for pattern selection",
+    
+    "inputs": {
+      "n_items": {
+        "type": "ℕ",
+        "desc": "Number of items to manage",
+        "measure": "count(items)"
+      },
+      "item_independence": {
+        "type": "[0,1]",
+        "desc": "Degree of independence between items",
+        "measure": "1 - (cross_references / max_possible_references)"
+      },
+      "state_weight": {
+        "type": "ℕ",
+        "unit": "bytes",
+        "desc": "Average state size per item",
+        "measure": "avg(sizeof(item.state))"
+      },
+      "switch_frequency": {
+        "type": "ℝ⁺",
+        "unit": "switches/minute",
+        "desc": "Expected switching rate between items",
+        "measure": "observed_switches / session_duration"
+      },
+      "viewport_width": {
+        "type": "ℕ",
+        "unit": "px",
+        "desc": "Available screen width",
+        "measure": "window.innerWidth"
+      },
+      "comparison_need": {
+        "type": "[0,1]",
+        "desc": "How often users need side-by-side view",
+        "measure": "comparison_requests / total_interactions"
+      },
+      "sequential_flow": {
+        "type": "𝔹",
+        "desc": "Whether items form an ordered sequence",
+        "measure": "∃ ordering: items → ℕ where order matters"
+      },
+      "max_concurrent": {
+        "type": "ℕ",
+        "desc": "Max items user works with simultaneously",
+        "measure": "max(|active_items|) over sessions"
+      }
+    },
+
+    "predicates": {
+      "P_multi": {
+        "def": "n_items > 1",
+        "weight": 1.0,
+        "required": true
+      },
+      "P_independent": {
+        "def": "item_independence ≥ 0.7",
+        "weight": 0.8,
+        "required": false
+      },
+      "P_heavy_state": {
+        "def": "state_weight > 1024",
+        "weight": 0.6,
+        "required": false
+      },
+      "P_frequent_switch": {
+        "def": "switch_frequency > 0.5",
+        "weight": 0.7,
+        "required": false
+      },
+      "P_wide_viewport": {
+        "def": "viewport_width ≥ 768",
+        "weight": 0.9,
+        "required": true
+      },
+      "P_no_comparison": {
+        "def": "comparison_need < 0.3",
+        "weight": 0.5,
+        "required": false
+      },
+      "P_non_sequential": {
+        "def": "¬sequential_flow",
+        "weight": 0.8,
+        "required": false
+      },
+      "P_bounded_items": {
+        "def": "n_items ≤ 12",
+        "weight": 0.4,
+        "required": false
+      }
+    },
+
+    "scoring": {
+      "method": "weighted_sum",
+      "formula": "score = Σ(predicate.satisfied × predicate.weight) / Σ(predicate.weight)",
+      "threshold": 0.6,
+      "decision": "score ≥ threshold ∧ ∀p ∈ required: p.satisfied"
+    },
+
+    "alternatives": [
+      {
+        "pattern": "Wizard",
+        "id": "P7",
+        "condition": "sequential_flow ∧ n_items ≤ 7",
+        "score_boost": "sequential_flow ? 0.3 : 0"
+      },
+      {
+        "pattern": "SplitPane",
+        "id": "P8", 
+        "condition": "comparison_need ≥ 0.3 ∧ n_items ≤ 3 ∧ viewport_width ≥ 1024",
+        "score_boost": "comparison_need × 0.4"
+      },
+      {
+        "pattern": "Accordion",
+        "id": "P9",
+        "condition": "n_items > 5 ∧ viewport_width < 768",
+        "score_boost": "(n_items > 10 ? 0.2 : 0) + (viewport_width < 768 ? 0.3 : 0)"
+      },
+      {
+        "pattern": "MasterDetail",
+        "id": "P10",
+        "condition": "item_independence < 0.5 ∧ ∃ hierarchy(items)",
+        "score_boost": "(1 - item_independence) × 0.3"
+      }
+    ],
+
+    "contraindications": [
+      {
+        "id": "C1",
+        "condition": "n_items = 1",
+        "severity": "hard",
+        "action": "reject",
+        "reason": "Single item needs no tabs"
+      },
+      {
+        "id": "C2", 
+        "condition": "viewport_width < 480",
+        "severity": "hard",
+        "action": "reject",
+        "reason": "Insufficient space for tab bar"
+      },
+      {
+        "id": "C3",
+        "condition": "n_items > 20",
+        "severity": "soft",
+        "action": "warn",
+        "reason": "Tab proliferation degrades UX",
+        "mitigation": "Consider tab groups or virtual tabs"
+      },
+      {
+        "id": "C4",
+        "condition": "comparison_need ≥ 0.5",
+        "severity": "soft", 
+        "action": "suggest_alternative",
+        "alternative": "SplitPane",
+        "reason": "Frequent comparison needs side-by-side view"
+      }
+    ]
+  },
+
+  "self_check": {
+    "lang": "javascript",
+    "entry": "assertP5",
+    "code": "function assertP5(p5) {\n  if (!p5 || p5.id !== \"P5\") throw new Error(\"id mismatch\");\n  if (!p5.def || !p5.desc) throw new Error(\"missing definition or description\");\n  if (!p5.applicability || !p5.applicability.predicates) throw new Error(\"missing applicability predicates\");\n  [\"comps\", \"types\", \"props\", \"ops\", \"manif\"].forEach((key) => {\n    if (!Array.isArray(p5[key]) || p5[key].length === 0) throw new Error(\"missing \" + key);\n  });\n\n  const findComponent = (name) => (p5.comps || []).find((c) => c.n === name);\n  const findType = (name) => (p5.types || []).find((t) => t.n === name);\n  const parseRecordFields = (defn) => {\n    if (!defn) return new Set();\n    const match = defn.trim().match(/^\\((.*)\\)$/);\n    if (!match) return new Set();\n    const fields = match[1]\n      .split(\",\")\n      .map((chunk) => chunk.trim())\n      .filter(Boolean)\n      .map((chunk) => (chunk.includes(\":\") ? chunk.split(\":\", 1)[0].trim() : chunk));\n    return new Set(fields);\n  };\n\n  const tabs = findComponent(\"tabs\");\n  if (!tabs) throw new Error(\"tabs component missing\");\n  const opsText = (p5.ops || []).map((op) => op.def || \"\").join(\" \");\n  if ((tabs.t || \"\").includes(\"Sequence\")) {\n    if (opsText.includes(\"∪\")) throw new Error(\"sequence tabs should not use set union\");\n    if (opsText.includes(\"\\\\\\\\\")) throw new Error(\"sequence tabs should not use set difference\");\n    if (opsText.includes(\"tab_id ∈ tabs\")) throw new Error(\"sequence tabs should not use set membership by id\");\n    if (opsText.includes(\"tabs[tab_id]\")) throw new Error(\"sequence tabs should not be indexed by id\");\n  }\n\n  const tabType = findType(\"Tab\");\n  if (!tabType) throw new Error(\"missing Tab type\");\n  const tabFields = parseRecordFields(tabType.def);\n  if (opsText.includes(\"tab.item\") || opsText.includes(\"Tab(item)\")) {\n    if (!tabFields.has(\"item\")) throw new Error(\"Tab type must include item if ops use tab.item or Tab(item)\");\n  }\n\n  const active = findComponent(\"active\");\n  if (!active) throw new Error(\"active component missing\");\n  if ((active.t || \"\").trim() === \"ℕ\") {\n    if (opsText.includes(\"active_tab\")) throw new Error(\"active is an index but ops reference active_tab id\");\n  }\n\n  const appType = findType(\"ApplicabilityResult\");\n  if (!appType) throw new Error(\"ApplicabilityResult type missing\");\n  const typeNames = new Set((p5.types || []).map((t) => t.n));\n  const appDef = appType.def || \"\";\n  if (appDef.includes(\"Contraindication\") && !typeNames.has(\"Contraindication\")) {\n    throw new Error(\"Contraindication type missing\");\n  }\n  if (appDef.includes(\"Pattern\") && !typeNames.has(\"Pattern\")) {\n    throw new Error(\"Pattern type missing\");\n  }\n\n  const evalOp = (p5.ops || []).find((op) => op.n === \"Evaluate Applicability\");\n  if (!evalOp) throw new Error(\"Evaluate Applicability op missing\");\n  if ((evalOp.def || \"\").includes(\"p.id\")) {\n    const predicates = (p5.applicability && p5.applicability.predicates) || {};\n    Object.keys(predicates).forEach((key) => {\n      if (!(\"id\" in predicates[key])) throw new Error(\"predicate '\" + key + \"' missing id\");\n    });\n  }\n\n  return true;\n}\n"
+  },
+
+  "comps": [
+    {
+      "n": "tabs",
+      "t": "Map⟨TabID, Tab⟩",
+      "d": "open tabs by id",
+      "nota": "tabs"
+    },
+    {
+      "n": "active",
+      "t": "TabID",
+      "d": "active tab id",
+      "nota": "active"
+    },
+    {
+      "n": "buffers",
+      "t": "Map⟨TabID, Content⟩",
+      "d": "stores tab contents by id",
+      "nota": "buffers"
+    },
+    {
+      "n": "state",
+      "t": "Map⟨TabID, State⟩",
+      "d": "stores tab states (dirty, saved) by id",
+      "nota": "state"
+    }
+  ],
+
+  "types": [
+    {
+      "n": "Tab",
+      "def": "(id: TabID, title: String, content: Content, state: State, item: Item | null)",
+      "d": "Tab with content, state, and optional item"
+    },
+    {
+      "n": "Context",
+      "def": "(n_items: ℕ, item_independence: [0,1], state_weight: ℕ, switch_frequency: ℝ⁺, viewport_width: ℕ, comparison_need: [0,1], sequential_flow: 𝔹, max_concurrent: ℕ)",
+      "d": "Input context for applicability evaluation"
+    },
+    {
+      "n": "ApplicabilityResult",
+      "def": "(applicable: 𝔹, score: [0,1], contraindications: List⟨Contraindication⟩, alternatives: List⟨(Pattern, score)⟩)",
+      "d": "Result of applicability evaluation"
+    },
+    {
+      "n": "Contraindication",
+      "def": "(id: String, condition: String, severity: String, action: String, reason: String, mitigation: String | null, alternative: Pattern | null)",
+      "d": "Applicability blocker or warning"
+    },
+    {
+      "n": "Pattern",
+      "def": "(id: String, name: String)",
+      "d": "Pattern reference for alternatives"
+    }
+  ],
+
+  "props": [
+    {
+      "id": "P.P5.1",
+      "n": "State Preservation",
+      "spec": "∀tab: state preserved_across_switches",
+      "d": "Tab state preserved when switching",
+      "inv": [
+        "persistent_tab_state"
+      ]
+    },
+    {
+      "id": "P.P5.2",
+      "n": "Keyboard Navigation",
+      "spec": "tabs keyboard_navigable",
+      "d": "Tabs accessible via keyboard",
+      "inv": [
+        "keyboard_accessible"
+      ]
+    },
+    {
+      "id": "P.P5.3",
+      "n": "Visual Active Indicator",
+      "spec": "active_tab visually_distinct",
+      "d": "Active tab visually distinct",
+      "inv": [
+        "clear_active_state"
+      ]
+    }
+  ],
+
+  "ops": [
+    {
+      "n": "Evaluate Applicability",
+      "sig": "evaluate(ctx: Context) → ApplicabilityResult",
+      "def": "$evaluate(ctx) = let scores = {k: (eval(pred.def, ctx) ? pred.weight : 0) | (k, pred) ∈ predicates}; total = Σ(scores.values) / Σ(pred.weight | (k, pred) ∈ predicates); contras = [c | c ∈ contraindications, eval(c.condition, ctx)]; hard_fail = ∃c ∈ contras: c.severity = 'hard'; required_fail = ∃pred ∈ predicates: pred.required ∧ ¬eval(pred.def, ctx); applicable = ¬hard_fail ∧ ¬required_fail ∧ total ≥ threshold; alts = sorted([(a.pattern, eval_alt(a, ctx)) | a ∈ alternatives], by=score, desc); return (applicable, total, contras, alts)$",
+      "pre": [
+        "ctx well-formed",
+        "all inputs in valid ranges"
+      ],
+      "post": [
+        "result.score ∈ [0,1]",
+        "result.applicable ⟹ no hard contraindications"
+      ],
+      "fx": []
+    },
+    {
+      "n": "Create Tab",
+      "sig": "create(title: String, content: Content) → Tab",
+      "def": "$create(title: String, content: Content) → Tab = tab := Tab(id=generate_id(), title, content, state=initial_state(), item=null); tabs[tab.id] := tab; buffers[tab.id] := content; state[tab.id] := tab.state; return tab$",
+      "pre": [
+        "title ≠ null"
+      ],
+      "post": [
+        "tab.id ∈ keys(tabs)"
+      ],
+      "fx": [
+        "Generates tab ID",
+        "Creates tab",
+        "Adds to tab list"
+      ]
+    },
+    {
+      "n": "Switch Tab",
+      "sig": "switch(tab_id: TabID) → Effect",
+      "def": "$switch(tab_id: TabID) → Effect = if tab_id ∈ keys(tabs): save_state(active); active := tab_id; restore_state(tab_id); render(tabs[tab_id].content)$",
+      "pre": [
+        "tab_id ∈ keys(tabs)"
+      ],
+      "post": [
+        "active = tab_id"
+      ],
+      "fx": [
+        "Saves current state",
+        "Switches active tab",
+        "Restores state",
+        "Renders content"
+      ]
+    },
+    {
+      "n": "Close Tab",
+      "sig": "close(tab_id: TabID) → Effect",
+      "def": "$close(tab_id: TabID) → Effect = if unsaved_changes(tab_id): prompt_save(); tabs := remove(tabs, tab_id); buffers := remove(buffers, tab_id); state := remove(state, tab_id); if active = tab_id: active := adjacent_tab_id()$",
+      "pre": [
+        "tab_id ∈ keys(tabs) ∧ |tabs| > 1"
+      ],
+      "post": [
+        "tab_id ∉ keys(tabs)"
+      ],
+      "fx": [
+        "Checks for unsaved changes",
+        "Removes tab",
+        "Switches if active"
+      ]
+    },
+    {
+      "n": "Open Tab",
+      "sig": "open(item: Item) → Effect",
+      "def": "$open(item: Item) → Effect = existing := find_tab_by_item(item); if existing ≠ null: active := existing.id; render(existing.content) else: tab := Tab(id=generate_id(), title=item.title, content=load(item), state=initial_state(), item=item); tabs[tab.id] := tab; buffers[tab.id] := tab.content; state[tab.id] := tab.state; active := tab.id$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+
+  "manif": [
+    {
+      "n": "Editor tabs",
+      "d": "VS Code"
+    },
+    {
+      "n": "Document tabs",
+      "d": "browsers"
+    },
+    {
+      "n": "Multi-file editing",
+      "d": "IDEs"
+    },
+    {
+      "n": "Chat tabs",
+      "d": "messaging apps"
+    }
+  ]
+}

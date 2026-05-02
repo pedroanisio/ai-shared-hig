@@ -6,7 +6,7 @@ All enumerations, patterns, and cardinality rules from the schema are enforced.
 """
 
 from typing import Optional, List, Literal
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 import re
 
 
@@ -21,9 +21,8 @@ class MathExpression(BaseModel):
     
     content: str = Field(..., description="The mathematical expression content")
     format: str = Field(default="latex", description="Format of the expression")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Domains(BaseModel):
@@ -73,9 +72,8 @@ class Definition(BaseModel):
     tuple_notation: MathExpression = Field(..., alias="tuple-notation", description="Tuple notation")
     components: Components = Field(..., description="Pattern components")
     description: Optional[str] = Field(None, description="Optional description")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class TypeDef(BaseModel):
@@ -90,9 +88,8 @@ class TypeDefinitions(BaseModel):
     """Collection of type definitions."""
     
     type_def: List[TypeDef] = Field(..., min_length=1, alias="type-def", description="List of type definitions")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Invariants(BaseModel):
@@ -109,9 +106,8 @@ class Property(BaseModel):
     formal_spec: MathExpression = Field(..., alias="formal-spec", description="Formal specification")
     description: Optional[str] = Field(None, description="Optional description")
     invariants: Optional[Invariants] = Field(None, description="Optional invariants")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Properties(BaseModel):
@@ -167,9 +163,8 @@ class Operation(BaseModel):
     preconditions: Optional[Conditions] = Field(None, description="Conditions that must hold before execution")
     postconditions: Optional[Conditions] = Field(None, description="Conditions that must hold after execution")
     effects: Optional[Effects] = Field(None, description="Observable side effects")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Operations(BaseModel):
@@ -193,8 +188,7 @@ class PatternRefs(BaseModel):
                 raise ValueError(f'Pattern ID "{ref}" must match pattern [CPF][0-9]+(.[0-9]+)?')
         return v
     
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Dependencies(BaseModel):
@@ -204,9 +198,8 @@ class Dependencies(BaseModel):
     uses: Optional[PatternRefs] = Field(None, description="Used patterns")
     specializes: Optional[PatternRefs] = Field(None, description="Patterns this specializes")
     specialized_by: Optional[PatternRefs] = Field(None, alias="specialized-by", description="Patterns that specialize this")
-    
-    class Config:
-        populate_by_name = True
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class Manifestation(BaseModel):
@@ -248,9 +241,9 @@ class Pattern(BaseModel):
             raise ValueError('Pattern ID must match pattern [CPF][0-9]+(.[0-9]+)?')
         return v
     
-    class Config:
-        populate_by_name = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        populate_by_name=True,
+        json_schema_extra={
             "example": {
                 "id": "C1",
                 "version": "1.1",
@@ -322,4 +315,4 @@ class Pattern(BaseModel):
                 }
             }
         }
-
+    )

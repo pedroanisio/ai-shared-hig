@@ -1,0 +1,157 @@
+{
+  "id": "F2.1",
+  "v": "1.1",
+  "name": "Processing Pipeline Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P = (stages, ir, error\\_handler, compose)$",
+  "desc": "Processing pipelines compose sequential transformation stages with intermediate representations.",
+  "comps": [
+    {
+      "n": "stages",
+      "t": "Sequence⟨Stage⟩",
+      "d": "transformation stages",
+      "nota": "stages"
+    },
+    {
+      "n": "ir",
+      "t": "Sequence⟨IR⟩",
+      "d": "intermediate representations",
+      "nota": "ir"
+    },
+    {
+      "n": "error\\_handler",
+      "t": "Error → Recovery",
+      "d": "handles stage failures",
+      "nota": "error\\_handler"
+    },
+    {
+      "n": "compose",
+      "t": "Sequence⟨Stage⟩ → (Input → Output)",
+      "d": "composes stages",
+      "nota": "compose"
+    }
+  ],
+  "types": [
+    {
+      "n": "Stage",
+      "def": "(name: String, transform: Input → Output | Error)",
+      "d": "Individual transformation stage in the pipeline"
+    },
+    {
+      "n": "IR",
+      "def": "Intermediate representation between stages",
+      "d": "Intermediate data format between pipeline stages"
+    },
+    {
+      "n": "Recovery",
+      "def": "Retry | Skip | Abort | Fallback",
+      "d": "Error recovery strategies for failed stages"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F2.1.1",
+      "n": "Sequential Composition",
+      "spec": "output(stage_n) = input(stage_{n+1}) Stages connect sequentially",
+      "d": "Pipeline stages connect in sequence with compatible types",
+      "inv": [
+        "type\\_compatible(stages)"
+      ]
+    },
+    {
+      "id": "P.F2.1.2",
+      "n": "Error Propagation",
+      "spec": "error(stage_i) ⇒ handle_error ∨ abort_pipeline",
+      "d": "Errors are handled or propagate to abort pipeline",
+      "inv": [
+        "error\\_handling\\_complete"
+      ]
+    },
+    {
+      "id": "P.F2.1.3",
+      "n": "Determinism",
+      "spec": "∀input: compose(stages)(input) produces same output",
+      "d": "Pipeline produces deterministic results for same input",
+      "inv": [
+        "deterministic\\_execution"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Execute Pipeline",
+      "sig": "execute(input: Input) → Output | Error",
+      "def": "$execute(input: Input) → Output | Error = fold(stages, input, λ(acc, stage): stage.transform(acc))$",
+      "pre": [
+        "∀stage ∈ stages: valid(stage)"
+      ],
+      "post": [
+        "result = success(output) ∨ result = error"
+      ],
+      "fx": [
+        "Executes stages sequentially",
+        "Propagates errors",
+        "Transforms input through pipeline"
+      ]
+    },
+    {
+      "n": "Compose Stages",
+      "sig": "compose(stages: Sequence⟨Stage⟩) → (Input → Output)",
+      "def": "$compose(stages: Sequence⟨Stage⟩) → (Input → Output) = λ input: fold(stages, input, λ(acc, stage): stage(acc))$",
+      "pre": [
+        "|stages| > 0"
+      ],
+      "post": [
+        "composable(stages)"
+      ],
+      "fx": [
+        "Creates composed function",
+        "Validates stage compatibility"
+      ]
+    },
+    {
+      "n": "Handle Error",
+      "sig": "handle_error(error: Error, stage: Stage) → Recovery",
+      "def": "$handle_error(error: Error, stage: Stage) → Recovery = case error_type(error) of Transient → Retry(stage, max_attempts=3) Permanent → Abort(error) Recoverable → Fallback(alternative_stage)$",
+      "pre": [
+        "error ≠ null"
+      ],
+      "post": [
+        "recovery\\_strategy\\_defined(result)"
+      ],
+      "fx": [
+        "Classifies error type",
+        "Selects recovery strategy"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Compiler pipelines",
+      "d": "source → AST → IR → binary"
+    },
+    {
+      "n": "Data transformation",
+      "d": "ETL pipelines"
+    },
+    {
+      "n": "Build systems",
+      "d": "source → compile → link → package"
+    },
+    {
+      "n": "Markdown renderers",
+      "d": "MD → AST → HTML"
+    },
+    {
+      "n": "Image processing",
+      "d": "raw → decode → transform → encode"
+    }
+  ]
+}

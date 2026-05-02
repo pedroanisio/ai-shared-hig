@@ -1,0 +1,185 @@
+{
+  "id": "P29",
+  "v": "1.1",
+  "name": "Centralized State Store",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (store, reducers, selectors, subscriptions)$",
+  "desc": "Centralized state stores manage application state in a single predictable container.",
+  "comps": [
+    {
+      "n": "store",
+      "t": "State",
+      "d": "application state (single source of truth)",
+      "nota": "store"
+    },
+    {
+      "n": "reducers",
+      "t": "Map⟨Action, Reducer⟩",
+      "d": "update state",
+      "nota": "reducers"
+    },
+    {
+      "n": "selectors",
+      "t": "Map⟨String, Selector⟩",
+      "d": "query state",
+      "nota": "selectors"
+    },
+    {
+      "n": "subscriptions",
+      "t": "Set⟨Subscriber⟩",
+      "d": "listen for changes",
+      "nota": "subscriptions"
+    }
+  ],
+  "types": [
+    {
+      "n": "Action",
+      "def": "(type: String, payload: Data)",
+      "d": "State change action"
+    },
+    {
+      "n": "Reducer",
+      "def": "(State, Action) → State",
+      "d": "Pure function computing new state"
+    },
+    {
+      "n": "Listener",
+      "def": "() → Effect",
+      "d": "State change callback"
+    },
+    {
+      "n": "State",
+      "def": "Map⟨String, Value⟩",
+      "d": "Centralized state map"
+    },
+    {
+      "n": "Selector",
+      "def": "State → Value",
+      "d": "Function selecting derived state"
+    },
+    {
+      "n": "Subscriber",
+      "def": "State → Effect",
+      "d": "Listener for state changes"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P29.1",
+      "n": "Single Source of Truth",
+      "spec": "∀component: reads\\_from(component, store)",
+      "d": "All components read from single store",
+      "inv": [
+        "centralized\\_state"
+      ]
+    },
+    {
+      "id": "P.P29.2",
+      "n": "Predictable Updates",
+      "spec": "∀s,a: reducer(s,a) deterministic",
+      "d": "State updates are predictable",
+      "inv": [
+        "deterministic\\_updates"
+      ]
+    },
+    {
+      "id": "P.P29.3",
+      "n": "Immutable State",
+      "spec": "reducer returns new\\_state, never mutates old\\_state",
+      "d": "State is immutable",
+      "inv": [
+        "immutable\\_state"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Dispatch Action",
+      "sig": "dispatch(action: Action) → State",
+      "def": "$dispatch(action: Action) → State = new\\_state := reducer(current\\_state, action); validate\\_state(new\\_state); current\\_state := new\\_state; notify\\_subscribers(); return new\\_state$",
+      "pre": [
+        "valid\\_action(action)"
+      ],
+      "post": [
+        "valid\\_state(current\\_state)"
+      ],
+      "fx": [
+        "Applies reducer",
+        "Validates new state",
+        "Updates state",
+        "Notifies subscribers"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(listener: Listener) → Unsubscribe",
+      "def": "$subscribe(listener: Listener) → Unsubscribe = listeners := listeners ∪ {listener}; return λ: listeners := listeners \\ {listener}$",
+      "pre": [
+        "listener ≠ null"
+      ],
+      "post": [
+        "listener ∈ listeners"
+      ],
+      "fx": [
+        "Adds listener",
+        "Returns unsubscribe function"
+      ]
+    },
+    {
+      "n": "Get State",
+      "sig": "getState() → State",
+      "def": "$getState() → State = return current\\_state$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "result = current\\_state"
+      ],
+      "fx": [
+        "Returns current state"
+      ]
+    },
+    {
+      "n": "Select",
+      "sig": "select(selector_name: String) → Value",
+      "def": "$select(selector_name: String) → Value = selector := selectors[selector_name] return selector(store)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Redux",
+      "d": "JavaScript"
+    },
+    {
+      "n": "Vuex",
+      "d": "Vue.js"
+    },
+    {
+      "n": "Global state",
+      "d": "any framework"
+    },
+    {
+      "n": "Application model",
+      "d": "centralized state tree for application logic"
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "id": "P99",
+  "v": "1.1",
+  "name": "Knowledge Graph Explorer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Knowledge Graph",
+    "Exploration"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E_{graph} = (G, N_{focus}, Traverse, Filter, Layout) : KnowledgeGraph \\to Exploration_{interactive}$",
+  "desc": "Dark mode pattern provides alternative color scheme to reduce eye strain in low-light conditions.",
+  "comps": [
+    {
+      "n": "G",
+      "t": "(N, E, λ_n, λ_e)",
+      "d": "Knowledge graph with nodes, edges, and labeling functions",
+      "nota": "G"
+    },
+    {
+      "n": "N_{focus}",
+      "t": "N",
+      "d": "Currently focused node in the graph",
+      "nota": "N_{focus}"
+    },
+    {
+      "n": "Traverse",
+      "t": "(N, Depth) → Set⟨N⟩",
+      "d": "Graph traversal function from node to depth-bounded neighborhood",
+      "nota": "Traverse"
+    },
+    {
+      "n": "Filter",
+      "t": "(Set⟨N⟩, Predicate) → Set⟨N⟩",
+      "d": "Node filtering function based on predicates",
+      "nota": "Filter"
+    },
+    {
+      "n": "Layout",
+      "t": "Set⟨N⟩ → Map⟨N, Position⟩",
+      "d": "Graph layout algorithm assigning visual positions to nodes",
+      "nota": "Layout"
+    }
+  ],
+  "types": [
+    {
+      "n": "Mode",
+      "def": "Light | Dark",
+      "d": "Color mode"
+    },
+    {
+      "n": "ColorScheme",
+      "def": "(background: Color, foreground: Color, primary: Color, secondary: Color)",
+      "d": "Color scheme"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P99.1",
+      "n": "Contrast Maintenance",
+      "spec": "∀mode: sufficient\\_contrast",
+      "d": "Sufficient contrast in both modes",
+      "inv": [
+        "readable\\_contrast"
+      ]
+    },
+    {
+      "id": "P.P99.2",
+      "n": "System Integration",
+      "spec": "respects\\_system\\_preference",
+      "d": "Respects system preference",
+      "inv": [
+        "system\\_aware"
+      ]
+    },
+    {
+      "id": "P.P99.3",
+      "n": "Persistence",
+      "spec": "preference\\_persists\\_across\\_sessions",
+      "d": "Preference persists across sessions",
+      "inv": [
+        "persistent\\_choice"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Toggle Mode",
+      "sig": "toggle() → Effect",
+      "def": "$toggle() → Effect = if current\\_mode = Light: set\\_mode(Dark) else: set\\_mode(Light); persist\\_preference(current\\_mode)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "current\\_mode = ¬old\\_mode"
+      ],
+      "fx": [
+        "Toggles mode",
+        "Persists preference"
+      ]
+    },
+    {
+      "n": "Apply Theme",
+      "sig": "apply(mode: Mode) → Effect",
+      "def": "$apply(mode: Mode) → Effect = colors := get\\_color\\_scheme(mode); for element in all\\_elements(): apply\\_colors(element, colors); update\\_meta\\_theme(colors.primary)$",
+      "pre": [
+        "valid\\_mode(mode)"
+      ],
+      "post": [
+        "theme\\_applied"
+      ],
+      "fx": [
+        "Gets color scheme",
+        "Applies to all elements",
+        "Updates meta theme"
+      ]
+    },
+    {
+      "n": "Auto Detect",
+      "sig": "detect() → Mode",
+      "def": "$detect() → Mode = preference := load\\_preference(); if preference ≠ null: return preference; system := query\\_system\\_preference(); return system$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "result ∈ {Light, Dark}"
+      ],
+      "fx": [
+        "Loads user preference",
+        "Falls back to system preference"
+      ]
+    },
+    {
+      "n": "SetFocus",
+      "sig": "focus(n: N) → Effect",
+      "def": "focus(n) = require n ∈ N; N_{focus} := n",
+      "pre": [
+        "n_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing n",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Explore",
+      "sig": "explore(depth: ℕ, filter: Predicate) → Set⟨N⟩",
+      "def": "explore(d, f) = Filter(Traverse(N_{focus}, d), f)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Render",
+      "sig": "render(nodes: Set⟨N⟩) → Visualization",
+      "def": "render(nodes) = visual_graph(nodes, {(n₁, n₂) ∈",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Knowledge Graph implementation",
+      "d": "Applied in ai, knowledge graph systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

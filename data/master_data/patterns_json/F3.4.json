@@ -1,0 +1,230 @@
+{
+  "id": "F3.4",
+  "v": "1.1",
+  "name": "Feedback Loop Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$U = (track, infer, personalize, apply)$",
+  "desc": "Feedback loops use output to adjust input in closed-loop control systems.",
+  "comps": [
+    {
+      "n": "track",
+      "t": "UserAction → Event",
+      "d": "records user behavior",
+      "nota": "track"
+    },
+    {
+      "n": "infer",
+      "t": "Sequence⟨Event⟩ → Preferences",
+      "d": "learns preferences",
+      "nota": "infer"
+    },
+    {
+      "n": "personalize",
+      "t": "Preferences → Configuration",
+      "d": "customizes experience",
+      "nota": "personalize"
+    },
+    {
+      "n": "apply",
+      "t": "Configuration → Effect",
+      "d": "applies personalization",
+      "nota": "apply"
+    }
+  ],
+  "types": [
+    {
+      "n": "Measurement",
+      "def": "Sensor reading",
+      "d": "Current system state measurement"
+    },
+    {
+      "n": "Setpoint",
+      "def": "Desired value",
+      "d": "Target value for controlled variable"
+    },
+    {
+      "n": "Error",
+      "def": "Setpoint - Measurement",
+      "d": "Difference between desired and actual"
+    },
+    {
+      "n": "ControlSignal",
+      "def": "Actuator command",
+      "d": "Signal sent to actuators"
+    },
+    {
+      "n": "UserAction",
+      "def": "Click | View | Purchase | Search | Rate | Configure",
+      "d": "User behavior signal captured as an action"
+    },
+    {
+      "n": "Event",
+      "def": "(user: UserId, action: UserAction, context: Context, timestamp: Time)",
+      "d": "Recorded interaction event with context"
+    },
+    {
+      "n": "Preferences",
+      "def": "Map⟨Feature, Score⟩",
+      "d": "Learned affinity scores for features"
+    },
+    {
+      "n": "Configuration",
+      "def": "Personalized settings and content",
+      "d": "Configuration applied to tailor experience"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F3.4.1",
+      "n": "Stability",
+      "spec": "bounded\\_oscillation ∨ convergence",
+      "d": "System exhibits stable behavior",
+      "inv": [
+        "stable\\_system"
+      ]
+    },
+    {
+      "id": "P.F3.4.2",
+      "n": "Zero Steady-State Error",
+      "spec": "lim(t→∞) error(t) = 0",
+      "d": "System eventually reaches setpoint",
+      "inv": [
+        "zero\\_final\\_error"
+      ]
+    },
+    {
+      "id": "P.F3.4.3",
+      "n": "Disturbance Rejection",
+      "spec": "disturbance ⇒ corrective\\_action",
+      "d": "System compensates for disturbances",
+      "inv": [
+        "robust\\_to\\_disturbances"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Personalize",
+      "sig": "personalize(user: UserId) → Effect",
+      "def": "$personalize(user: UserId) → Effect = events := track(user) preferences := infer(events) config := personalize(preferences, user.explicit_settings) apply(config, user.session)$",
+      "pre": [
+        "user \\neq null \\wedge user.active = true"
+      ],
+      "post": [
+        "session.personalized = true",
+        "user.experience\\_customized = true"
+      ],
+      "fx": [
+        "Customizes user experience based on behavior",
+        "Applies inferred preferences to session"
+      ]
+    },
+    {
+      "n": "Infer Preferences",
+      "sig": "infer(events: Sequence⟨Event⟩) → Preferences",
+      "def": "$infer(events: Sequence⟨Event⟩) → Preferences = features := extract_features(events) patterns := find_patterns(features) preferences := {} for (feature, pattern) in patterns: score := calculate_affinity(pattern) preferences[feature] := score return preferences$",
+      "pre": [
+        "|events| > 0",
+        "sufficient\\_data(events)"
+      ],
+      "post": [
+        "result.based\\_on(events)",
+        "\\forall p \\in result: 0 \\leq p.score \\leq 1"
+      ],
+      "fx": [
+        "Analyzes user behavior patterns",
+        "Extracts preference scores"
+      ]
+    },
+    {
+      "n": "Apply Configuration",
+      "sig": "apply(config: Configuration, session: Session) → Effect",
+      "def": "$apply(config: Configuration, session: Session) → Effect = for (setting, value) in config: session.set(setting, value) content := filter_by_preferences(available_content, config) session.recommendations := rank(content, config)$",
+      "pre": [
+        "config \\neq null \\wedge session \\neq null",
+        "valid(config)"
+      ],
+      "post": [
+        "\\forall (s, v) \\in config: session[s] = v",
+        "session.configured = true"
+      ],
+      "fx": [
+        "Updates session settings",
+        "Filters and ranks content"
+      ]
+    },
+    {
+      "n": "Sense",
+      "sig": "sense() → Measurement",
+      "def": "$sense() → Measurement = read\\_sensors(); calibrate\\_reading()$",
+      "pre": [
+        "sensors\\_operational()"
+      ],
+      "post": [
+        "accurate(result)"
+      ],
+      "fx": [
+        "Reads sensor values",
+        "Calibrates measurements"
+      ]
+    },
+    {
+      "n": "Compare",
+      "sig": "compare(measurement: Measurement, setpoint: Setpoint) → Error",
+      "def": "$compare(measurement: Measurement, setpoint: Setpoint) → Error = setpoint - measurement$",
+      "pre": [
+        "compatible\\_units(measurement, setpoint)"
+      ],
+      "post": [
+        "signed(result)"
+      ],
+      "fx": [
+        "Computes error signal"
+      ]
+    },
+    {
+      "n": "Actuate",
+      "sig": "actuate(control: ControlSignal) → Effect",
+      "def": "$actuate(control: ControlSignal) → Effect = clamp(control, limits); apply\\_to\\_system(control)$",
+      "pre": [
+        "within\\_limits(control)"
+      ],
+      "post": [
+        "system\\_updated()"
+      ],
+      "fx": [
+        "Clamps to safe limits",
+        "Applies control signal"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Recommendation engines",
+      "d": "Feedback drives ranking and content selection"
+    },
+    {
+      "n": "Adaptive interfaces",
+      "d": "Interface changes based on user behavior"
+    },
+    {
+      "n": "Content personalization",
+      "d": "Personalized feeds informed by interaction data"
+    },
+    {
+      "n": "Search result ranking",
+      "d": "Ranking updates based on click feedback"
+    },
+    {
+      "n": "Notification preferences",
+      "d": "Feedback loop tunes notification settings"
+    }
+  ]
+}

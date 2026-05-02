@@ -1,0 +1,151 @@
+{
+  "id": "F5",
+  "v": "1.1",
+  "name": "Collaborative Editing Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (U, D, O, T, M, \\delta_{F5})$",
+  "desc": "Collaborative editing enables multiple users to edit shared documents concurrently with conflict resolution.",
+  "comps": [
+    {
+      "n": "U",
+      "t": "Set⟨User⟩",
+      "d": "active participants",
+      "nota": "U"
+    },
+    {
+      "n": "D",
+      "t": "Document",
+      "d": "shared document state",
+      "nota": "D"
+    },
+    {
+      "n": "O",
+      "t": "Sequence⟨Operation⟩",
+      "d": "concurrent edit operations",
+      "nota": "O"
+    },
+    {
+      "n": "T",
+      "t": "O \\times O → O",
+      "d": "**transformation function**",
+      "nota": "T"
+    },
+    {
+      "n": "M",
+      "t": "U → Cursor",
+      "d": "tracks **user presence**",
+      "nota": "M"
+    },
+    {
+      "n": "\\delta_{F5}",
+      "t": "Sequence⟨Operation⟩ \\times Document → Document",
+      "d": "deterministic merge of concurrent operations",
+      "nota": "\\delta_{F5}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Operation",
+      "def": "Insert | Delete | Modify",
+      "d": "Edit operation types"
+    },
+    {
+      "n": "Document",
+      "def": "Shared content",
+      "d": "Collaboratively edited document"
+    },
+    {
+      "n": "User",
+      "def": "(id: String, name: String)",
+      "d": "Participant in the editing session"
+    },
+    {
+      "n": "Cursor",
+      "def": "Caret position and selection range",
+      "d": "Presence indicator for a user's location in the document"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F5.1",
+      "n": "Eventual Consistency",
+      "spec": "∀users: eventually(D_u1 = D_u2)",
+      "d": "All users eventually see the same document",
+      "inv": [
+        "convergent"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Local Edit",
+      "sig": "edit(user: User, op: Operation) → Effect",
+      "def": "$edit(user: User, op: Operation) → Effect = D_user := apply(op, D_user) broadcast(op, user)$",
+      "pre": [
+        "authorized(user)"
+      ],
+      "post": [
+        "applied(op, D_user)"
+      ],
+      "fx": [
+        "Applies edit locally",
+        "Broadcasts to other users"
+      ]
+    },
+    {
+      "n": "Receive Remote Edit",
+      "sig": "receive(op: Operation, u_remote: User) → Effect",
+      "def": "$receive(op: Operation, u_remote: User) → Effect = op' := transform(op, local_ops) D := apply(op', D)$",
+      "pre": [
+        "valid(op)"
+      ],
+      "post": [
+        "consistent(D)"
+      ],
+      "fx": [
+        "Transforms operation",
+        "Applies to local document"
+      ]
+    },
+    {
+      "n": "Transform",
+      "sig": "transform(op1: Operation, op2: Operation) → Operation",
+      "def": "$transform(op1: Operation, op2: Operation) → Operation = adjust op1 for concurrent effects of op2; resolve conflicts using deterministic rules$",
+      "pre": [
+        "concurrent(op1, op2)"
+      ],
+      "post": [
+        "preserves\\_intent(result, op1)"
+      ],
+      "fx": [
+        "Adjusts operation for concurrency",
+        "Resolves conflicts deterministically"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Google Docs",
+      "d": "Real-time collaborative editing with conflict resolution"
+    },
+    {
+      "n": "Figma multiplayer",
+      "d": "Concurrent design editing with presence indicators"
+    },
+    {
+      "n": "VS Code Live Share",
+      "d": "Shared code editing sessions with synchronization"
+    },
+    {
+      "n": "Notion collaboration",
+      "d": "Multi-user document editing with live updates"
+    }
+  ]
+}

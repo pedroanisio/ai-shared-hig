@@ -1,0 +1,192 @@
+{
+  "id": "P98",
+  "v": "1.1",
+  "name": "Agent State Timeline",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "State",
+    "Timeline"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{state} = (States, Decisions, Transitions, History) : Agent_{history} \\to Timeline$",
+  "desc": "Accessibility pattern ensures interfaces are usable by people with disabilities.",
+  "comps": [
+    {
+      "n": "States",
+      "t": "Sequence⟨(Time, AgentState)⟩",
+      "d": "Chronologically ordered sequence of agent states with timestamps",
+      "nota": "States"
+    },
+    {
+      "n": "Decisions",
+      "t": "Sequence⟨(Time, Decision, Rationale)⟩",
+      "d": "Timeline of decisions made by agent with reasoning",
+      "nota": "Decisions"
+    },
+    {
+      "n": "Transitions",
+      "t": "Set⟨(State, State, Trigger)⟩",
+      "d": "Set of state transitions with triggering events",
+      "nota": "Transitions"
+    },
+    {
+      "n": "History",
+      "t": "TimeRange → Sequence⟨Event⟩",
+      "d": "Queryable function to retrieve events within time range",
+      "nota": "History"
+    }
+  ],
+  "types": [
+    {
+      "n": "Color",
+      "def": "(r: ℕ, g: ℕ, b: ℕ, a: ℝ)",
+      "d": "RGBA color"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P98.1",
+      "n": "Screen Reader Support",
+      "spec": "screen\\_reader\\_accessible",
+      "d": "Screen reader accessible",
+      "inv": [
+        "semantic\\_html"
+      ]
+    },
+    {
+      "id": "P.P98.2",
+      "n": "Keyboard Navigation",
+      "spec": "fully\\_keyboard\\_operable",
+      "d": "Fully keyboard operable",
+      "inv": [
+        "keyboard\\_complete"
+      ]
+    },
+    {
+      "id": "P.P98.3",
+      "n": "WCAG Compliance",
+      "spec": "meets\\_wcag\\_standards",
+      "d": "Meets WCAG standards",
+      "inv": [
+        "standards\\_compliant"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add ARIA Labels",
+      "sig": "aria(element: Element, label: String, role: String) → Effect",
+      "def": "$aria(element: Element, label: String, role: String) → Effect = element.attributes[\"aria-label\"] := label; element.attributes[\"role\"] := role; if interactive(element): element.attributes[\"tabindex\"] := \"0\"$",
+      "pre": [
+        "element ≠ null"
+      ],
+      "post": [
+        "has\\_aria\\_attributes(element)"
+      ],
+      "fx": [
+        "Sets ARIA label",
+        "Sets role",
+        "Sets tabindex if interactive"
+      ]
+    },
+    {
+      "n": "Ensure Keyboard Nav",
+      "sig": "keyboard(element: Element) → Effect",
+      "def": "$keyboard(element: Element) → Effect = if interactive(element): element.on\\_keydown := handle\\_keyboard; element.tabindex := calculate\\_tab\\_index(element); add\\_focus\\_indicator(element)$",
+      "pre": [
+        "interactive(element)"
+      ],
+      "post": [
+        "keyboard\\_accessible(element)"
+      ],
+      "fx": [
+        "Adds keyboard handler",
+        "Sets tab index",
+        "Adds focus indicator"
+      ]
+    },
+    {
+      "n": "Check Contrast",
+      "sig": "contrast(foreground: Color, background: Color) → 𝔹",
+      "def": "$contrast(foreground: Color, background: Color) → 𝔹 = ratio := calculate\\_contrast\\_ratio(foreground, background); return ratio ≥ 4.5$",
+      "pre": [
+        "valid\\_color(foreground) ∧ valid\\_color(background)"
+      ],
+      "post": [
+        "result ⇔ wcag\\_compliant"
+      ],
+      "fx": [
+        "Calculates contrast ratio",
+        "Checks WCAG compliance"
+      ]
+    },
+    {
+      "n": "RecordState",
+      "sig": "record_state(s: AgentState) → Effect",
+      "def": "record_state(s) = States := States + [(now(), s)]",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "QueryHistory",
+      "sig": "query(t₁: Time, t₂: Time) → Sequence⟨Event⟩",
+      "def": "query(t₁, t₂) = History(t₁, t₂)",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "GetTransitions",
+      "sig": "get_transitions(state: AgentState) → Set⟨Transition⟩",
+      "def": "get_transitions(s) = {(s₁, s₂, t) ∈ Transition",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, State implementation",
+      "d": "Applied in ai, state systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

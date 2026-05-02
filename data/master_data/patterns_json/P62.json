@@ -1,0 +1,374 @@
+{
+  "id": "P62",
+  "v": "1.1",
+  "name": "Integration Test Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I = (components, interactions, environment, verify)$",
+  "desc": "Bulkhead pattern isolates resources to prevent cascade failures across system components.",
+  "comps": [
+    {
+      "n": "components",
+      "t": "Set⟨Component⟩",
+      "d": "integrated components",
+      "nota": "components"
+    },
+    {
+      "n": "interactions",
+      "t": "Sequence⟨Interaction⟩",
+      "d": "component communications",
+      "nota": "interactions"
+    },
+    {
+      "n": "environment",
+      "t": "Environment",
+      "d": "test environment (DB, API, etc.)",
+      "nota": "environment"
+    },
+    {
+      "n": "verify",
+      "t": "() → \\mathbb{B}",
+      "d": "checks end-to-end behavior",
+      "nota": "verify"
+    }
+  ],
+  "types": [
+    {
+      "n": "ResourcePool",
+      "def": "(name: String, resources: Set⟨Resource⟩, available: ℕ)",
+      "d": "Isolated resource pool"
+    },
+    {
+      "n": "Component",
+      "def": "Service | Module | System",
+      "d": "Component participating in integration"
+    },
+    {
+      "n": "Interaction",
+      "def": "(from: Component, to: Component, message: Message)",
+      "d": "Interaction between components"
+    },
+    {
+      "n": "Environment",
+      "def": "(database: DB, services: Set⟨Service⟩, config: Config)",
+      "d": "Test environment configuration and dependencies"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P62.1",
+      "n": "Isolation",
+      "spec": "pool\\_failure ¬⇒ other\\_pool\\_failure",
+      "d": "Pool failures are isolated",
+      "inv": [
+        "fault\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P62.2",
+      "n": "Resource Limits",
+      "spec": "allocated ≤ pool\\_size",
+      "d": "Resource allocation is bounded",
+      "inv": [
+        "bounded\\_resources"
+      ]
+    },
+    {
+      "id": "P.P62.3",
+      "n": "Fair Allocation",
+      "spec": "∀pools: independent\\_allocation",
+      "d": "Pools allocate independently",
+      "inv": [
+        "independent\\_pools"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Top-Down",
+      "sig": "test_top_down(module: Module, deps: Set⟨Module⟩) → TestResult",
+      "def": "$test\\_top\\_down(module: Module, deps: Set⟨Module⟩) → TestResult = stub\\_dependencies(deps); test\\_module(module); verify\\_integration()$",
+      "pre": [
+        "module ≠ null ∧ deps ⊆ AllModules",
+        "∀d ∈ deps: tested(d) = true"
+      ],
+      "post": [
+        "result.status ∈ {pass, fail}",
+        "tested(module) = true"
+      ],
+      "fx": [
+        "Tests module after dependencies verified",
+        "Records integration points between module and deps"
+      ]
+    },
+    {
+      "n": "Bottom-Up",
+      "sig": "test_bottom_up(modules: Sequence⟨Module⟩) → TestResult",
+      "def": "$test\\_bottom\\_up(modules: Sequence⟨Module⟩) → TestResult = for module in reverse\\_dependency\\_order(modules): test(module); integrate\\_with\\_tested()$",
+      "pre": [
+        "|modules| > 0",
+        "sorted_by_dependencies(modules)"
+      ],
+      "post": [
+        "∀m ∈ modules: tested(m) = true",
+        "result.coverage ≥ baseline"
+      ],
+      "fx": [
+        "Tests from leaf modules upward",
+        "Builds confidence in foundation before integration"
+      ]
+    },
+    {
+      "n": "Big Bang",
+      "sig": "test_big_bang(system: System) → TestResult",
+      "def": "$test\\_big\\_bang(system: System) → TestResult = integrate\\_all\\_modules(); test\\_entire\\_system()$",
+      "pre": [
+        "system.modules_count > 0",
+        "all_modules_deployed(system)"
+      ],
+      "post": [
+        "result.tested_all = true",
+        "result.integration_points_checked > 0"
+      ],
+      "fx": [
+        "Tests all modules simultaneously",
+        "Identifies system-wide integration issues quickly"
+      ]
+    },
+    {
+      "n": "Sandwich (Hybrid)",
+      "sig": "test_sandwich(top: Set⟨Module⟩, middle: Set⟨Module⟩, bottom: Set⟨Module⟩) → TestResult",
+      "def": "$test\\_sandwich(top: Set⟨Module⟩, middle: Set⟨Module⟩, bottom: Set⟨Module⟩) → TestResult = test\\_top\\_down(top); test\\_bottom\\_up(bottom); integrate\\_middle(middle)$",
+      "pre": [
+        "top ∩ middle = ∅ ∧ middle ∩ bottom = ∅",
+        "|top| + |bottom| > 0"
+      ],
+      "post": [
+        "∀m ∈ (top ∪ bottom): tested(m) = true",
+        "middle_stubbed = true"
+      ],
+      "fx": [
+        "Tests critical layers first (top/bottom)",
+        "Stubs middle layer to isolate integration issues"
+      ]
+    },
+    {
+      "n": "Mock",
+      "sig": "mock_integration(interface: Interface, behavior: Behavior) → Mock",
+      "def": "$mock\\_integration(interface: Interface, behavior: Behavior) → Mock = create\\_mock(interface); configure\\_behavior(behavior); return\\_mock()$",
+      "pre": [
+        "interface.methods ≠ ∅",
+        "behavior.defined_for_all(interface.methods)"
+      ],
+      "post": [
+        "result.implements(interface)",
+        "result.records_calls = true"
+      ],
+      "fx": [
+        "Creates controllable test double",
+        "Records method invocations for verification"
+      ]
+    },
+    {
+      "n": "Mock Object",
+      "sig": "mock(interface: Interface) → Mock",
+      "def": "$mock(interface: Interface) → Mock = create\\_mock(interface); configure\\_expectations(); return\\_mock\\_instance()$",
+      "pre": [
+        "interface ≠ null"
+      ],
+      "post": [
+        "result.interface = interface",
+        "∀m ∈ interface.methods: result.can_verify(m)"
+      ],
+      "fx": [
+        "Generates mock implementing interface",
+        "Enables behavior verification in tests"
+      ]
+    },
+    {
+      "n": "Stub",
+      "sig": "stub(method: Method, return_value: Value) → Stub",
+      "def": "$stub(method: Method, return\\_value: Value) → Stub = stub\\_method := λ args: return\\_value$",
+      "pre": [
+        "method ≠ null",
+        "return_value matches method.return_type"
+      ],
+      "post": [
+        "result.method = method",
+        "result() = return_value"
+      ],
+      "fx": [
+        "Returns fixed value when called",
+        "Isolates system under test from dependencies"
+      ]
+    },
+    {
+      "n": "Spy",
+      "sig": "spy(object: Object) → Spy",
+      "def": "$spy(object: Object) → Spy = wrap(object); record\\_calls(); forward\\_to\\_real\\_object()$",
+      "pre": [
+        "object ≠ null"
+      ],
+      "post": [
+        "result.wraps(object)",
+        "result.call_log = []"
+      ],
+      "fx": [
+        "Wraps real object to record interactions",
+        "Preserves original behavior while tracking calls"
+      ]
+    },
+    {
+      "n": "Fake",
+      "sig": "fake(interface: Interface, simple_impl: Implementation) → Fake",
+      "def": "$fake(interface: Interface, simple\\_impl: Implementation) → Fake = create\\_working\\_implementation(simple\\_impl)$",
+      "pre": [
+        "interface ≠ null",
+        "simple_impl.implements(interface)"
+      ],
+      "post": [
+        "result.functional = true",
+        "result.lightweight = true"
+      ],
+      "fx": [
+        "Provides working simplified implementation",
+        "Faster than real implementation for testing"
+      ]
+    },
+    {
+      "n": "Fixture",
+      "sig": "fixture(setup: () → State) → State",
+      "def": "$fixture(setup: () → State) → State = setup()$",
+      "pre": [
+        "setup ≠ null"
+      ],
+      "post": [
+        "result = setup()",
+        "result.ready_for_test = true"
+      ],
+      "fx": [
+        "Establishes known test state",
+        "Provides consistent starting conditions"
+      ]
+    },
+    {
+      "n": "Setup Environment",
+      "sig": "setup_environment() → Environment",
+      "def": "$setup_environment() → Environment = db := create_test_database() services := start_test_services() config := load_test_config() return Environment(db, services, config)$",
+      "pre": [
+        "resources_available()"
+      ],
+      "post": [
+        "result.ready = true",
+        "result.isolated = true"
+      ],
+      "fx": [
+        "Initializes test environment",
+        "Configures dependencies and services"
+      ]
+    },
+    {
+      "n": "Execute Integration Test",
+      "sig": "execute_integration(test: IntegrationTest, env: Environment) → TestResult",
+      "def": "$execute_integration(test: IntegrationTest, env: Environment) → TestResult = setup_data(env.database) result := test.run(env) verify_state(env) return result$",
+      "pre": [
+        "env.ready = true",
+        "test.runnable = true"
+      ],
+      "post": [
+        "result.executed = true",
+        "result.duration > 0"
+      ],
+      "fx": [
+        "Runs integration test suite",
+        "Verifies component interactions"
+      ]
+    },
+    {
+      "n": "Teardown Environment",
+      "sig": "teardown(env: Environment) → Effect",
+      "def": "$teardown(env: Environment) → Effect = env.database.drop() env.services.stop() cleanup_test_data() integration_test_user_registration() // Setup environment = test_db := create_test_database() api_client := create_api_client() email_service := create_mock_email_service() // Execute integration flow response := api_client.post(\"/register\", { username: \"newuser\", email: \"new@example.com\", password: \"secure123\" }) // Verify database state user := test_db.query(\"SELECT * FROM users WHERE username = ?\", [\"newuser\"]) assert(user ≠ null) assert(user.email = \"new@example.com\") // Verify email sent assert(email_service.sent_count = 1) assert(email_service.last_email.to = \"new@example.com\") // Cleanup test_db.drop()$",
+      "pre": [
+        "env ≠ null"
+      ],
+      "post": [
+        "resources_released(env)",
+        "env.state = cleaned"
+      ],
+      "fx": [
+        "Cleans up test resources",
+        "Restores system to pre-test state"
+      ]
+    },
+    {
+      "n": "Allocate Resource",
+      "sig": "allocate(pool: ResourcePool, request: Request) → Resource | null",
+      "def": "$allocate(pool: ResourcePool, request: Request) → Resource | null = if pool.available > 0: resource := pool.resources.take(); pool.available := pool.available - 1; return resource else: return null$",
+      "pre": [
+        "pool ≠ null"
+      ],
+      "post": [
+        "(result ≠ null ∧ pool.available = old\\_available - 1) ∨ (result = null ∧ pool.available = 0)"
+      ],
+      "fx": [
+        "Checks availability",
+        "Allocates if available",
+        "Returns resource or null"
+      ]
+    },
+    {
+      "n": "Release Resource",
+      "sig": "release(pool: ResourcePool, resource: Resource) → Effect",
+      "def": "$release(pool: ResourcePool, resource: Resource) → Effect = pool.resources.return(resource); pool.available := pool.available + 1$",
+      "pre": [
+        "resource ∈ pool.resources"
+      ],
+      "post": [
+        "pool.available = old\\_available + 1"
+      ],
+      "fx": [
+        "Returns resource to pool",
+        "Increments available count"
+      ]
+    },
+    {
+      "n": "Create Pool",
+      "sig": "create(name: String, size: ℕ) → ResourcePool",
+      "def": "$create(name: String, size: ℕ) → ResourcePool = resources := create\\_resources(size); pool := ResourcePool(name, resources, available=size); return pool$",
+      "pre": [
+        "size > 0"
+      ],
+      "post": [
+        "pool.available = size"
+      ],
+      "fx": [
+        "Creates resource pool",
+        "Initializes resources"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "API integration tests",
+      "d": "Verify API interactions across services"
+    },
+    {
+      "n": "Database integration tests",
+      "d": "Verify persistence and query flows"
+    },
+    {
+      "n": "Service-to-service tests",
+      "d": "Validate contract between services"
+    },
+    {
+      "n": "End-to-end user flows",
+      "d": "Full-stack flow validation in staging"
+    }
+  ]
+}

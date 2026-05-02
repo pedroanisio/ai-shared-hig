@@ -1,0 +1,156 @@
+{
+  "id": "F6",
+  "v": "1.1",
+  "name": "Error Recovery Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (detect, classify, strategy, recover)$",
+  "desc": "Error recovery flows detect failures and apply strategies to restore normal operation.",
+  "comps": [
+    {
+      "n": "detect",
+      "t": "Operation → Error | Success",
+      "d": "detects operation failures and errors",
+      "nota": "detect"
+    },
+    {
+      "n": "classify",
+      "t": "Error → ErrorType",
+      "d": "determines error category",
+      "nota": "classify"
+    },
+    {
+      "n": "strategy",
+      "t": "ErrorType → RecoveryStrategy",
+      "d": "selects recovery approach",
+      "nota": "strategy"
+    },
+    {
+      "n": "recover",
+      "t": "(Error, RecoveryStrategy) → Effect",
+      "d": "executes recovery",
+      "nota": "recover"
+    }
+  ],
+  "types": [
+    {
+      "n": "ErrorType",
+      "def": "Transient | Permanent | Recoverable",
+      "d": "Categories of errors"
+    },
+    {
+      "n": "RecoveryStrategy",
+      "def": "Retry(max: ℕ, backoff: Time → Time) | Fallback(alternative: Operation) | Abort",
+      "d": "Error recovery strategies"
+    },
+    {
+      "n": "Operation",
+      "def": "() → Result | Error",
+      "d": "Fallible operation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F6.1",
+      "n": "Error Classification",
+      "spec": "∀e ∈ Error: classify(e) determines appropriate recovery strategy Transient → Retry Permanent → Report Recoverable → Fallback",
+      "d": "Errors are classified to select appropriate recovery",
+      "inv": [
+        "correct\\_classification"
+      ]
+    },
+    {
+      "id": "P.F6.2",
+      "n": "Recovery Exhaustion",
+      "spec": "∀recovery_attempt: attempts ≤ max_attempts ∨ escalate(error)",
+      "d": "Recovery attempts are bounded",
+      "inv": [
+        "bounded\\_retries"
+      ]
+    },
+    {
+      "id": "P.F6.3",
+      "n": "State Safety",
+      "spec": "∀e ∈ Error: recover(e) preserves system invariants No partial state corruption",
+      "d": "Recovery preserves system integrity",
+      "inv": [
+        "safe\\_recovery"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Retry with Backoff",
+      "sig": "retry(op: Operation, max: ℕ, backoff: Time → Time) → Result | Error",
+      "def": "$retry(op: Operation, max: ℕ, backoff: Time → Time) → Result | Error = for attempt in 1..max: try: return op(); catch error: wait(backoff(attempt)); throw MaxAttemptsExceeded$",
+      "pre": [
+        "max > 0"
+      ],
+      "post": [
+        "result = success ∨ attempts = max"
+      ],
+      "fx": [
+        "Retries operation with exponential backoff",
+        "Returns success or exhausts attempts"
+      ]
+    },
+    {
+      "n": "Circuit Breaker",
+      "sig": "circuit_breaker(op: Operation, threshold: ℕ) → Result | Error",
+      "def": "$circuit\\_breaker(op: Operation, threshold: ℕ) → Result | Error = if failures > threshold: return CircuitOpen; try: result := op(); reset\\_failures(); return result; catch: increment\\_failures(); throw$",
+      "pre": [
+        "threshold > 0"
+      ],
+      "post": [
+        "circuit\\_state ∈ {Open, Closed, HalfOpen}"
+      ],
+      "fx": [
+        "Opens circuit after threshold failures",
+        "Prevents cascade failures"
+      ]
+    },
+    {
+      "n": "Graceful Degradation",
+      "sig": "degrade(levels: Sequence⟨Mode⟩, operation: Mode → Result) → Result",
+      "def": "$degrade(levels: Sequence⟨Mode⟩, operation: Mode → Result) → Result = for mode in levels: try: return operation(mode) catch error: continue throw AllModesFailedError$",
+      "pre": [
+        "|levels| > 0"
+      ],
+      "post": [
+        "result = success ∨ all\\_modes\\_failed"
+      ],
+      "fx": [
+        "Tries degraded modes sequentially",
+        "Returns best available result"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Network request retry",
+      "d": "HTTP clients with backoff"
+    },
+    {
+      "n": "File load fallback",
+      "d": "multiple locations/mirrors"
+    },
+    {
+      "n": "Service degradation",
+      "d": "cache → static → error"
+    },
+    {
+      "n": "Database connection pooling",
+      "d": "retry on transient failures"
+    },
+    {
+      "n": "User retry prompts",
+      "d": "try again button"
+    }
+  ]
+}

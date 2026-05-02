@@ -1,0 +1,261 @@
+{
+  "id": "P56",
+  "v": "1.1",
+  "name": "Cache Strategy Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C = (storage, policy, ttl, evict)$",
+  "desc": "Cache strategy pattern stores frequently accessed data for faster retrieval.",
+  "comps": [
+    {
+      "n": "storage",
+      "t": "Map⟨Key, (Value, Metadata)⟩",
+      "d": "cache store",
+      "nota": "storage"
+    },
+    {
+      "n": "policy",
+      "t": "EvictionPolicy",
+      "d": "determines what to evict",
+      "nota": "policy"
+    },
+    {
+      "n": "ttl",
+      "t": "Key → Duration",
+      "d": "defines time-to-live",
+      "nota": "ttl"
+    },
+    {
+      "n": "evict",
+      "t": "() → Effect",
+      "d": "removes stale entries",
+      "nota": "evict"
+    }
+  ],
+  "types": [
+    {
+      "n": "CacheEntry",
+      "def": "(value: Value, expires: Time, accessed: Time)",
+      "d": "Cached entry with metadata"
+    },
+    {
+      "n": "EvictionPolicy",
+      "def": "LRU | LFU | FIFO",
+      "d": "Cache eviction policy"
+    },
+    {
+      "n": "Metadata",
+      "def": "(last_accessed: Time, access_count: ℕ, inserted: Time)",
+      "d": "Access metadata used for eviction decisions"
+    },
+    {
+      "n": "Duration",
+      "def": "ℕ  // milliseconds",
+      "d": "Time-to-live duration in milliseconds"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P56.1",
+      "n": "Hit Rate",
+      "spec": "hit\\_rate > threshold",
+      "d": "Cache maintains good hit rate",
+      "inv": [
+        "effective\\_caching"
+      ]
+    },
+    {
+      "id": "P.P56.2",
+      "n": "Bounded Size",
+      "spec": "|cache| ≤ max\\_size",
+      "d": "Cache size is bounded",
+      "inv": [
+        "size\\_limited"
+      ]
+    },
+    {
+      "id": "P.P56.3",
+      "n": "Freshness",
+      "spec": "expired\\_entries evicted",
+      "d": "Expired entries are removed",
+      "inv": [
+        "fresh\\_cache"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Cache-Aside",
+      "sig": "cache_aside(key: Key) → Value",
+      "def": "$cache\\_aside(key: Key) → Value = if key ∈ cache: return cache[key] else: val := db.get(key); cache[key] := val; return val$",
+      "pre": [
+        "key \\neq null"
+      ],
+      "post": [
+        "cache\\_hit(key) \\implies result = cache[key]",
+        "cache\\_miss(key) \\implies result = load\\_from\\_db(key) \\wedge cache'[key] = result"
+      ],
+      "fx": [
+        "Application reads from cache first",
+        "Loads from DB on miss and populates cache"
+      ]
+    },
+    {
+      "n": "Read-Through",
+      "sig": "read_through(key: Key) → Value",
+      "def": "$read\\_through(key: Key) → Value = cache.get(key) // Cache loads from DB automatically$",
+      "pre": [
+        "key \\neq null",
+        "cache\\_configured\\_with\\_loader()"
+      ],
+      "post": [
+        "result \\neq null \\implies cached(key)",
+        "cache\\_handles\\_loading = true"
+      ],
+      "fx": [
+        "Cache transparently loads data on miss",
+        "Application unaware of cache misses"
+      ]
+    },
+    {
+      "n": "Write-Through",
+      "sig": "write_through(key: Key, value: Value) → Effect",
+      "def": "$write\\_through(key: Key, value: Value) → Effect = db.set(key, value); cache.set(key, value)$",
+      "pre": [
+        "key \\neq null \\wedge value \\neq null"
+      ],
+      "post": [
+        "cache'[key] = value \\wedge db'[key] = value",
+        "synchronous\\_write\\_complete = true"
+      ],
+      "fx": [
+        "Writes to cache and DB synchronously",
+        "Ensures consistency"
+      ]
+    },
+    {
+      "n": "Write-Behind",
+      "sig": "write_behind(key: Key, value: Value) → Effect",
+      "def": "$write\\_behind(key: Key, value: Value) → Effect = cache.set(key, value); queue\\_db\\_write(key, value)$",
+      "pre": [
+        "key \\neq null \\wedge value \\neq null",
+        "write\\_queue\\_available()"
+      ],
+      "post": [
+        "cache'[key] = value",
+        "(key, value) \\in write\\_queue'"
+      ],
+      "fx": [
+        "Updates cache immediately",
+        "Queues DB write for async processing"
+      ]
+    },
+    {
+      "n": "Get (with Cache-Through)",
+      "sig": "get(key: Key, load: () → Value) → Value",
+      "def": "$get(key: Key, load: () → Value) → Value = if key ∈ storage ∧ ¬expired(key): update_metadata(key) return storage[key].value else: value := load() set(key, value) return value$",
+      "pre": [
+        "key \\neq null \\wedge load \\neq null"
+      ],
+      "post": [
+        "cache\\_hit(key) \\implies result = cache[key]",
+        "cache\\_miss(key) \\implies result = load() \\wedge cache'[key] = result"
+      ],
+      "fx": [
+        "Returns cached value if available",
+        "Loads and caches on miss using provided loader"
+      ]
+    },
+    {
+      "n": "Set",
+      "sig": "set(key: Key, value: Value) → Effect",
+      "def": "$set(key: Key, value: Value) → Effect = if |storage| = max_size: evict() storage[key] := (value, Metadata(now(), 0, now()))$",
+      "pre": [
+        "key \\neq null \\wedge value \\neq null",
+        "cache\\_writable = true"
+      ],
+      "post": [
+        "cache'[key] = value",
+        "stored = true"
+      ],
+      "fx": [
+        "Stores value in cache",
+        "Overwrites existing value if present"
+      ]
+    },
+    {
+      "n": "Get",
+      "sig": "get(key: Key) → Value | null",
+      "def": "$get(key: Key) → Value | null = if key ∈ cache ∧ ¬expired(cache[key]): update\\_access\\_time(key); return cache[key].value else: return null$",
+      "pre": [
+        "key ≠ null"
+      ],
+      "post": [
+        "result = cached\\_value ∨ result = null"
+      ],
+      "fx": [
+        "Checks cache",
+        "Updates access time if hit",
+        "Returns value or null"
+      ]
+    },
+    {
+      "n": "Put",
+      "sig": "put(key: Key, value: Value, ttl: Time) → Effect",
+      "def": "$put(key: Key, value: Value, ttl: Time) → Effect = if |cache| ≥ max\\_size: evict(); cache[key] := CacheEntry(value, expires=now()+ttl, accessed=now())$",
+      "pre": [
+        "key ≠ null"
+      ],
+      "post": [
+        "key ∈ cache"
+      ],
+      "fx": [
+        "Evicts if full",
+        "Stores entry with TTL"
+      ]
+    },
+    {
+      "n": "Evict",
+      "sig": "evict() → Effect",
+      "def": "$evict() → Effect = victim := select\\_victim(eviction\\_policy); cache := cache \\ {victim}$",
+      "pre": [
+        "|cache| > 0"
+      ],
+      "post": [
+        "|cache| < old\\_size"
+      ],
+      "fx": [
+        "Selects victim by policy",
+        "Removes from cache"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Browser cache",
+      "d": "Caches assets for faster page loads"
+    },
+    {
+      "n": "CDN caching",
+      "d": "Edge caching for static and dynamic content"
+    },
+    {
+      "n": "Database query cache",
+      "d": "Stores frequent query results"
+    },
+    {
+      "n": "Computed value cache",
+      "d": "Caches expensive computed results"
+    },
+    {
+      "n": "Image thumbnails",
+      "d": "Stores resized previews for reuse"
+    }
+  ]
+}

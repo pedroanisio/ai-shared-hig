@@ -1,0 +1,198 @@
+{
+  "id": "P103",
+  "v": "1.1",
+  "name": "Multi-Source Reconciliation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{multi} = (Sources, Conflicts, Resolution, Display) : \\text{Sources} \\to \\text{Reconciled}_{view}$",
+  "desc": "Multi-source reconciliation combines conflicting information from multiple sources into coherent results.",
+  "comps": [
+    {
+      "n": "Sources",
+      "t": "Set⟨Source × Claim⟩",
+      "d": "multiple sources making potentially conflicting claims",
+      "nota": "Sources"
+    },
+    {
+      "n": "Conflicts",
+      "t": "Set⟨Claim × Claim × ConflictType⟩",
+      "d": "detected contradictions between sources",
+      "nota": "Conflicts"
+    },
+    {
+      "n": "Resolution",
+      "t": "Conflict → ResolvedClaim",
+      "d": "strategy for resolving conflicts",
+      "nota": "Resolution"
+    },
+    {
+      "n": "Display",
+      "t": "ResolvedClaim → Visualization",
+      "d": "how to present reconciled information",
+      "nota": "Display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Fact",
+      "def": "(claim: String, source: Source, confidence: ℝ)",
+      "d": "Atomic factual claim from a source"
+    },
+    {
+      "n": "Conflict",
+      "def": "(fact1: Fact, fact2: Fact, type: ConflictType)",
+      "d": "Pair of contradictory facts"
+    },
+    {
+      "n": "Strategy",
+      "def": "SourceRank | Voting | Recency | Custom",
+      "d": "Conflict resolution strategy"
+    },
+    {
+      "n": "Claim",
+      "def": "$\\text{Claim} = (\\text{statement}, \\text{timestamp}, \\text{confidence})$ (factual assertion)",
+      "d": "Factual statement with time and confidence"
+    },
+    {
+      "n": "ConflictType",
+      "def": "$\\text{ConflictType} = \\{\\text{contradiction}, \\text{uncertainty}, \\text{temporal}, \\text{partial}\\}$",
+      "d": "Kinds of disagreements between claims"
+    },
+    {
+      "n": "ResolvedClaim",
+      "def": "$\\text{ResolvedClaim} = (\\text{merged\\_claim}, \\text{consensus\\_score}, \\text{dissenting\\_sources})$",
+      "d": "Merged claim with consensus and dissent"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P103.1",
+      "n": "Consistency",
+      "spec": "¬∃f1,f2 ∈ result: contradicts(f1,f2)",
+      "d": "Reconciled data contains no contradictions",
+      "inv": [
+        "conflict\\_free"
+      ]
+    },
+    {
+      "id": "P.P103.2",
+      "n": "Completeness",
+      "spec": "∀fact ∈ sources: represented(fact, result)",
+      "d": "All source facts are considered",
+      "inv": [
+        "comprehensive\\_reconciliation"
+      ]
+    },
+    {
+      "id": "P.P103.3",
+      "n": "Transparency",
+      "spec": "∀resolution: explainable(resolution.rationale)",
+      "d": "Resolution decisions are explainable",
+      "inv": [
+        "traceable\\_decisions"
+      ]
+    },
+    {
+      "id": "P.P103.4",
+      "n": "Temporal Consistency",
+      "spec": "$\\forall c_1, c_2 : c_1.timestamp < c_2.timestamp \\implies \\text{priority}(c_2) > \\text{priority}(c_1)$ (recency bias)",
+      "d": "More recent claims receive higher priority during reconciliation",
+      "inv": [
+        "recency_priority"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Reconcile",
+      "sig": "reconcile(sources: Set⟨Source⟩, topic: Topic) → ReconciledData",
+      "def": "$reconcile(sources: Set⟨Source⟩, topic: Topic) → ReconciledData = facts := extract\\_facts(sources, topic); conflicts := detect\\_conflicts(facts); resolved := resolve\\_conflicts(conflicts); synthesize(resolved)$",
+      "pre": [
+        "|sources| ≥ 2"
+      ],
+      "post": [
+        "consistent(result)"
+      ],
+      "fx": [
+        "Extracts facts from sources",
+        "Detects conflicts",
+        "Resolves and synthesizes"
+      ]
+    },
+    {
+      "n": "Detect Conflicts",
+      "sig": "detect(facts: Set⟨Fact⟩) → Set⟨Conflict⟩",
+      "def": "$detect(facts: Set⟨Fact⟩) → Set⟨Conflict⟩ = {(f1, f2) : f1,f2 ∈ facts, contradicts(f1, f2)}$",
+      "pre": [
+        "|facts| > 0"
+      ],
+      "post": [
+        "∀(f1,f2) ∈ result: contradicts(f1,f2)"
+      ],
+      "fx": [
+        "Identifies contradictory facts"
+      ]
+    },
+    {
+      "n": "Resolve Conflict",
+      "sig": "resolve(conflict: Conflict, strategy: Strategy) → Resolution",
+      "def": "$resolve(conflict: Conflict, strategy: Strategy) → Resolution = case strategy of SourceRank → prefer\\_higher\\_ranked() Voting → majority\\_wins() Recency → prefer\\_newer() Custom → apply\\_custom\\_logic()$",
+      "pre": [
+        "valid\\_strategy(strategy)"
+      ],
+      "post": [
+        "consistent(result)"
+      ],
+      "fx": [
+        "Applies resolution strategy",
+        "Produces consistent result"
+      ]
+    },
+    {
+      "n": "Visualize Disagreement",
+      "sig": "visualizeDisagreement: ResolvedClaim → Visualization",
+      "def": "$\\text{visualizeDisagreement}(r) = \\text{view}$where$\\text{view}.main = r.merged\\_claim$$\\text{view}.alternatives = \\{c \\mid c \\in r.dissenting\\}$$\\text{view}.consensus\\_bar = r.consensus\\_score \\times 100\\%$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P100"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Wikipedia edit conflicts",
+      "d": "merging multiple editor contributions"
+    },
+    {
+      "n": "AI-aggregated answers",
+      "d": "combining multiple LLM responses"
+    },
+    {
+      "n": "News aggregation with bias detection",
+      "d": "showing consensus and dissenting views"
+    },
+    {
+      "n": "Multi-RAG source reconciliation",
+      "d": "resolving conflicting retrieved documents"
+    }
+  ]
+}

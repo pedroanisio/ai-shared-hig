@@ -1,0 +1,231 @@
+{
+  "id": "P111",
+  "v": "1.1",
+  "name": "Document Evolution Timeline",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{evol} = (Versions, Changes, Contributors, Timestamps) : \\text{Document}_{history} \\to \\text{Timeline}$",
+  "desc": "Document evolution timeline visualizes how documents change over time with branching and merging.",
+  "comps": [
+    {
+      "n": "Versions",
+      "t": "Seq⟨Version⟩",
+      "d": "chronologically ordered document versions",
+      "nota": "Versions"
+    },
+    {
+      "n": "Changes",
+      "t": "Version × Version → Delta",
+      "d": "computed diff between consecutive versions",
+      "nota": "Changes"
+    },
+    {
+      "n": "Contributors",
+      "t": "Version → Set⟨Actor⟩",
+      "d": "humans and AI agents that modified each version",
+      "nota": "Contributors"
+    },
+    {
+      "n": "Timestamps",
+      "t": "Version → Time",
+      "d": "temporal mapping of versions",
+      "nota": "Timestamps"
+    }
+  ],
+  "types": [
+    {
+      "n": "Timeline",
+      "def": "(commits: Sequence⟨Commit⟩, branches: Set⟨Branch⟩, merges: Set⟨Merge⟩)",
+      "d": "Document evolution structure"
+    },
+    {
+      "n": "Version",
+      "def": "(id: String, content: Content, timestamp: Time, author: User)",
+      "d": "Specific document version"
+    },
+    {
+      "n": "Diff",
+      "def": "Set⟨Change⟩ between versions",
+      "d": "Differences between versions"
+    },
+    {
+      "n": "Delta",
+      "def": "$\\text{Delta} = \\text{Set}\\langle \\text{Edit} \\rangle$ (set of atomic edits)",
+      "d": "Set of edits between versions"
+    },
+    {
+      "n": "Actor",
+      "def": "$\\text{Actor} = \\text{Human} \\mid \\text{Agent}$ (union type)",
+      "d": "Contributor entity, human or AI"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P111.1",
+      "n": "Completeness",
+      "spec": "∀version ∈ history: visible(version, timeline)",
+      "d": "Timeline shows all versions",
+      "inv": [
+        "complete\\_history"
+      ]
+    },
+    {
+      "id": "P.P111.2",
+      "n": "Chronological Order",
+      "spec": "∀v1,v2: timestamp(v1) < timestamp(v2) ⇒ before(v1, v2, timeline)",
+      "d": "Timeline preserves chronological order",
+      "inv": [
+        "time\\_ordered"
+      ]
+    },
+    {
+      "id": "P.P111.3",
+      "n": "Branch Clarity",
+      "spec": "∀branch: visually\\_distinct(branch)",
+      "d": "Branches are visually distinguishable",
+      "inv": [
+        "clear\\_branching"
+      ]
+    },
+    {
+      "id": "P.P111.4",
+      "n": "Reconstructability",
+      "spec": "$\\forall v_i \\in Versions : v_i = \\text{apply}(v_0, \\bigoplus_{j=1}^{i} Changes(v_{j-1}, v_j))$ (replay history)",
+      "d": "Versions can be reconstructed by replaying deltas",
+      "inv": [
+        "replayable_history"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Build Timeline",
+      "sig": "build(document: Document) → Timeline",
+      "def": "$build(document: Document) → Timeline = commits := fetch\\_commits(document); branches := identify\\_branches(commits); merges := identify\\_merges(commits); return Timeline(commits, branches, merges)$",
+      "pre": [
+        "versioned(document)"
+      ],
+      "post": [
+        "complete\\_history(result)"
+      ],
+      "fx": [
+        "Fetches commit history",
+        "Identifies branches and merges",
+        "Builds timeline structure"
+      ]
+    },
+    {
+      "n": "Visualize",
+      "sig": "visualize(timeline: Timeline) → Visualization",
+      "def": "$visualize(timeline: Timeline) → Visualization = layout := compute\\_timeline\\_layout(timeline); render\\_commits(timeline.commits, layout); render\\_branches(timeline.branches, layout); render\\_merges(timeline.merges, layout); return Visualization(layout)$",
+      "pre": [
+        "timeline ≠ null"
+      ],
+      "post": [
+        "readable(result)"
+      ],
+      "fx": [
+        "Computes visual layout",
+        "Renders commits, branches, merges"
+      ]
+    },
+    {
+      "n": "Compare Versions",
+      "sig": "compare(v1: Version, v2: Version) → Diff",
+      "def": "$compare(v1: Version, v2: Version) → Diff = changes := compute\\_diff(v1.content, v2.content); metadata := compare\\_metadata(v1, v2); return Diff(changes, metadata)$",
+      "pre": [
+        "v1 ≠ null ∧ v2 ≠ null"
+      ],
+      "post": [
+        "apply(v1, result) = v2"
+      ],
+      "fx": [
+        "Computes content differences",
+        "Compares metadata"
+      ]
+    },
+    {
+      "n": "Compute Delta",
+      "sig": "computeDelta: Version × Version → Delta",
+      "def": "$\\text{computeDelta}(v_1, v_2) = \\{e \\mid e = \\text{diff}(v_1.content, v_2.content)\\}$using Myers' diff algorithm or similar",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Visualize Timeline",
+      "sig": "visualize: Seq⟨Version⟩ → Rendering",
+      "def": "$\\text{visualize}(V) = \\text{render}$where$\\text{render}.timeline = \\{(Timestamps(v), v.id, |Changes(v_{i-1}, v)|) \\mid v \\in V\\}$$\\text{render}.contributors = \\text{aggregate}(Contributors, V)$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Time Travel",
+      "sig": "timeTravel: Version × Time → Version",
+      "def": "$\\text{timeTravel}(v_{current}, t) = v_t$where$v_t = \\arg\\max_{v \\in Versions} \\{v \\mid Timestamps(v) \\leq t\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "C5"
+    ],
+    "use": [
+      "P113"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Git history visualization",
+      "d": "commit timeline with contributors and diffs"
+    },
+    {
+      "n": "Google Docs version history",
+      "d": "temporal document evolution with named versions"
+    },
+    {
+      "n": "Wikipedia revision history",
+      "d": "chronological edits with diff viewing"
+    },
+    {
+      "n": "Notion page history",
+      "d": "version timeline with restore capability"
+    }
+  ]
+}

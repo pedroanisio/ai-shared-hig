@@ -1,0 +1,179 @@
+{
+  "id": "P7",
+  "v": "1.1",
+  "name": "Breadcrumb Trail",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B = (path, separators, actions)$",
+  "desc": "Dashboard layout pattern organizes information widgets in configurable grid layouts.",
+  "comps": [
+    {
+      "n": "path",
+      "t": "Sequence⟨Node⟩",
+      "d": "current location path",
+      "nota": "path"
+    },
+    {
+      "n": "separators",
+      "t": "String",
+      "d": "visual separators (e.g., \" / \")",
+      "nota": "separators"
+    },
+    {
+      "n": "actions",
+      "t": "Node → Effect",
+      "d": "defines click behavior",
+      "nota": "actions"
+    }
+  ],
+  "types": [
+    {
+      "n": "GridPosition",
+      "def": "(row: ℕ, col: ℕ)",
+      "d": "Grid cell position"
+    },
+    {
+      "n": "GridSize",
+      "def": "(rows: ℕ, cols: ℕ)",
+      "d": "Widget size in grid cells"
+    },
+    {
+      "n": "Widget",
+      "def": "(id: WidgetID, type: WidgetType, size: GridSize, config: Config)",
+      "d": "Dashboard widget"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P7.1",
+      "n": "Drag and Drop",
+      "spec": "widgets drag\\_and\\_drop\\_repositionable",
+      "d": "Widgets can be repositioned via drag-drop",
+      "inv": [
+        "interactive\\_layout"
+      ]
+    },
+    {
+      "id": "P.P7.2",
+      "n": "Responsive Grid",
+      "spec": "grid adapts\\_to\\_viewport",
+      "d": "Grid adapts to viewport size",
+      "inv": [
+        "responsive\\_dashboard"
+      ]
+    },
+    {
+      "id": "P.P7.3",
+      "n": "Persistence",
+      "spec": "layout\\_saved\\_and\\_restored",
+      "d": "Layout persists across sessions",
+      "inv": [
+        "persistent\\_layout"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Widget",
+      "sig": "add(widget: Widget, position: GridPosition) → Effect",
+      "def": "$add(widget: Widget, position: GridPosition) → Effect = if position\\_available(position, widget.size): grid[position] := widget; render\\_widget(widget) else: suggest\\_alternative\\_position()$",
+      "pre": [
+        "valid\\_position(position) ∧ valid\\_size(widget.size)"
+      ],
+      "post": [
+        "widget ∈ grid ∨ position\\_unavailable"
+      ],
+      "fx": [
+        "Checks position availability",
+        "Places widget",
+        "Renders or suggests alternative"
+      ]
+    },
+    {
+      "n": "Move Widget",
+      "sig": "move(widget: Widget, new_position: GridPosition) → Effect",
+      "def": "$move(widget: Widget, new\\_position: GridPosition) → Effect = old\\_position := grid.find(widget); if position\\_available(new\\_position, widget.size): grid[old\\_position] := null; grid[new\\_position] := widget; animate\\_move(widget, old\\_position, new\\_position)$",
+      "pre": [
+        "widget ∈ grid"
+      ],
+      "post": [
+        "grid[new\\_position] = widget"
+      ],
+      "fx": [
+        "Removes from old position",
+        "Places at new position",
+        "Animates"
+      ]
+    },
+    {
+      "n": "Resize Widget",
+      "sig": "resize(widget: Widget, new_size: GridSize) → Effect",
+      "def": "$resize(widget: Widget, new\\_size: GridSize) → Effect = position := grid.find(widget); if space\\_available(position, new\\_size): widget.size := new\\_size; reflow\\_adjacent(); refresh\\_widget(widget)$",
+      "pre": [
+        "widget ∈ grid ∧ valid\\_size(new\\_size)"
+      ],
+      "post": [
+        "widget.size = new\\_size ∨ insufficient\\_space"
+      ],
+      "fx": [
+        "Checks space",
+        "Updates size",
+        "Reflows adjacent widgets"
+      ]
+    },
+    {
+      "n": "Compute Path",
+      "sig": "compute_path(root: Node, target: Node) → Sequence⟨Node⟩",
+      "def": "$compute_path(root: Node, target: Node) → Sequence⟨Node⟩ = if target = root: [root] else: compute_path(root, parent(target)) ++ [target]$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Navigate",
+      "sig": "navigate(node: Node) → Effect",
+      "def": "$navigate(node: Node) → Effect = set_location(node) path := compute_path(root, node) render(breadcrumb)$",
+      "pre": [
+        "route_exists(path)",
+        "user_authenticated()"
+      ],
+      "post": [
+        "location = target",
+        "history_updated()"
+      ],
+      "fx": [
+        "Changes application state",
+        "Updates URL"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File path",
+      "d": "OS, web"
+    },
+    {
+      "n": "Navigation chain",
+      "d": "multi-step processes"
+    },
+    {
+      "n": "Context path",
+      "d": "hierarchical views"
+    }
+  ]
+}

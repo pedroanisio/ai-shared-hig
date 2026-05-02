@@ -1,0 +1,232 @@
+{
+  "id": "P105",
+  "v": "1.1",
+  "name": "Semantic Similarity Visualizer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{sim} = (Concepts, Sim_{matrix}, Layout, Threshold) : \\text{Set}\\langle \\text{Concept} \\rangle \\to \\text{Similarity}_{visual}$",
+  "desc": "Semantic similarity visualizers display relationships based on meaning and content similarity.",
+  "comps": [
+    {
+      "n": "Concepts",
+      "t": "Set⟨Concept⟩",
+      "d": "set of semantic concepts to compare",
+      "nota": "Concepts"
+    },
+    {
+      "n": "Sim_{matrix}",
+      "t": "Concept × Concept → [0,1]",
+      "d": "pairwise similarity scores",
+      "nota": "Sim_{matrix}"
+    },
+    {
+      "n": "Layout",
+      "t": "Concept → ℝ²",
+      "d": "2D spatial positioning of concepts",
+      "nota": "Layout"
+    },
+    {
+      "n": "Threshold",
+      "t": "ℝ ∈ [0,1]",
+      "d": "minimum similarity to display connection",
+      "nota": "Threshold"
+    }
+  ],
+  "types": [
+    {
+      "n": "Similarity",
+      "def": "ℝ ∈ [-1,1]",
+      "d": "Cosine similarity score"
+    },
+    {
+      "n": "Embedding",
+      "def": "Vector in ℝⁿ",
+      "d": "Dense vector representation"
+    },
+    {
+      "n": "Cluster",
+      "def": "Set⟨Item⟩ with high internal similarity",
+      "d": "Group of similar items"
+    },
+    {
+      "n": "Concept",
+      "def": "$\\text{Concept} = (\\text{id}, \\text{label}, \\text{embedding})$ where $\\text{embedding} \\in \\mathbb{R}^d$",
+      "d": "Semantic concept with label and embedding"
+    },
+    {
+      "n": "SimilarityMetric",
+      "def": "$\\text{SimilarityMetric} = \\{\\text{cosine}, \\text{euclidean}, \\text{jaccard}, \\text{semantic}\\}$",
+      "d": "Metric used to compute similarity scores"
+    },
+    {
+      "n": "LayoutAlgorithm",
+      "def": "$\\text{LayoutAlgorithm} = \\{\\text{force-directed}, \\text{tsne}, \\text{umap}, \\text{mds}\\}$",
+      "d": "Algorithm used to position concepts in 2D"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P105.1",
+      "n": "Distance Preservation",
+      "spec": "similar(i1,i2) ⇒ close(position(i1), position(i2))",
+      "d": "Visual distance reflects semantic similarity",
+      "inv": [
+        "faithful\\_representation"
+      ]
+    },
+    {
+      "id": "P.P105.2",
+      "n": "Cluster Coherence",
+      "spec": "∀c ∈ clusters: ∀i,j ∈ c: similar(i,j) > threshold",
+      "d": "Items in clusters are mutually similar",
+      "inv": [
+        "coherent\\_clusters"
+      ]
+    },
+    {
+      "id": "P.P105.3",
+      "n": "Interactivity",
+      "spec": "∀item: inspectable(item) ∧ expandable(item)",
+      "d": "Users can inspect and expand items",
+      "inv": [
+        "explorable\\_visualization"
+      ]
+    },
+    {
+      "id": "P.P105.4",
+      "n": "Self-Similarity Identity",
+      "spec": "$\\forall c \\in Concepts : Sim_{matrix}(c, c) = 1$ (maximum self-similarity)",
+      "d": "Each concept has maximal similarity to itself",
+      "inv": [
+        "identity_similarity"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Compute Similarity",
+      "sig": "compute(item1: Item, item2: Item) → Similarity",
+      "def": "$compute(item1: Item, item2: Item) → Similarity = v1 := embed(item1); v2 := embed(item2); similarity := cosine(v1, v2)$",
+      "pre": [
+        "embeddable(item1) ∧ embeddable(item2)"
+      ],
+      "post": [
+        "-1 ≤ result ≤ 1"
+      ],
+      "fx": [
+        "Embeds items into vector space",
+        "Computes cosine similarity"
+      ]
+    },
+    {
+      "n": "Layout",
+      "sig": "layout(items: Set⟨Item⟩, similarities: Map⟨(Item,Item),Similarity⟩) → Layout",
+      "def": "$layout(items: Set⟨Item⟩, similarities: Map⟨(Item,Item),Similarity⟩) → Layout = positions := force\\_directed\\_layout(similarities); optimize\\_overlap(); return positions$",
+      "pre": [
+        "|items| > 0"
+      ],
+      "post": [
+        "∀i ∈ items: positioned(i)"
+      ],
+      "fx": [
+        "Computes force-directed layout",
+        "Optimizes visual clarity"
+      ]
+    },
+    {
+      "n": "Cluster",
+      "sig": "cluster(items: Set⟨Item⟩, threshold: ℝ) → Set⟨Cluster⟩",
+      "def": "$cluster(items: Set⟨Item⟩, threshold: ℝ) → Set⟨Cluster⟩ = graph := build\\_similarity\\_graph(items, threshold); components := find\\_connected\\_components(graph)$",
+      "pre": [
+        "0 ≤ threshold ≤ 1"
+      ],
+      "post": [
+        "partition(items, result)"
+      ],
+      "fx": [
+        "Builds similarity graph",
+        "Finds connected components"
+      ]
+    },
+    {
+      "n": "Compute Similarity Matrix",
+      "sig": "computeSimilarity: Set⟨Concept⟩ × SimilarityMetric → Matrix",
+      "def": "$\\text{computeSimilarity}(C, metric) = M$where$M[i,j] = \\text{metric}(c_i.embedding, c_j.embedding)$$\\text{for cosine: } M[i,j] = \\frac{e_i \\cdot e_j}{\\|e_i\\| \\|e_j\\|}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Generate Layout",
+      "sig": "generateLayout: Sim_matrix × LayoutAlgorithm → (Concept → ℝ²)",
+      "def": "$\\text{generateLayout}(M, alg) = L$where$L = \\arg\\min_{L'} \\sum_{i,j} (M[i,j] - \\frac{1}{\\|L'(c_i) - L'(c_j)\\|}^2$(stress minimization)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Filter by Threshold",
+      "sig": "filter: Sim_matrix × ℝ → Set⟨Edge⟩",
+      "def": "$\\text{filter}(M, \\theta) = \\{(c_i, c_j) \\mid M[i,j] \\geq \\theta \\land i \\neq j\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P99"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Embedding space visualization",
+      "d": "t-SNE/UMAP plots of concept embeddings"
+    },
+    {
+      "n": "Document similarity networks",
+      "d": "graph showing related documents"
+    },
+    {
+      "n": "Topic clustering visualization",
+      "d": "semantic clusters in 2D space"
+    },
+    {
+      "n": "Knowledge graph similarity view",
+      "d": "concepts positioned by semantic distance"
+    }
+  ]
+}

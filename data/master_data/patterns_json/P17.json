@@ -1,0 +1,132 @@
+{
+  "id": "P17",
+  "v": "1.1",
+  "name": "Key-Value Store",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$K = (store, get, set, delete)$",
+  "desc": "Key-value stores provide fast access to data using simple key lookups.",
+  "comps": [
+    {
+      "n": "store",
+      "t": "Map⟨Key, Value⟩",
+      "d": "storage",
+      "nota": "store"
+    },
+    {
+      "n": "get",
+      "t": "Key → Value | null",
+      "d": "retrieves value by key from store",
+      "nota": "get"
+    },
+    {
+      "n": "set",
+      "t": "Key × Value → Effect",
+      "d": "stores values",
+      "nota": "set"
+    },
+    {
+      "n": "delete",
+      "t": "Key → Effect",
+      "d": "removes entries",
+      "nota": "delete"
+    }
+  ],
+  "types": [
+    {
+      "n": "Key",
+      "def": "String identifier",
+      "d": "Lookup key"
+    },
+    {
+      "n": "Value",
+      "def": "Arbitrary data",
+      "d": "Stored value"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P17.1",
+      "n": "Fast Lookup",
+      "spec": "get\\_time = O(1)",
+      "d": "Lookups are constant time",
+      "inv": [
+        "constant\\_time\\_access"
+      ]
+    },
+    {
+      "id": "P.P17.2",
+      "n": "Persistence",
+      "spec": "put(k,v); get(k) = v",
+      "d": "Stored values persist",
+      "inv": [
+        "durable\\_storage"
+      ]
+    },
+    {
+      "id": "P.P17.3",
+      "n": "Key Uniqueness",
+      "spec": "∀k: |values(k)| ≤ 1",
+      "d": "Each key maps to at most one value",
+      "inv": [
+        "unique\\_keys"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(command: Command) → Result",
+      "def": "$process(command: Command) → Result = case command of GET(key) → retrieve(key) SET(key, val) → store(key, val) DELETE(key) → remove(key)$",
+      "pre": [
+        "command \\neq null"
+      ],
+      "post": [
+        "result.executed = true"
+      ],
+      "fx": [
+        "Executes key-value operation",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := serialize(data) output(formatted)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "output\\_rendered = true"
+      ],
+      "fx": [
+        "Displays key-value data",
+        "Serializes output"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Cache",
+      "d": "in-memory key-value cache for fast reads"
+    },
+    {
+      "n": "Settings storage",
+      "d": "user and app preferences keyed by name"
+    },
+    {
+      "n": "Session state",
+      "d": "session tokens and metadata keyed by id"
+    },
+    {
+      "n": "Metadata store",
+      "d": "resource attributes stored by key"
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "id": "P65",
+  "v": "1.1",
+  "name": "Streaming Component",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Streaming",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (\\tau_{stream}, buf, Q_{render}, sync) : \\text{Token} \\to \\Delta \\text{UI}$",
+  "desc": "API versioning pattern manages multiple API versions for backward compatibility.",
+  "comps": [
+    {
+      "n": "\\tau_{stream}",
+      "t": "Stream⟨Token⟩",
+      "d": "incoming token stream from LLM",
+      "nota": "\\tau_{stream}"
+    },
+    {
+      "n": "buf",
+      "t": "BoundedQueue⟨Token⟩",
+      "d": "buffer for token accumulation",
+      "nota": "buf"
+    },
+    {
+      "n": "Q_{render}",
+      "t": "Queue⟨RenderTask⟩",
+      "d": "render task queue for async updates",
+      "nota": "Q_{render}"
+    },
+    {
+      "n": "sync",
+      "t": "State → Effect",
+      "d": "synchronization mechanism for UI updates",
+      "nota": "sync"
+    }
+  ],
+  "types": [
+    {
+      "n": "Version",
+      "def": "(number: String, status: VersionStatus, sunset: Date)",
+      "d": "API version"
+    },
+    {
+      "n": "VersionStatus",
+      "def": "Active | Deprecated | Sunset",
+      "d": "Version lifecycle status"
+    },
+    {
+      "n": "Token",
+      "def": "$\\text{Token} = \\text{String}$ (atomic unit of LLM output)",
+      "d": "Minimal unit of streamed generation"
+    },
+    {
+      "n": "RenderTask",
+      "def": "$\\text{RenderTask} = (\\text{tokens}, \\text{priority}, \\text{callback})$",
+      "d": "Buffered tokens packaged for rendering"
+    },
+    {
+      "n": "BoundedQueue",
+      "def": "$\\text{BoundedQueue}\\langle T \\rangle = \\{q \\mid |q| \\leq \\text{capacity}\\}$",
+      "d": "Queue with maximum capacity for backpressure"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P65.1",
+      "n": "Backward Compatibility",
+      "spec": "∀old\\_version: continues\\_working",
+      "d": "Old versions continue working",
+      "inv": [
+        "backward\\_compatible"
+      ]
+    },
+    {
+      "id": "P.P65.2",
+      "n": "Clear Communication",
+      "spec": "deprecation communicated\\_in\\_advance",
+      "d": "Deprecations communicated early",
+      "inv": [
+        "advance\\_notice"
+      ]
+    },
+    {
+      "id": "P.P65.3",
+      "n": "Migration Support",
+      "spec": "migration\\_path\\_documented",
+      "d": "Migration paths documented",
+      "inv": [
+        "documented\\_migration"
+      ]
+    },
+    {
+      "id": "P.P65.4",
+      "n": "Sync Consistency",
+      "spec": "$\\forall s \\in \\text{State} : sync(s) \\implies \\text{UI}_{rendered} = \\text{UI}_{expected}(s)$",
+      "d": "Rendered output matches synchronized state",
+      "inv": [
+        "synchronized\\_render"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Route Request",
+      "sig": "route(request: Request) → Handler",
+      "def": "$route(request: Request) → Handler = version := extract\\_version(request); if version ∈ supported\\_versions: handler := handlers[version]; return handler else: return version\\_not\\_supported\\_handler$",
+      "pre": [
+        "request ≠ null"
+      ],
+      "post": [
+        "handler handles\\_version(version)"
+      ],
+      "fx": [
+        "Extracts version",
+        "Finds handler",
+        "Returns handler"
+      ]
+    },
+    {
+      "n": "Deprecate Version",
+      "sig": "deprecate(version: Version, sunset_date: Date) → Effect",
+      "def": "$deprecate(version: Version, sunset\\_date: Date) → Effect = version.status := Deprecated; version.sunset := sunset\\_date; add\\_deprecation\\_headers(version)$",
+      "pre": [
+        "version ∈ supported\\_versions"
+      ],
+      "post": [
+        "version.status = Deprecated"
+      ],
+      "fx": [
+        "Marks as deprecated",
+        "Sets sunset date",
+        "Adds warning headers"
+      ]
+    },
+    {
+      "n": "Migrate Client",
+      "sig": "migrate(client: Client, from: Version, to: Version) → MigrationPlan",
+      "def": "$migrate(client: Client, from: Version, to: Version) → MigrationPlan = changes := compute\\_breaking\\_changes(from, to); steps := generate\\_migration\\_steps(changes); return MigrationPlan(client, steps)$",
+      "pre": [
+        "from ∈ supported\\_versions ∧ to ∈ supported\\_versions"
+      ],
+      "post": [
+        "executable(result)"
+      ],
+      "fx": [
+        "Computes breaking changes",
+        "Generates migration steps"
+      ]
+    },
+    {
+      "n": "Accumulate Tokens",
+      "sig": "accumulate: Stream⟨Token⟩ → String",
+      "def": "$\\text{accumulate}(S) = \\text{fold}(\\oplus, \\text{\"\"}, S)$where$\\oplus$is string concatenation",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Enqueue Render",
+      "sig": "enqueue: Token → Effect",
+      "def": "$\\text{enqueue}(t) = Q_{render}'$where$buf' = buf \\oplus [t]$$Q_{render}' = Q_{render} \\oplus [\\text{task}(buf')]$if ready",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Flush Buffer",
+      "sig": "flush: BoundedQueue → RenderTask",
+      "def": "$\\text{flush}(buf) = task$where$task = (\\text{accumulate}(buf), \\text{HIGH}, \\text{render})$$buf' = \\emptyset$(clear buffer)",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22",
+      "P114"
+    ],
+    "use": [
+      "P115"
+    ]
+  },
+  "manif": [
+    {
+      "n": "ChatGPT streaming responses",
+      "d": "token-by-token text rendering"
+    },
+    {
+      "n": "Vercel AI SDK useChat",
+      "d": "React hook for streaming LLM output"
+    },
+    {
+      "n": "LangChain StreamingStdOutCallbackHandler",
+      "d": "streaming callback for progressive output"
+    },
+    {
+      "n": "Claude streaming API",
+      "d": "SSE-based token streaming"
+    }
+  ]
+}

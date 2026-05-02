@@ -1,0 +1,180 @@
+{
+  "id": "P46",
+  "v": "1.1",
+  "name": "Focus Management System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$F = (O, \\tau_{46}, R, I, S)$",
+  "desc": "Focus management systems control keyboard focus flow and accessibility.",
+  "comps": [
+    {
+      "n": "O",
+      "t": "UI → Sequence⟨Element⟩",
+      "d": "**focus order function**",
+      "nota": "O"
+    },
+    {
+      "n": "\\tau_{46}",
+      "t": "Element → \\{\\text{tabbable}, \\text{not\\_tabbable}\\}",
+      "d": "**tabbability**",
+      "nota": "\\tau_{46}"
+    },
+    {
+      "n": "R",
+      "t": "Modal → Element",
+      "d": "**focus restoration function**",
+      "nota": "R"
+    },
+    {
+      "n": "I",
+      "t": "Element → VisualIndicator",
+      "d": "**indicator rendering**",
+      "nota": "I"
+    }
+  ],
+  "types": [
+    {
+      "n": "FocusTrap",
+      "def": "(container: Element, on_escape: Handler, on_tab: Handler)",
+      "d": "Focus containment trap"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P46.1",
+      "n": "Logical Order",
+      "spec": "focus\\_order follows\\_visual\\_order",
+      "d": "Focus order matches visual order",
+      "inv": [
+        "intuitive\\_order"
+      ]
+    },
+    {
+      "id": "P.P46.2",
+      "n": "Keyboard Navigation",
+      "spec": "all\\_elements keyboard\\_reachable",
+      "d": "All interactive elements keyboard reachable",
+      "inv": [
+        "complete\\_keyboard\\_access"
+      ]
+    },
+    {
+      "id": "P.P46.3",
+      "n": "Screen Reader Support",
+      "spec": "focus\\_changes announced",
+      "d": "Focus changes announced to screen readers",
+      "inv": [
+        "accessible\\_focus"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Set Focus",
+      "sig": "focus(element: Element) → Effect",
+      "def": "$focus(element: Element) → Effect = if focusable(element): blur(current\\_focus); current\\_focus := element; element.focus(); scroll\\_into\\_view(element); announce\\_to\\_screen\\_reader(element)$",
+      "pre": [
+        "focusable(element)"
+      ],
+      "post": [
+        "current\\_focus = element"
+      ],
+      "fx": [
+        "Blurs current",
+        "Sets new focus",
+        "Scrolls into view",
+        "Announces to screen reader"
+      ]
+    },
+    {
+      "n": "Next Focusable",
+      "sig": "next() → Element",
+      "def": "$next() → Element = focusables := get\\_focusable\\_elements(); current\\_index := index\\_of(current\\_focus, focusables); next\\_element := focusables[(current\\_index + 1) mod |focusables|]; return next\\_element$",
+      "pre": [
+        "|focusables| > 0"
+      ],
+      "post": [
+        "focusable(result)"
+      ],
+      "fx": [
+        "Gets focusable elements",
+        "Calculates next",
+        "Returns next focusable"
+      ]
+    },
+    {
+      "n": "Create Focus Trap",
+      "sig": "trap(container: Element) → FocusTrap",
+      "def": "$trap(container: Element) → FocusTrap = trap := FocusTrap(container); trap.on\\_escape := λ: focus(container.first\\_focusable); trap.on\\_tab := λ: cycle\\_within(container); return trap$",
+      "pre": [
+        "container ≠ null"
+      ],
+      "post": [
+        "focus\\_trapped(container)"
+      ],
+      "fx": [
+        "Creates focus trap",
+        "Sets up handlers",
+        "Traps focus within container"
+      ]
+    },
+    {
+      "n": "Move Focus Forward",
+      "sig": "next_focus() → Effect",
+      "def": "$next_focus() → Effect = order := O(active_scope) index := indexOf(focused, order) focus(order[(index + 1) mod |order|])$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Trap Focus",
+      "sig": "trap(modal: Modal) → Effect",
+      "def": "$trap(modal: Modal) → Effect = S := descendants(modal) R(modal) := currently_focused focus(first_tabbable(S))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Modal dialog focus trap",
+      "d": "keeps focus within a modal until closed"
+    },
+    {
+      "n": "Keyboard navigation",
+      "d": "tab order across interactive elements"
+    },
+    {
+      "n": "Skip links",
+      "d": "skip to main content for accessibility"
+    },
+    {
+      "n": "Accessible widgets",
+      "d": "components with proper focus management"
+    }
+  ]
+}

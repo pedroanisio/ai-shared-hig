@@ -1,0 +1,245 @@
+{
+  "id": "P51",
+  "v": "1.1",
+  "name": "Responsive Layout Pattern (NEW)",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$L = (breakpoints, layouts, current)$",
+  "desc": "Responsive layout pattern adapts UI to different screen sizes and orientations.",
+  "comps": [
+    {
+      "n": "breakpoints",
+      "t": "Sequence⟨(width: ℝ, name: String)⟩",
+      "d": "define size thresholds",
+      "nota": "breakpoints"
+    },
+    {
+      "n": "layouts",
+      "t": "Map⟨String, Layout⟩",
+      "d": "map breakpoint names to layouts",
+      "nota": "layouts"
+    },
+    {
+      "n": "current",
+      "t": "String",
+      "d": "active layout name",
+      "nota": "current"
+    }
+  ],
+  "types": [
+    {
+      "n": "ViewportSize",
+      "def": "(width: ℝ, height: ℝ)",
+      "d": "Viewport dimensions"
+    },
+    {
+      "n": "Breakpoint",
+      "def": "(name: String, min_width: ℝ, max_width: ℝ)",
+      "d": "Responsive breakpoint"
+    },
+    {
+      "n": "Layout",
+      "def": "(structure: Component, visibility: Map⟨Element, 𝔹⟩)",
+      "d": "Layout structure and element visibility rules"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P51.1",
+      "n": "Fluid Adaptation",
+      "spec": "layout adapts\\_continuously",
+      "d": "Layout adapts fluidly to size changes",
+      "inv": [
+        "smooth\\_adaptation"
+      ]
+    },
+    {
+      "id": "P.P51.2",
+      "n": "Mobile First",
+      "spec": "optimized\\_for\\_mobile",
+      "d": "Mobile-optimized by default",
+      "inv": [
+        "mobile\\_priority"
+      ]
+    },
+    {
+      "id": "P.P51.3",
+      "n": "Performance",
+      "spec": "reflow\\_time < threshold",
+      "d": "Reflows perform efficiently",
+      "inv": [
+        "fast\\_reflow"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Collapsing Navigation",
+      "sig": "collapse(nav: Navigation, width: ℕ) → Navigation",
+      "def": "$collapse(nav: Navigation, width: ℕ) → Navigation = if width < TABLET: hamburger(nav) else: full(nav)$",
+      "pre": [
+        "nav \\neq null \\wedge width > 0"
+      ],
+      "post": [
+        "width < mobile\\_breakpoint \\implies result.collapsed = true",
+        "result.items = nav.items"
+      ],
+      "fx": [
+        "Collapses navigation to hamburger menu on small screens",
+        "Preserves all navigation items"
+      ]
+    },
+    {
+      "n": "Column Reflow",
+      "sig": "reflow(columns: ℕ, width: ℕ) → ℕ",
+      "def": "$reflow(columns: ℕ, width: ℕ) → ℕ = if width < MOBILE: 1 else if width < TABLET: 2 else: columns$",
+      "pre": [
+        "columns > 0 \\wedge width > 0"
+      ],
+      "post": [
+        "result \\leq columns",
+        "result \\times min\\_column\\_width \\leq width"
+      ],
+      "fx": [
+        "Calculates optimal column count for width",
+        "Stacks columns on narrow screens"
+      ]
+    },
+    {
+      "n": "Component Swap",
+      "sig": "swap(desktop: Component, mobile: Component, width: ℕ) → Component",
+      "def": "$swap(desktop: Component, mobile: Component, width: ℕ) → Component = if width < MOBILE: mobile else: desktop$",
+      "pre": [
+        "desktop \\neq null \\wedge mobile \\neq null",
+        "width > 0"
+      ],
+      "post": [
+        "width < mobile\\_breakpoint \\implies result = mobile",
+        "width \\geq mobile\\_breakpoint \\implies result = desktop"
+      ],
+      "fx": [
+        "Switches between desktop and mobile components",
+        "Based on screen width"
+      ]
+    },
+    {
+      "n": "Select Layout",
+      "sig": "select_layout(width: ℝ) → String",
+      "def": "$select_layout(width: ℝ) → String = find_last(breakpoints, λbp: bp.width ≤ width).name$",
+      "pre": [
+        "width > 0",
+        "breakpoints\\_defined()"
+      ],
+      "post": [
+        "result \\in \\{mobile, tablet, desktop, wide\\}",
+        "matches\\_breakpoint(width, result)"
+      ],
+      "fx": [
+        "Determines active layout tier",
+        "Based on viewport width"
+      ]
+    },
+    {
+      "n": "Apply Layout",
+      "sig": "apply(layout: Layout) → Effect",
+      "def": "$apply(layout: Layout) → Effect = structure := layout.structure for (element, visible) in layout.visibility: element.visible := visible reflow()$",
+      "pre": [
+        "layout \\neq null",
+        "valid\\_layout(layout)"
+      ],
+      "post": [
+        "active\\_layout' = layout",
+        "ui\\_updated = true"
+      ],
+      "fx": [
+        "Applies layout configuration",
+        "Triggers UI re-render"
+      ]
+    },
+    {
+      "n": "Register Breakpoint",
+      "sig": "register(bp: Breakpoint, layout: Layout) → Effect",
+      "def": "$register(bp: Breakpoint, layout: Layout) → Effect = breakpoints := insert_sorted(breakpoints, bp) layouts[bp.name] := layout mobile: < 640px tablet: 640px - 1024px desktop: 1024px - 1440px wide: ≥ 1440px$",
+      "pre": [
+        "bp.width > 0 \\wedge layout \\neq null"
+      ],
+      "post": [
+        "breakpoints' = breakpoints \\cup \\{(bp, layout)\\}"
+      ],
+      "fx": [
+        "Registers breakpoint with layout",
+        "Enables responsive behavior"
+      ]
+    },
+    {
+      "n": "Detect Viewport",
+      "sig": "detect() → ViewportSize",
+      "def": "$detect() → ViewportSize = width := window.innerWidth; height := window.innerHeight; return ViewportSize(width, height)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "result.width > 0 ∧ result.height > 0"
+      ],
+      "fx": [
+        "Gets viewport dimensions"
+      ]
+    },
+    {
+      "n": "Apply Breakpoint",
+      "sig": "apply(viewport: ViewportSize) → Layout",
+      "def": "$apply(viewport: ViewportSize) → Layout = breakpoint := find\\_breakpoint(viewport.width); layout := layouts[breakpoint]; apply\\_layout(layout); return layout$",
+      "pre": [
+        "viewport ≠ null"
+      ],
+      "post": [
+        "active\\_layout = layout"
+      ],
+      "fx": [
+        "Finds matching breakpoint",
+        "Applies layout",
+        "Returns layout"
+      ]
+    },
+    {
+      "n": "Reflow",
+      "sig": "reflow() → Effect",
+      "def": "$reflow() → Effect = viewport := detect(); new\\_layout := apply(viewport); if new\\_layout ≠ current\\_layout: animate\\_transition(); render(new\\_layout)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "layout\\_matches\\_viewport"
+      ],
+      "fx": [
+        "Detects viewport",
+        "Applies layout",
+        "Animates if changed"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Responsive web apps",
+      "d": "Layouts that adapt across screen sizes"
+    },
+    {
+      "n": "Mobile-first design",
+      "d": "Designs optimized for small screens first"
+    },
+    {
+      "n": "Adaptive interfaces",
+      "d": "Interfaces that reflow on device changes"
+    },
+    {
+      "n": "Cross-device layouts",
+      "d": "Single UI supporting phone, tablet, desktop"
+    }
+  ]
+}

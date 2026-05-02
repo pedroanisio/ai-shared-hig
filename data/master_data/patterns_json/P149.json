@@ -1,0 +1,197 @@
+{
+  "id": "P149",
+  "v": "1.1",
+  "name": "Usage Analytics Dashboard",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A_{usage} = (Usage_{history}, Trends, Breakdown, Insights) : Usage \\to Analytics$",
+  "desc": "Usage analytics dashboards aggregate and visualize usage patterns and trends over time.",
+  "comps": [
+    {
+      "n": "Metrics",
+      "t": "Map⟨Resource, TimeSeries⟩",
+      "d": "Historical resource usage metrics",
+      "nota": "Metrics"
+    },
+    {
+      "n": "Analytics",
+      "t": "Metrics → Insights",
+      "d": "Analytics function for deriving insights",
+      "nota": "Analytics"
+    },
+    {
+      "n": "Visualizations",
+      "t": "Set⟨Chart⟩",
+      "d": "Visual charts and graphs",
+      "nota": "Visualizations"
+    },
+    {
+      "n": "Reports",
+      "t": "TimeRange → Report",
+      "d": "Report generation function",
+      "nota": "Reports"
+    }
+  ],
+  "types": [
+    {
+      "n": "UsageEvent",
+      "def": "(user_id: String, action: Action, context: Context, timestamp: Time)",
+      "d": "Single usage event"
+    },
+    {
+      "n": "Trends",
+      "def": "(patterns: Set⟨Pattern⟩, growth: ℝ, insights: Set⟨Insight⟩)",
+      "d": "Analyzed usage trends"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P149.1",
+      "n": "Data Accuracy",
+      "spec": "∀metric: accurate(metric.value)",
+      "d": "Analytics data is accurate",
+      "inv": [
+        "reliable\\_analytics"
+      ]
+    },
+    {
+      "id": "P.P149.2",
+      "n": "Actionable Insights",
+      "spec": "∀insight: actionable(insight)",
+      "d": "Insights are actionable",
+      "inv": [
+        "useful\\_insights"
+      ]
+    },
+    {
+      "id": "P.P149.3",
+      "n": "Privacy Compliance",
+      "spec": "∀data: anonymized(data) ∨ consented(data)",
+      "d": "Analytics respects privacy",
+      "inv": [
+        "privacy\\_preserving"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Collect Analytics",
+      "sig": "collect(event: UsageEvent) → Effect",
+      "def": "$collect(event: UsageEvent) → Effect = event.timestamp := now(); analytics\\_db.insert(event); update\\_aggregates(event); trigger\\_analysis()$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "stored(event)"
+      ],
+      "fx": [
+        "Timestamps event",
+        "Stores in analytics DB",
+        "Updates aggregates"
+      ]
+    },
+    {
+      "n": "Analyze Trends",
+      "sig": "analyze(period: TimePeriod) → Trends",
+      "def": "$analyze(period: TimePeriod) → Trends = events := filter\\_by\\_period(analytics\\_db, period); patterns := detect\\_patterns(events); growth := compute\\_growth\\_rate(events); insights := generate\\_insights(patterns, growth); return Trends(patterns, growth, insights)$",
+      "pre": [
+        "valid\\_period(period)"
+      ],
+      "post": [
+        "actionable(result.insights)"
+      ],
+      "fx": [
+        "Filters events by period",
+        "Detects patterns",
+        "Generates insights"
+      ]
+    },
+    {
+      "n": "Visualize Dashboard",
+      "sig": "visualize(trends: Trends) → Dashboard",
+      "def": "$visualize(trends: Trends) → Dashboard = charts := create\\_trend\\_charts(trends); metrics := format\\_key\\_metrics(trends); recommendations := generate\\_recommendations(trends); return Dashboard(charts, metrics, recommendations)$",
+      "pre": [
+        "trends ≠ null"
+      ],
+      "post": [
+        "informative(result)"
+      ],
+      "fx": [
+        "Creates trend charts",
+        "Formats metrics",
+        "Generates recommendations"
+      ]
+    },
+    {
+      "n": "RecordMetric",
+      "sig": "record(r: Resource, value: ℝ) → Effect",
+      "def": "record(r, value) appends usage data point",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GenerateInsights",
+      "sig": "analyze(t1: Time, t2: Time) → Insights",
+      "def": "analyze(t1, t2) computes insights for time range",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ExportReport",
+      "sig": "export(range: TimeRange) → Report",
+      "def": "export(range) generates usage report",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,195 @@
+{
+  "id": "P134",
+  "v": "1.1",
+  "name": "Collaboration Session",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S_{session} = (Participants, Workspace, Coordination, State_{shared}) : Collaborators \\to Session$",
+  "desc": "Collaboration sessions manage multi-user work sessions with shared context and coordination.",
+  "comps": [
+    {
+      "n": "Participants",
+      "t": "Set⟨User ∪ Agent⟩",
+      "d": "All session participants",
+      "nota": "Participants"
+    },
+    {
+      "n": "Workspace",
+      "t": "SharedSpace",
+      "d": "Shared workspace or document",
+      "nota": "Workspace"
+    },
+    {
+      "n": "Coordination",
+      "t": "ConflictResolver",
+      "d": "Mechanism for coordinating simultaneous edits",
+      "nota": "Coordination"
+    },
+    {
+      "n": "State_{shared}",
+      "t": "State",
+      "d": "Shared session state visible to all participants",
+      "nota": "State_{shared}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Session",
+      "def": "(id: SessionID, participants: Set⟨User⟩, context: Context, created: Time)",
+      "d": "Collaboration session state"
+    },
+    {
+      "n": "SessionID",
+      "def": "Unique session identifier",
+      "d": "Session unique ID"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P134.1",
+      "n": "Shared Context",
+      "spec": "∀p1,p2 ∈ session.participants: context(p1) = context(p2)",
+      "d": "All participants share same context",
+      "inv": [
+        "synchronized\\_context"
+      ]
+    },
+    {
+      "id": "P.P134.2",
+      "n": "Participant Awareness",
+      "spec": "∀participant: aware\\_of(participant, other\\_participants)",
+      "d": "Participants are aware of each other",
+      "inv": [
+        "mutual\\_awareness"
+      ]
+    },
+    {
+      "id": "P.P134.3",
+      "n": "Clean Termination",
+      "spec": "end\\_session ⇒ resources\\_released",
+      "d": "Sessions clean up resources on termination",
+      "inv": [
+        "proper\\_cleanup"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Session",
+      "sig": "create(initiator: User, context: Context) → Session",
+      "def": "$create(initiator: User, context: Context) → Session = session := Session(id=generate\\_id(), participants={initiator}, context, created=now()); sessions[session.id] := session; return session$",
+      "pre": [
+        "authenticated(initiator)"
+      ],
+      "post": [
+        "initiator ∈ session.participants"
+      ],
+      "fx": [
+        "Generates session ID",
+        "Creates session with initiator",
+        "Stores session"
+      ]
+    },
+    {
+      "n": "Join Session",
+      "sig": "join(user: User, session_id: SessionID) → Effect",
+      "def": "$join(user: User, session\\_id: SessionID) → Effect = session := sessions[session\\_id]; if authorized(user, session): session.participants := session.participants ∪ {user}; sync\\_context(user, session.context); notify\\_participants(session, user\\_joined) else: throw Unauthorized$",
+      "pre": [
+        "exists(session\\_id)"
+      ],
+      "post": [
+        "user ∈ session.participants"
+      ],
+      "fx": [
+        "Adds user to session",
+        "Syncs session context",
+        "Notifies other participants"
+      ]
+    },
+    {
+      "n": "Broadcast Action",
+      "sig": "broadcast(session: Session, action: Action) → Effect",
+      "def": "$broadcast(session: Session, action: Action) → Effect = for participant in session.participants: send(participant, action)$",
+      "pre": [
+        "|session.participants| > 0"
+      ],
+      "post": [
+        "∀p ∈ participants: received(p, action)"
+      ],
+      "fx": [
+        "Sends action to all participants"
+      ]
+    },
+    {
+      "n": "Join",
+      "sig": "join(p: Participant) → Effect",
+      "def": "join(p) adds p to session and synchronizes state",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Coordinate",
+      "sig": "coordinate(ops: Set⟨Operation⟩) → Operation",
+      "def": "coordinate(ops) resolves concurrent operations",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Sync",
+      "sig": "sync() → State",
+      "def": "sync() returns current shared state",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

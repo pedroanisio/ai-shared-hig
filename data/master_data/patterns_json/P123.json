@@ -1,0 +1,144 @@
+{
+  "id": "P123",
+  "v": "1.1",
+  "name": "Domain Boundary Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{boundary} = (Domain_{current}, Scope, Visual_{cue}, Alerts) : Context \\to Domain_{indication}$",
+  "desc": "Domain boundary indicators visually mark transitions between different operational domains.",
+  "comps": [
+    {
+      "n": "Domain_{current}",
+      "t": "Component",
+      "d": "Component implementing Domain Boundary Indicator functionality",
+      "nota": "Domain_{current}"
+    },
+    {
+      "n": "Scope",
+      "t": "Component",
+      "d": "Component implementing Domain Boundary Indicator functionality",
+      "nota": "Scope"
+    },
+    {
+      "n": "Visual_{cue}",
+      "t": "Component",
+      "d": "Component implementing Domain Boundary Indicator functionality",
+      "nota": "Visual_{cue}"
+    },
+    {
+      "n": "Alerts",
+      "t": "Component",
+      "d": "Component implementing Domain Boundary Indicator functionality",
+      "nota": "Alerts"
+    }
+  ],
+  "types": [
+    {
+      "n": "BoundaryMarker",
+      "def": "(from: Domain, to: Domain, location: Location, style: Style)",
+      "d": "Visual indicator of domain boundary"
+    },
+    {
+      "n": "Animation",
+      "def": "Visual transition between domains",
+      "d": "Transition animation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P123.1",
+      "n": "Clear Demarcation",
+      "spec": "∀boundary: easily\\_identifiable(boundary)",
+      "d": "Domain boundaries are clearly marked",
+      "inv": [
+        "visible\\_boundaries"
+      ]
+    },
+    {
+      "id": "P.P123.2",
+      "n": "Consistent Styling",
+      "spec": "∀domain: consistent\\_visual\\_identity(domain)",
+      "d": "Each domain has consistent visual identity",
+      "inv": [
+        "recognizable\\_domains"
+      ]
+    },
+    {
+      "id": "P.P123.3",
+      "n": "Smooth Transitions",
+      "spec": "¬jarring(domain\\_transition)",
+      "d": "Domain transitions are smooth",
+      "inv": [
+        "pleasant\\_transitions"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Mark Boundary",
+      "sig": "mark(from: Domain, to: Domain, location: Location) → BoundaryMarker",
+      "def": "$mark(from: Domain, to: Domain, location: Location) → BoundaryMarker = marker := BoundaryMarker(from, to, location); style := compute\\_style(from, to); apply\\_visual\\_cue(marker, style); return marker$",
+      "pre": [
+        "from ≠ to"
+      ],
+      "post": [
+        "visible(marker)"
+      ],
+      "fx": [
+        "Creates boundary marker",
+        "Applies visual styling"
+      ]
+    },
+    {
+      "n": "Highlight Active Domain",
+      "sig": "highlight(domain: Domain) → Effect",
+      "def": "$highlight(domain: Domain) → Effect = apply\\_highlight\\_style(domain); dim\\_other\\_domains(); update\\_context\\_indicator(domain)$",
+      "pre": [
+        "active(domain)"
+      ],
+      "post": [
+        "visually\\_prominent(domain)"
+      ],
+      "fx": [
+        "Highlights active domain",
+        "Dims others",
+        "Updates indicators"
+      ]
+    },
+    {
+      "n": "Show Transition",
+      "sig": "show_transition(from: Domain, to: Domain) → Animation",
+      "def": "$show\\_transition(from: Domain, to: Domain) → Animation = anim := create\\_transition\\_animation(from, to); play(anim); return anim$",
+      "pre": [
+        "from ≠ to"
+      ],
+      "post": [
+        "user\\_aware\\_of\\_transition"
+      ],
+      "fx": [
+        "Creates transition animation",
+        "Plays animation"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "id": "P93",
+  "v": "1.1",
+  "name": "Agent Thinking Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "Thinking",
+    "Visualization"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{think} = (P_{reasoning}, V_{display}, Phase_{current}) : Agent_{state} \\to Indicator_{thinking}$",
+  "desc": "Infinite scroll pattern loads content progressively as user scrolls.",
+  "comps": [
+    {
+      "n": "P_{reasoning}",
+      "t": "Component",
+      "d": "Component implementing Agent Thinking Indicator functionality",
+      "nota": "P_{reasoning}"
+    },
+    {
+      "n": "V_{display}",
+      "t": "Component",
+      "d": "Component implementing Agent Thinking Indicator functionality",
+      "nota": "V_{display}"
+    },
+    {
+      "n": "Phase_{current}",
+      "t": "Component",
+      "d": "Component implementing Agent Thinking Indicator functionality",
+      "nota": "Phase_{current}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Viewport",
+      "def": "(scrollTop: ℝ, height: ℝ, scrollHeight: ℝ)",
+      "d": "Scroll viewport"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P93.1",
+      "n": "Seamless Loading",
+      "spec": "loading appears\\_seamless",
+      "d": "Loading appears seamless",
+      "inv": [
+        "continuous\\_experience"
+      ]
+    },
+    {
+      "id": "P.P93.2",
+      "n": "Loading Indicator",
+      "spec": "shows\\_loading\\_state",
+      "d": "Shows loading state",
+      "inv": [
+        "clear\\_feedback"
+      ]
+    },
+    {
+      "id": "P.P93.3",
+      "n": "Performance",
+      "spec": "doesn't\\_load\\_all\\_at\\_once",
+      "d": "Loads incrementally for performance",
+      "inv": [
+        "efficient\\_loading"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Monitor Scroll",
+      "sig": "monitor(viewport: Viewport, threshold: ℝ) → Effect",
+      "def": "$monitor(viewport: Viewport, threshold: ℝ) → Effect = on\\_scroll := λ: position := viewport.scrollTop + viewport.height; total := viewport.scrollHeight; if position ≥ total - threshold: load\\_more(); register\\_scroll\\_listener(on\\_scroll)$",
+      "pre": [
+        "threshold > 0"
+      ],
+      "post": [
+        "scroll\\_listener\\_registered"
+      ],
+      "fx": [
+        "Registers scroll listener",
+        "Triggers load when near bottom"
+      ]
+    },
+    {
+      "n": "Load More",
+      "sig": "load() → Effect",
+      "def": "$load() → Effect = if ¬loading ∧ has\\_more: loading := true; show\\_loading\\_indicator(); next\\_page := current\\_page + 1; items := fetch\\_page(next\\_page); append\\_items(items); current\\_page := next\\_page; loading := false; hide\\_loading\\_indicator()$",
+      "pre": [
+        "¬loading ∧ has\\_more"
+      ],
+      "post": [
+        "current\\_page = old\\_page + 1 ∧ ¬loading"
+      ],
+      "fx": [
+        "Shows loading indicator",
+        "Fetches next page",
+        "Appends items",
+        "Hides indicator"
+      ]
+    },
+    {
+      "n": "Reset",
+      "sig": "reset() → Effect",
+      "def": "$reset() → Effect = clear\\_items(); current\\_page := 0; has\\_more := true; load()$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "current\\_page = 1 ∧ items\\_count > 0"
+      ],
+      "fx": [
+        "Clears items",
+        "Resets state",
+        "Loads first page"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Thinking implementation",
+      "d": "Applied in ai, thinking systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

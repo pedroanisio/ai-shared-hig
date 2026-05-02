@@ -1,0 +1,215 @@
+{
+  "id": "P9",
+  "v": "1.1",
+  "name": "Backlinks/References",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$bac = (state, process, visualize, interact) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Backlinks/references surface items that link to the current item, enabling reverse navigation and context.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to backlinks/references",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from backlinks/references",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Item",
+      "def": "(id: ItemID, summary: Summary, details: Details)",
+      "d": "List item with details"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Input context for backlink lookup"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Backlink and reference results"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Backlink view state snapshot"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P9.1",
+      "n": "Synchronized Views",
+      "spec": "master\\_and\\_detail synchronized",
+      "d": "Master and detail views synchronized",
+      "inv": [
+        "view\\_sync"
+      ]
+    },
+    {
+      "id": "P.P9.2",
+      "n": "Selection Persistence",
+      "spec": "selection persists\\_across\\_updates",
+      "d": "Selection persists during updates",
+      "inv": [
+        "persistent\\_selection"
+      ]
+    },
+    {
+      "id": "P.P9.3",
+      "n": "Responsive Layout",
+      "spec": "adapts\\_to\\_screen\\_size",
+      "d": "Layout adapts to screen size",
+      "inv": [
+        "responsive\\_views"
+      ]
+    },
+    {
+      "id": "P.P9.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Backlink view is usable and easy to navigate",
+      "inv": [
+        "usable_backlinks"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show List",
+      "sig": "list(items: Sequence⟨Item⟩) → Effect",
+      "def": "$list(items: Sequence⟨Item⟩) → Effect = master\\_view := render\\_list(items); display(master\\_view)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "visible(master\\_view)"
+      ],
+      "fx": [
+        "Renders item list",
+        "Displays master view"
+      ]
+    },
+    {
+      "n": "Select Item",
+      "sig": "select(item: Item) → Effect",
+      "def": "$select(item: Item) → Effect = detail\\_view := render\\_details(item); display(detail\\_view); highlight(item, master\\_view)$",
+      "pre": [
+        "item ∈ items"
+      ],
+      "post": [
+        "selected(item) ∧ visible(detail\\_view)"
+      ],
+      "fx": [
+        "Renders item details",
+        "Displays detail view",
+        "Highlights in list"
+      ]
+    },
+    {
+      "n": "Update Detail",
+      "sig": "update(item: Item, changes: Changes) → Effect",
+      "def": "$update(item: Item, changes: Changes) → Effect = apply\\_changes(item, changes); refresh\\_detail\\_view(item); refresh\\_list\\_item(item)$",
+      "pre": [
+        "selected(item)"
+      ],
+      "post": [
+        "item updated"
+      ],
+      "fx": [
+        "Applies changes",
+        "Refreshes detail view",
+        "Refreshes list item"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Backlinks/References in modern applications",
+      "d": "implements backlinks/references pattern"
+    },
+    {
+      "n": "Web-based backlinks/references",
+      "d": "browser implementation of backlinks/references"
+    },
+    {
+      "n": "Mobile backlinks/references",
+      "d": "mobile app implementation"
+    }
+  ]
+}

@@ -1,0 +1,339 @@
+{
+  "id": "P58",
+  "v": "1.1",
+  "name": "Authentication Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (users, credentials, sessions, verify, tokens)$",
+  "desc": "Batch processing pattern handles large-scale operations in manageable chunks.",
+  "comps": [
+    {
+      "n": "users",
+      "t": "Map⟨UserID, User⟩",
+      "d": "registered users",
+      "nota": "users"
+    },
+    {
+      "n": "credentials",
+      "t": "Map⟨UserID, HashedPassword⟩",
+      "d": "store credentials",
+      "nota": "credentials"
+    },
+    {
+      "n": "sessions",
+      "t": "Map⟨SessionID, Session⟩",
+      "d": "track active sessions",
+      "nota": "sessions"
+    },
+    {
+      "n": "verify",
+      "t": "(UserID, Password) → 𝔹",
+      "d": "validates credentials",
+      "nota": "verify"
+    },
+    {
+      "n": "tokens",
+      "t": "Map⟨Token, UserID⟩",
+      "d": "map tokens to users",
+      "nota": "tokens"
+    }
+  ],
+  "types": [
+    {
+      "n": "Batch",
+      "def": "(id: BatchID, chunks: Sequence⟨Chunk⟩, status: BatchStatus)",
+      "d": "Batch of items"
+    },
+    {
+      "n": "BatchStatus",
+      "def": "Pending | Processing | Complete | Failed",
+      "d": "Batch processing status"
+    },
+    {
+      "n": "User",
+      "def": "(id: UserID, username: String, email: String, roles: Set⟨Role⟩)",
+      "d": "User identity with roles for access control"
+    },
+    {
+      "n": "HashedPassword",
+      "def": "String  // bcrypt, argon2, etc.",
+      "d": "Stored password hash"
+    },
+    {
+      "n": "Session",
+      "def": "(id: SessionID, user: UserID, created: Time, expires: Time, data: Map⟨String,Value⟩)",
+      "d": "Server-side session record"
+    },
+    {
+      "n": "Token",
+      "def": "String  // JWT, opaque token, etc.",
+      "d": "Bearer token representing authentication"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P58.1",
+      "n": "Progress Tracking",
+      "spec": "progress visible\\_and\\_accurate",
+      "d": "Progress is tracked and visible",
+      "inv": [
+        "observable\\_progress"
+      ]
+    },
+    {
+      "id": "P.P58.2",
+      "n": "Error Isolation",
+      "spec": "chunk\\_failure ¬⇒ batch\\_failure",
+      "d": "Chunk failures isolated",
+      "inv": [
+        "fault\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P58.3",
+      "n": "Resource Management",
+      "spec": "concurrent\\_chunks ≤ max\\_concurrent",
+      "d": "Manages concurrent processing",
+      "inv": [
+        "bounded\\_concurrency"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Authenticate",
+      "sig": "authenticate(credentials: Credentials) → User | null",
+      "def": "$authenticate(credentials: Credentials) → User | null = user := find\\_user(credentials.username); if user ∧ verify\\_password(credentials.password, user.hash): return user; else: return null$",
+      "pre": [
+        "credentials \\neq null",
+        "credentials.username \\neq \\emptyset"
+      ],
+      "post": [
+        "result \\neq null \\implies valid\\_credentials(credentials)",
+        "result = null \\implies invalid\\_credentials(credentials)"
+      ],
+      "fx": [
+        "Verifies user identity",
+        "Returns user on success, null on failure"
+      ]
+    },
+    {
+      "n": "Register User",
+      "sig": "register(username: String, password: String) → User | Error",
+      "def": "$register(username: String, password: String) → User | Error = if exists(username): return Error(\\\"User exists\\\"); hash := hash\\_password(password); user := create\\_user(username, hash); return user$",
+      "pre": [
+        "|username| \\geq min\\_length",
+        "|password| \\geq min\\_password\\_length",
+        "\\neg exists\\_user(username)"
+      ],
+      "post": [
+        "success(result) \\implies stored(result)",
+        "success(result) \\implies hashed(result.password)"
+      ],
+      "fx": [
+        "Creates new user account",
+        "Hashes password before storage"
+      ]
+    },
+    {
+      "n": "Verify Password",
+      "sig": "verify_password(plain: String, hash: String) → 𝔹",
+      "def": "$verify\\_password(plain: String, hash: String) → 𝔹 = hash(plain + salt) = hash$",
+      "pre": [
+        "plain \\neq null \\wedge hash \\neq null",
+        "valid\\_hash\\_format(hash)"
+      ],
+      "post": [
+        "result = true \\iff matches(plain, hash)"
+      ],
+      "fx": [
+        "Compares plaintext against hash",
+        "Uses constant-time comparison"
+      ]
+    },
+    {
+      "n": "Create Session",
+      "sig": "create_session(user: User) → Session",
+      "def": "$create\\_session(user: User) → Session = session := Session(id: uuid(), user: user.id, expires: now() + TTL); store\\_session(session); return session$",
+      "pre": [
+        "user \\neq null \\wedge authenticated(user)"
+      ],
+      "post": [
+        "result.user\\_id = user.id",
+        "stored(result) \\wedge expires\\_at(result) > now()"
+      ],
+      "fx": [
+        "Generates unique session ID",
+        "Stores session with expiry time"
+      ]
+    },
+    {
+      "n": "Validate Session",
+      "sig": "validate_session(session_id: String) → User | null",
+      "def": "$validate\\_session(session\\_id: String) → User | null = session := get\\_session(session\\_id); if session ∧ session.expires > now(): return get\\_user(session.user); else: return null$",
+      "pre": [
+        "session\\_id \\neq null"
+      ],
+      "post": [
+        "result \\neq null \\implies active\\_session(session\\_id)",
+        "result = null \\implies expired(session\\_id) \\vee invalid(session\\_id)"
+      ],
+      "fx": [
+        "Checks session validity",
+        "Returns associated user if valid"
+      ]
+    },
+    {
+      "n": "Generate Token (JWT)",
+      "sig": "generate_token(user: User) → String",
+      "def": "$generate\\_token(user: User) → String = payload := {user\\_id: user.id, exp: now() + TTL}; sign(payload, secret\\_key)$",
+      "pre": [
+        "user \\neq null",
+        "secret\\_key\\_available()"
+      ],
+      "post": [
+        "valid\\_jwt\\_format(result)",
+        "signed(result) \\wedge contains\\_claims(result, user)"
+      ],
+      "fx": [
+        "Creates signed JWT with user claims",
+        "Sets expiration time"
+      ]
+    },
+    {
+      "n": "Session-Based",
+      "sig": "session_auth() → AuthStrategy",
+      "def": "$session\\_auth() → AuthStrategy = server stores session state; cookie contains session ID$",
+      "pre": [
+        "session\\_store\\_configured()"
+      ],
+      "post": [
+        "result.type = session",
+        "result.stateful = true"
+      ],
+      "fx": [
+        "Uses server-side session storage",
+        "Requires cookie or session ID"
+      ]
+    },
+    {
+      "n": "Token-Based (JWT)",
+      "sig": "token_auth() → AuthStrategy",
+      "def": "$token\\_auth() → AuthStrategy = stateless; token contains all auth info$",
+      "pre": [
+        "jwt\\_secret\\_configured()"
+      ],
+      "post": [
+        "result.type = token",
+        "result.stateless = true"
+      ],
+      "fx": [
+        "Uses stateless JWT tokens",
+        "No server-side session storage needed"
+      ]
+    },
+    {
+      "n": "OAuth 2.0",
+      "sig": "oauth2(provider: OAuthProvider) → Token",
+      "def": "$oauth2(provider: OAuthProvider) → Token = redirect\\_to\\_provider(provider); receive\\_auth\\_code(); exchange\\_code\\_for\\_token()$",
+      "pre": [
+        "provider \\in supported\\_providers",
+        "client\\_credentials\\_configured(provider)"
+      ],
+      "post": [
+        "result.access\\_token \\neq null",
+        "result.expires\\_in > 0"
+      ],
+      "fx": [
+        "Delegates authentication to OAuth provider",
+        "Returns access and refresh tokens"
+      ]
+    },
+    {
+      "n": "Multi-Factor (MFA)",
+      "sig": "verify_mfa(user: User, code: String) → 𝔹",
+      "def": "$verify\\_mfa(user: User, code: String) → 𝔹 = totp := generate\\_totp(user.secret, now()); code = totp$",
+      "pre": [
+        "user.mfa\\_enabled = true",
+        "|code| = expected\\_code\\_length"
+      ],
+      "post": [
+        "result = true \\iff valid\\_totp(user.secret, code, now())"
+      ],
+      "fx": [
+        "Validates time-based one-time password",
+        "Provides additional security layer"
+      ]
+    },
+    {
+      "n": "Create Batch",
+      "sig": "create(items: Sequence⟨Item⟩, batch_size: ℕ) → Batch",
+      "def": "$create(items: Sequence⟨Item⟩, batch\\_size: ℕ) → Batch = chunks := partition(items, batch\\_size); batch := Batch(id=generate\\_id(), chunks, status=Pending); return batch$",
+      "pre": [
+        "|items| > 0 ∧ batch\\_size > 0"
+      ],
+      "post": [
+        "batch.status = Pending"
+      ],
+      "fx": [
+        "Partitions items into chunks",
+        "Creates batch"
+      ]
+    },
+    {
+      "n": "Process Batch",
+      "sig": "process(batch: Batch, processor: Processor) → BatchResult",
+      "def": "$process(batch: Batch, processor: Processor) → BatchResult = batch.status := Processing; results := ∅; for chunk in batch.chunks: try: result := processor(chunk); results := results ∪ {result}; update\\_progress() catch error: handle\\_error(error); batch.status := Complete; return BatchResult(results)$",
+      "pre": [
+        "batch.status = Pending"
+      ],
+      "post": [
+        "batch.status = Complete ∨ batch.status = Failed"
+      ],
+      "fx": [
+        "Processes each chunk",
+        "Tracks progress",
+        "Handles errors"
+      ]
+    },
+    {
+      "n": "Retry Failed",
+      "sig": "retry(batch: Batch) → Effect",
+      "def": "$retry(batch: Batch) → Effect = failed\\_chunks := {c : c ∈ batch.chunks, c.status = Failed}; batch.chunks := failed\\_chunks; batch.status := Pending; process(batch)$",
+      "pre": [
+        "∃c ∈ batch.chunks: c.status = Failed"
+      ],
+      "post": [
+        "retry\\_attempted"
+      ],
+      "fx": [
+        "Identifies failed chunks",
+        "Retries processing"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "User login systems",
+      "d": "Username/password authentication flows"
+    },
+    {
+      "n": "API authentication",
+      "d": "Token-based access for API clients"
+    },
+    {
+      "n": "SSO",
+      "d": "Single Sign-On"
+    },
+    {
+      "n": "Multi-factor authentication",
+      "d": "Second-factor verification for logins"
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+  "id": "P92",
+  "v": "1.1",
+  "name": "Contextual Undo/Rollback",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Undo",
+    "Rollback"
+  ],
+  "updated": "2025-11-23",
+  "def": "$U_{ctx} = (H_{actions}, Snap_{state}, Track_{dep}, Prev_{undo}) : Action \\to State_{previous}$",
+  "desc": "Carousel pattern displays rotating content items with navigation controls.",
+  "comps": [
+    {
+      "n": "H_{actions}",
+      "t": "Component",
+      "d": "Component implementing Contextual Undo/Rollback functionality",
+      "nota": "H_{actions}"
+    },
+    {
+      "n": "Snap_{state}",
+      "t": "Component",
+      "d": "State management component maintaining Contextual Undo/Rollback state",
+      "nota": "Snap_{state}"
+    },
+    {
+      "n": "Track_{dep}",
+      "t": "Component",
+      "d": "Component implementing Contextual Undo/Rollback functionality",
+      "nota": "Track_{dep}"
+    },
+    {
+      "n": "Prev_{undo}",
+      "t": "Component",
+      "d": "Component implementing Contextual Undo/Rollback functionality",
+      "nota": "Prev_{undo}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Carousel",
+      "def": "(items: Sequence⟨Item⟩, current: ℕ, config: Config)",
+      "d": "Carousel component"
+    },
+    {
+      "n": "Config",
+      "def": "(autoplay: 𝔹, interval: Time, loop: 𝔹)",
+      "d": "Carousel configuration"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P92.1",
+      "n": "Smooth Transitions",
+      "spec": "transitions smooth\\_and\\_animated",
+      "d": "Transitions are smooth and animated",
+      "inv": [
+        "fluid\\_animation"
+      ]
+    },
+    {
+      "id": "P.P92.2",
+      "n": "Navigation Controls",
+      "spec": "provides\\_prev/next\\_controls",
+      "d": "Provides prev/next controls",
+      "inv": [
+        "accessible\\_controls"
+      ]
+    },
+    {
+      "id": "P.P92.3",
+      "n": "Indicator Dots",
+      "spec": "shows\\_position\\_indicators",
+      "d": "Shows position indicator dots",
+      "inv": [
+        "progress\\_indication"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Carousel",
+      "sig": "create(items: Sequence⟨Item⟩, config: Config) → Carousel",
+      "def": "$create(items: Sequence⟨Item⟩, config: Config) → Carousel = carousel := Carousel(items, current=0, config); render(carousel); if config.autoplay: start\\_autoplay(carousel); return carousel$",
+      "pre": [
+        "|items| > 0"
+      ],
+      "post": [
+        "carousel.current = 0"
+      ],
+      "fx": [
+        "Creates carousel",
+        "Renders",
+        "Starts autoplay if configured"
+      ]
+    },
+    {
+      "n": "Next Item",
+      "sig": "next(carousel: Carousel) → Effect",
+      "def": "$next(carousel: Carousel) → Effect = old\\_index := carousel.current; carousel.current := (carousel.current + 1) mod |carousel.items|; animate\\_transition(old\\_index, carousel.current)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "0 ≤ carousel.current < |carousel.items|"
+      ],
+      "fx": [
+        "Advances to next (wraps around)",
+        "Animates transition"
+      ]
+    },
+    {
+      "n": "Go To Item",
+      "sig": "goto(carousel: Carousel, index: ℕ) → Effect",
+      "def": "$goto(carousel: Carousel, index: ℕ) → Effect = if 0 ≤ index < |carousel.items|: old\\_index := carousel.current; carousel.current := index; animate\\_transition(old\\_index, index)$",
+      "pre": [
+        "0 ≤ index < |carousel.items|"
+      ],
+      "post": [
+        "carousel.current = index"
+      ],
+      "fx": [
+        "Jumps to specific item",
+        "Animates"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Undo implementation",
+      "d": "Applied in ai, undo systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

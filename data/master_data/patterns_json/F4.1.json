@@ -1,0 +1,226 @@
+{
+  "id": "F4.1",
+  "v": "1.1",
+  "name": "Presentation Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R = (state, render, diff, patch)$",
+  "desc": "Presentation flows prepare and format data for display to users.",
+  "comps": [
+    {
+      "n": "state",
+      "t": "State",
+      "d": "current application state",
+      "nota": "state"
+    },
+    {
+      "n": "render",
+      "t": "State → VirtualDOM",
+      "d": "creates virtual representation",
+      "nota": "render"
+    },
+    {
+      "n": "diff",
+      "t": "VirtualDOM × VirtualDOM → Patch",
+      "d": "computes changes",
+      "nota": "diff"
+    },
+    {
+      "n": "patch",
+      "t": "Patch → Effect",
+      "d": "applies changes to actual DOM",
+      "nota": "patch"
+    }
+  ],
+  "types": [
+    {
+      "n": "Template",
+      "def": "Presentation structure",
+      "d": "Template defining presentation structure"
+    },
+    {
+      "n": "Presentation",
+      "def": "Formatted output",
+      "d": "Data formatted for display"
+    },
+    {
+      "n": "Locale",
+      "def": "Language and region settings",
+      "d": "Localization settings"
+    },
+    {
+      "n": "State",
+      "def": "Application data that drives rendering",
+      "d": "Current UI state used for rendering"
+    },
+    {
+      "n": "VirtualDOM",
+      "def": "Tree representation of UI",
+      "d": "Virtual UI tree used for diffing"
+    },
+    {
+      "n": "Patch",
+      "def": "Set⟨Operation⟩ where Operation := Insert | Update | Delete | Move",
+      "d": "Minimal operations needed to update the UI"
+    },
+    {
+      "n": "RealDOM",
+      "def": "Actual browser DOM",
+      "d": "Live rendered DOM in the client"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F4.1.1",
+      "n": "Separation of Concerns",
+      "spec": "data ⊥ presentation",
+      "d": "Data and presentation logic are separated",
+      "inv": [
+        "decoupled\\_layers"
+      ]
+    },
+    {
+      "id": "P.F4.1.2",
+      "n": "Localization Support",
+      "spec": "∀locale: presentable(data, locale)",
+      "d": "Content can be presented in any supported locale",
+      "inv": [
+        "locale\\_independent"
+      ]
+    },
+    {
+      "id": "P.F4.1.3",
+      "n": "Responsive Formatting",
+      "spec": "adapts\\_to\\_viewport(presentation)",
+      "d": "Presentation adapts to different display sizes",
+      "inv": [
+        "responsive\\_layout"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update",
+      "sig": "update(new_state: State) → Effect",
+      "def": "$update(new_state: State) → Effect = old_vdom := render(current_state) new_vdom := render(new_state) patch := diff(old_vdom, new_vdom) apply_patch(patch, real_dom) current_state := new_state$",
+      "pre": [
+        "new\\_state \\neq null",
+        "render\\_function\\_defined()"
+      ],
+      "post": [
+        "current\\_state' = new\\_state",
+        "dom\\_reflects(new\\_state)"
+      ],
+      "fx": [
+        "Updates virtual DOM",
+        "Patches real DOM efficiently"
+      ]
+    },
+    {
+      "n": "Diff",
+      "sig": "diff(old: VirtualDOM, new: VirtualDOM) → Patch",
+      "def": "$diff(old: VirtualDOM, new: VirtualDOM) → Patch = if old = new: return [] if different_type(old, new): return [Replace(old, new)] if different_props(old, new): ops := [UpdateProps(old, new)] else: ops := [] ops := ops + diff_children(old.children, new.children) return ops$",
+      "pre": [
+        "old \\neq null \\wedge new \\neq null"
+      ],
+      "post": [
+        "minimal(result)",
+        "apply(result, old) = new"
+      ],
+      "fx": [
+        "Computes minimal DOM changes",
+        "Optimizes rendering performance"
+      ]
+    },
+    {
+      "n": "Apply Patch",
+      "sig": "apply_patch(patch: Patch, dom: RealDOM) → Effect",
+      "def": "$apply_patch(patch: Patch, dom: RealDOM) → Effect = for op in patch: case op of Insert(node, parent, index) → parent.insert_child(node, index) Update(node, props) → node.update_properties(props) Delete(node) → node.remove() Move(node, new_parent, new_index) → move(node, new_parent, new_index)$",
+      "pre": [
+        "patch \\neq null \\wedge dom \\neq null",
+        "valid\\_patch(patch, dom)"
+      ],
+      "post": [
+        "dom' = apply\\_operations(patch, dom)",
+        "dom\\_updated = true"
+      ],
+      "fx": [
+        "Applies changes to real DOM",
+        "Updates browser display"
+      ]
+    },
+    {
+      "n": "Format",
+      "sig": "format(data: Data, template: Template) → Presentation",
+      "def": "$format(data: Data, template: Template) → Presentation = bind\\_data(template, data); apply\\_formatting(); render()$",
+      "pre": [
+        "compatible(data, template)"
+      ],
+      "post": [
+        "renderable(result)"
+      ],
+      "fx": [
+        "Binds data to template",
+        "Applies formatting rules",
+        "Produces presentation"
+      ]
+    },
+    {
+      "n": "Localize",
+      "sig": "localize(content: Content, locale: Locale) → Content",
+      "def": "$localize(content: Content, locale: Locale) → Content = translate(content, locale); format\\_numbers(locale); format\\_dates(locale)$",
+      "pre": [
+        "supported\\_locale(locale)"
+      ],
+      "post": [
+        "locale\\_appropriate(result)"
+      ],
+      "fx": [
+        "Translates text",
+        "Formats numbers and dates for locale"
+      ]
+    },
+    {
+      "n": "Paginate",
+      "sig": "paginate(items: Sequence⟨Item⟩, page_size: ℕ) → Sequence⟨Page⟩",
+      "def": "$paginate(items: Sequence⟨Item⟩, page\\_size: ℕ) → Sequence⟨Page⟩ = chunk(items, page\\_size)$",
+      "pre": [
+        "page\\_size > 0"
+      ],
+      "post": [
+        "∀page ∈ result: |page| ≤ page\\_size"
+      ],
+      "fx": [
+        "Splits items into pages"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "React/Vue/Svelte rendering",
+      "d": "Virtual DOM rendering pipelines"
+    },
+    {
+      "n": "Virtual DOM frameworks",
+      "d": "Diff-and-patch rendering engines"
+    },
+    {
+      "n": "Incremental rendering",
+      "d": "Rendering partial updates to avoid full redraws"
+    },
+    {
+      "n": "Reactive UI libraries",
+      "d": "State-driven view updates"
+    },
+    {
+      "n": "Real-time dashboards",
+      "d": "Frequent UI updates from live data"
+    }
+  ]
+}

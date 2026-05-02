@@ -1,0 +1,174 @@
+{
+  "id": "P47",
+  "v": "1.1",
+  "name": "Inline Editing Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (M, \\sigma_{47}, \\tau_{47}, \\phi_{47}, \\psi_{47})$",
+  "desc": "Inline editing pattern enables direct content editing without separate forms.",
+  "comps": [
+    {
+      "n": "\\tau_{47}",
+      "t": "Event → M",
+      "d": "**trigger function**",
+      "nota": "\\tau_{47}"
+    },
+    {
+      "n": "\\phi_{47}",
+      "t": "Value \\times Value → Effect",
+      "d": "**commit handler**",
+      "nota": "\\phi_{47}"
+    },
+    {
+      "n": "\\psi_{47}",
+      "t": "() → Effect",
+      "d": "**cancel handler**",
+      "nota": "\\psi_{47}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Editor",
+      "def": "(element: Element, value: String, original: String)",
+      "d": "Inline editor state"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P47.1",
+      "n": "Direct Manipulation",
+      "spec": "edit\\_in\\_place",
+      "d": "Editing happens in place",
+      "inv": [
+        "in\\_context\\_editing"
+      ]
+    },
+    {
+      "id": "P.P47.2",
+      "n": "Instant Feedback",
+      "spec": "validation\\_feedback immediate",
+      "d": "Validation feedback is immediate",
+      "inv": [
+        "real\\_time\\_validation"
+      ]
+    },
+    {
+      "id": "P.P47.3",
+      "n": "Keyboard Support",
+      "spec": "enter\\_saves ∧ escape\\_cancels",
+      "d": "Keyboard shortcuts for save/cancel",
+      "inv": [
+        "keyboard\\_friendly"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Start Edit",
+      "sig": "start(element: Element) → Editor",
+      "def": "$start(element: Element) → Editor = if editable(element): original := element.content; editor := create\\_editor(element); editor.value := original; focus(editor); return editor$",
+      "pre": [
+        "editable(element)"
+      ],
+      "post": [
+        "editing(element)"
+      ],
+      "fx": [
+        "Saves original value",
+        "Creates editor",
+        "Sets value",
+        "Focuses editor"
+      ]
+    },
+    {
+      "n": "Save Edit",
+      "sig": "save(editor: Editor) → Effect",
+      "def": "$save(editor: Editor) → Effect = new\\_value := editor.value; validate(new\\_value); element.content := new\\_value; destroy(editor); notify\\_change(element)$",
+      "pre": [
+        "valid(editor.value)"
+      ],
+      "post": [
+        "element.content = editor.value ∧ ¬editing(element)"
+      ],
+      "fx": [
+        "Validates value",
+        "Saves to element",
+        "Destroys editor",
+        "Notifies change"
+      ]
+    },
+    {
+      "n": "Cancel Edit",
+      "sig": "cancel(editor: Editor) → Effect",
+      "def": "$cancel(editor: Editor) → Effect = element.content := editor.original; destroy(editor)$",
+      "pre": [
+        "editor ≠ null"
+      ],
+      "post": [
+        "element.content = original ∧ ¬editing(element)"
+      ],
+      "fx": [
+        "Restores original",
+        "Destroys editor"
+      ]
+    },
+    {
+      "n": "Enter Edit Mode",
+      "sig": "activate() → Effect",
+      "def": "$activate() → Effect = value_original := value σ₄₇ := edit render_input() focus(input) select_all(input)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Commit Changes",
+      "sig": "commit() → Effect",
+      "def": "$commit() → Effect = v_new := get_input_value() if valid(v_new): φ₄₇(value_original, v_new) value := v_new σ₄₇ := view$",
+      "pre": [
+        "changes_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing changes",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Click paragraph to edit",
+      "d": "paragraph becomes editable on click"
+    },
+    {
+      "n": "Spreadsheet cell editing",
+      "d": "inline cell edits in a grid"
+    },
+    {
+      "n": "Filename rename",
+      "d": "rename a file in place"
+    },
+    {
+      "n": "Tag editing",
+      "d": "edit tag labels inline"
+    }
+  ]
+}

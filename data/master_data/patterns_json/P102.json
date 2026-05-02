@@ -1,0 +1,219 @@
+{
+  "id": "P102",
+  "v": "1.1",
+  "name": "Confidence-Based Highlighting",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$H_{conf} = (Text, Conf_{scores}, Colors, Thresholds) : (\\text{Content}, \\text{Confidence}) \\to \\text{Highlighted}$",
+  "desc": "Confidence-based highlighting visually indicates reliability of information through visual cues.",
+  "comps": [
+    {
+      "n": "Text",
+      "t": "Seq⟨TextSpan⟩",
+      "d": "sequence of text segments",
+      "nota": "Text"
+    },
+    {
+      "n": "Conf_{scores}",
+      "t": "TextSpan → [0,1]",
+      "d": "confidence mapping for each span",
+      "nota": "Conf_{scores}"
+    },
+    {
+      "n": "Colors",
+      "t": "[0,1] → RGB",
+      "d": "color scale from low to high confidence",
+      "nota": "Colors"
+    },
+    {
+      "n": "Thresholds",
+      "t": "Seq⟨ℝ⟩",
+      "d": "confidence thresholds for coloring tiers",
+      "nota": "Thresholds"
+    }
+  ],
+  "types": [
+    {
+      "n": "Confidence",
+      "def": "ℝ ∈ [0,1]",
+      "d": "Normalized confidence score"
+    },
+    {
+      "n": "Style",
+      "def": "(color: Color, opacity: ℝ, annotation: String)",
+      "d": "Visual styling for confidence"
+    },
+    {
+      "n": "StyledContent",
+      "def": "Content with visual confidence indicators",
+      "d": "Content with confidence highlighting"
+    },
+    {
+      "n": "TextSpan",
+      "def": "$\\text{TextSpan} = (\\text{start}, \\text{end}, \\text{content})$ where $\\text{start}, \\text{end} \\in \\mathbb{N}$",
+      "d": "Text segment with offsets and content"
+    },
+    {
+      "n": "RGB",
+      "def": "$\\text{RGB} = [0, 255]^3 \\subset \\mathbb{N}^3$ (red, green, blue color components)",
+      "d": "RGB color triple for highlighting"
+    },
+    {
+      "n": "ConfidenceLevel",
+      "def": "$\\text{Level} = \\{\\text{high}, \\text{medium}, \\text{low}, \\text{uncertain}\\}$",
+      "d": "Discrete confidence tier labels"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P102.1",
+      "n": "Monotonicity",
+      "spec": "quality(s1) > quality(s2) ⇒ confidence(s1) > confidence(s2)",
+      "d": "Better sources yield higher confidence",
+      "inv": [
+        "monotonic\\_scoring"
+      ]
+    },
+    {
+      "id": "P.P102.2",
+      "n": "Visual Distinction",
+      "spec": "∀c1,c2: |c1-c2| > threshold ⇒ visually\\_distinct(h(c1), h(c2))",
+      "d": "Different confidence levels are visually distinct",
+      "inv": [
+        "perceptible\\_differences"
+      ]
+    },
+    {
+      "id": "P.P102.3",
+      "n": "Accessibility",
+      "spec": "∀user: perceivable(highlighting, user)",
+      "d": "Highlighting is accessible to all users",
+      "inv": [
+        "accessible\\_design"
+      ]
+    },
+    {
+      "id": "P.P102.4",
+      "n": "Visual Distinguishability",
+      "spec": "$\\forall t_i, t_{i+1} \\in Thresholds : \\Delta E(Colors(t_i), Colors(t_{i+1})) > \\tau$ (perceptually distinct)",
+      "d": "Adjacent confidence tiers are perceptually distinct",
+      "inv": [
+        "distinct_color_steps"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Compute Confidence",
+      "sig": "compute(content: Content, sources: Set⟨Source⟩) → Confidence",
+      "def": "$compute(content: Content, sources: Set⟨Source⟩) → Confidence = source\\_quality := assess\\_sources(sources); agreement := measure\\_agreement(sources); freshness := check\\_freshness(sources); combine\\_scores(source\\_quality, agreement, freshness)$",
+      "pre": [
+        "|sources| > 0"
+      ],
+      "post": [
+        "0 ≤ result ≤ 1"
+      ],
+      "fx": [
+        "Assesses source quality",
+        "Measures agreement",
+        "Combines metrics"
+      ]
+    },
+    {
+      "n": "Apply Highlighting",
+      "sig": "highlight(content: Content, confidence: Confidence) → StyledContent",
+      "def": "$highlight(content: Content, confidence: Confidence) → StyledContent = style := map\\_confidence\\_to\\_style(confidence); apply\\_visual\\_cue(content, style)$",
+      "pre": [
+        "0 ≤ confidence ≤ 1"
+      ],
+      "post": [
+        "visually\\_distinct(result)"
+      ],
+      "fx": [
+        "Maps confidence to visual style",
+        "Applies highlighting"
+      ]
+    },
+    {
+      "n": "Explain Confidence",
+      "sig": "explain(confidence: Confidence) → Explanation",
+      "def": "$explain(confidence: Confidence) → Explanation = factors := decompose\\_confidence(confidence); describe\\_each\\_factor(); provide\\_improvement\\_suggestions()$",
+      "pre": [
+        "confidence ≠ null"
+      ],
+      "post": [
+        "actionable(result)"
+      ],
+      "fx": [
+        "Breaks down confidence score",
+        "Explains factors",
+        "Suggests improvements"
+      ]
+    },
+    {
+      "n": "Categorize Confidence",
+      "sig": "categorize: ℝ → ConfidenceLevel",
+      "def": "$\\text{categorize}(c) = \\begin{cases} \\text{high} & \\text{if } c \\geq t_3 \\\\ \\text{medium} & \\text{if } t_2 \\leq c < t_3 \\\\ \\text{low} & \\text{if } t_1 \\leq c < t_2 \\\\ \\text{uncertain} & \\text{if } c < t_1 \\end{cases}$where$t_1, t_2, t_3 \\in Thresholds$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Interpolate Color",
+      "sig": "interpolate: [0,1] → RGB",
+      "def": "$\\text{interpolate}(c) = (1-c) \\cdot \\text{color}_{low} + c \\cdot \\text{color}_{high}$(linear gradient)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P80",
+      "P89",
+      "P96"
+    ]
+  },
+  "manif": [
+    {
+      "n": "AI fact-checking highlights",
+      "d": "color-coded confidence in generated claims"
+    },
+    {
+      "n": "Spell-checker confidence",
+      "d": "red/yellow/green underlines for spelling suggestions"
+    },
+    {
+      "n": "LLM output confidence visualization",
+      "d": "token-level confidence heatmaps"
+    },
+    {
+      "n": "Citation confidence display",
+      "d": "highlight strength based on source reliability"
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "id": "P113",
+  "v": "1.1",
+  "name": "Event Replay Control",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{replay} = (History, Selector, Playback, State_{restore}) : \\text{Events}_{past} \\to \\text{Replay}$",
+  "desc": "Event replay control enables stepping through, rewinding, and replaying event sequences.",
+  "comps": [
+    {
+      "n": "History",
+      "t": "Seq⟨Event⟩",
+      "d": "recorded sequence of past events",
+      "nota": "History"
+    },
+    {
+      "n": "Selector",
+      "t": "(Event → Boolean) × TimeRange",
+      "d": "predicate and time range for replay selection",
+      "nota": "Selector"
+    },
+    {
+      "n": "Playback",
+      "t": "PlaybackControl",
+      "d": "controls for playback speed, pause, step",
+      "nota": "Playback"
+    },
+    {
+      "n": "State_{restore}",
+      "t": "Seq⟨Event⟩ → State",
+      "d": "reconstructs system state from event sequence",
+      "nota": "State_{restore}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Direction",
+      "def": "Forward | Backward",
+      "d": "Step direction"
+    },
+    {
+      "n": "Event",
+      "def": "(type: EventType, data: Data, timestamp: Time, delay: Time)",
+      "d": "Event with timing information"
+    },
+    {
+      "n": "PlaybackControl",
+      "def": "$\\text{PlaybackControl} = (\\text{speed}, \\text{position}, \\text{mode})$ where $\\text{speed} \\in \\mathbb{R}_{> 0}$",
+      "d": "Playback state including speed and position"
+    },
+    {
+      "n": "PlaybackMode",
+      "def": "$\\text{Mode} = \\{\\text{play}, \\text{pause}, \\text{step-forward}, \\text{step-backward}, \\text{reverse}\\}$",
+      "d": "Playback modes for direction and stepping"
+    },
+    {
+      "n": "TimeRange",
+      "def": "$\\text{TimeRange} = (t_{start}, t_{end})$ where $t_{start}, t_{end} \\in \\text{Time}$",
+      "d": "Time interval to include in replay"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P113.1",
+      "n": "State Consistency",
+      "spec": "∀t: state(t) = replay\\_from\\_start\\_to(t)",
+      "d": "State at any time matches replay from start",
+      "inv": [
+        "consistent\\_replay"
+      ]
+    },
+    {
+      "id": "P.P113.2",
+      "n": "Reversibility",
+      "spec": "step(forward); step(backward) restores state",
+      "d": "Backward steps reverse forward steps",
+      "inv": [
+        "reversible\\_stepping"
+      ]
+    },
+    {
+      "id": "P.P113.3",
+      "n": "Speed Control",
+      "spec": "∀speed > 0: replay\\_supported(speed)",
+      "d": "Replay supports arbitrary positive speeds",
+      "inv": [
+        "flexible\\_speed"
+      ]
+    },
+    {
+      "id": "P.P113.4",
+      "n": "Selective Replay",
+      "spec": "$\\text{replay}(Selector) = \\{e \\in History \\mid Selector.predicate(e) \\land e.timestamp \\in Selector.range\\}$",
+      "d": "Replay includes only events in the selected range",
+      "inv": [
+        "selective_replay"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Replay",
+      "sig": "replay(events: Sequence⟨Event⟩, speed: ℝ) → Effect",
+      "def": "$replay(events: Sequence⟨Event⟩, speed: ℝ) → Effect = for event in events: wait(event.delay / speed); dispatch(event); update\\_visualization(event)$",
+      "pre": [
+        "speed > 0"
+      ],
+      "post": [
+        "all\\_events\\_dispatched(events)"
+      ],
+      "fx": [
+        "Replays events at specified speed",
+        "Updates visualization",
+        "Maintains timing ratios"
+      ]
+    },
+    {
+      "n": "Step",
+      "sig": "step(direction: Direction) → Effect",
+      "def": "$step(direction: Direction) → Effect = case direction of Forward → current := current + 1; dispatch(events[current]) Backward → current := current - 1; restore\\_state(events[current])$",
+      "pre": [
+        "valid\\_position(current, direction)"
+      ],
+      "post": [
+        "moved(current, direction)"
+      ],
+      "fx": [
+        "Moves one event in specified direction",
+        "Updates state"
+      ]
+    },
+    {
+      "n": "Seek",
+      "sig": "seek(timestamp: Time) → Effect",
+      "def": "$seek(timestamp: Time) → Effect = target := find\\_event\\_at(timestamp); restore\\_state\\_to(target); update\\_position(target)$",
+      "pre": [
+        "timestamp ∈ event\\_timeline"
+      ],
+      "post": [
+        "current\\_time = timestamp"
+      ],
+      "fx": [
+        "Jumps to specified time",
+        "Restores state"
+      ]
+    },
+    {
+      "n": "Replay Events",
+      "sig": "replay: Seq⟨Event⟩ × PlaybackControl → State",
+      "def": "$\\text{replay}(H, ctrl) = \\text{foldl}(\\text{apply}, State_0, H_{selected})$where$H_{selected}$respects$ctrl.mode$and$ctrl.speed$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Step Forward",
+      "sig": "stepForward: State × Event → State",
+      "def": "$\\text{stepForward}(s, e) = s'$where$s' = \\text{applyEvent}(s, e)$$Playback.position \\leftarrow Playback.position + 1$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Time Travel to Point",
+      "sig": "travelTo: Time → State",
+      "def": "$\\text{travelTo}(t) = State_{restore}(\\{e \\in History \\mid e.timestamp \\leq t\\})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22"
+    ],
+    "use": [
+      "P30"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Redux DevTools time travel",
+      "d": "replay Redux actions with state restoration"
+    },
+    {
+      "n": "Event sourcing replay",
+      "d": "rebuild system state from event log"
+    },
+    {
+      "n": "Video game replay systems",
+      "d": "playback recorded game inputs"
+    },
+    {
+      "n": "Debugging time-travel (rr, Mozilla)",
+      "d": "deterministic replay of program execution"
+    }
+  ]
+}

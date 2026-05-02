@@ -1,0 +1,143 @@
+{
+  "id": "P118",
+  "v": "1.1",
+  "name": "Domain Context Switcher",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S_{domain} = (Domains, Context_{current}, Switch, Preserve_{state}) : Domain_i \\to Domain_j$",
+  "desc": "Domain context switcher enables transitioning between different operational domains seamlessly.",
+  "comps": [
+    {
+      "n": "Domains",
+      "t": "Component",
+      "d": "Component implementing Domain Context Switcher functionality",
+      "nota": "Domains"
+    },
+    {
+      "n": "Context_{current}",
+      "t": "Component",
+      "d": "Context container holding current application state for Domain Context Switcher",
+      "nota": "Context_{current}"
+    },
+    {
+      "n": "Switch",
+      "t": "Component",
+      "d": "Component implementing Domain Context Switcher functionality",
+      "nota": "Switch"
+    },
+    {
+      "n": "Preserve_{state}",
+      "t": "Component",
+      "d": "State management component maintaining Domain Context Switcher state",
+      "nota": "Preserve_{state}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Domain",
+      "def": "(id: String, name: String, config: DomainConfig)",
+      "d": "Operational domain with configuration"
+    },
+    {
+      "n": "DomainConfig",
+      "def": "Domain-specific settings and tools",
+      "d": "Configuration for domain"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P118.1",
+      "n": "State Preservation",
+      "spec": "switch(A,B); switch(B,A) ⇒ state(A) preserved",
+      "d": "Domain state is preserved across switches",
+      "inv": [
+        "persistent\\_state"
+      ]
+    },
+    {
+      "id": "P.P118.2",
+      "n": "Smooth Transition",
+      "spec": "transition\\_time < threshold",
+      "d": "Switches complete quickly",
+      "inv": [
+        "fast\\_switching"
+      ]
+    },
+    {
+      "id": "P.P118.3",
+      "n": "Context Clarity",
+      "spec": "∀t: clear\\_indicator(active\\_domain(t))",
+      "d": "Active domain is always clearly indicated",
+      "inv": [
+        "visible\\_context"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Switch Context",
+      "sig": "switch(from: Domain, to: Domain) → Effect",
+      "def": "$switch(from: Domain, to: Domain) → Effect = save\\_state(from); load\\_state(to); activate\\_tools(to); update\\_ui(to)$",
+      "pre": [
+        "valid\\_domain(from) ∧ valid\\_domain(to)"
+      ],
+      "post": [
+        "active\\_domain = to"
+      ],
+      "fx": [
+        "Saves current domain state",
+        "Loads target domain state",
+        "Activates domain tools"
+      ]
+    },
+    {
+      "n": "Get Available Domains",
+      "sig": "domains() → Set⟨Domain⟩",
+      "def": "$domains() → Set⟨Domain⟩ = {d : registered(d) ∧ accessible(d, current\\_user)}$",
+      "pre": [
+        "authenticated(current\\_user)"
+      ],
+      "post": [
+        "∀d ∈ result: can\\_switch\\_to(d)"
+      ],
+      "fx": [
+        "Returns accessible domains for user"
+      ]
+    },
+    {
+      "n": "Quick Switch",
+      "sig": "quick_switch(shortcut: Shortcut) → Effect",
+      "def": "$quick\\_switch(shortcut: Shortcut) → Effect = domain := resolve(shortcut); switch(current\\_domain, domain)$",
+      "pre": [
+        "bound(shortcut)"
+      ],
+      "post": [
+        "switched\\_to(resolve(shortcut))"
+      ],
+      "fx": [
+        "Resolves shortcut to domain",
+        "Performs quick switch"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "id": "P60",
+  "v": "1.1",
+  "name": "Input Sanitization Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (validators, sanitizers, encoders, rules)$",
+  "desc": "Retry policy pattern handles transient failures with configurable retry strategies.",
+  "comps": [
+    {
+      "n": "validators",
+      "t": "Map⟨InputType, Validator⟩",
+      "d": "check input validity",
+      "nota": "validators"
+    },
+    {
+      "n": "sanitizers",
+      "t": "Map⟨InputType, Sanitizer⟩",
+      "d": "clean input",
+      "nota": "sanitizers"
+    },
+    {
+      "n": "encoders",
+      "t": "Map⟨Context, Encoder⟩",
+      "d": "encode for safe output",
+      "nota": "encoders"
+    },
+    {
+      "n": "rules",
+      "t": "Set⟨SecurityRule⟩",
+      "d": "define security constraints",
+      "nota": "rules"
+    }
+  ],
+  "types": [
+    {
+      "n": "RetryPolicy",
+      "def": "(max_attempts: ℕ, backoff: BackoffStrategy)",
+      "d": "Retry configuration"
+    },
+    {
+      "n": "BackoffStrategy",
+      "def": "Exponential(base: Time) | Linear(interval: Time) | Fixed(delay: Time)",
+      "d": "Backoff calculation strategy"
+    },
+    {
+      "n": "InputType",
+      "def": "Text | HTML | SQL | URL | Email | ...",
+      "d": "Input categories with different risk profiles"
+    },
+    {
+      "n": "Validator",
+      "def": "Input → ValidationResult",
+      "d": "Validates input against rules"
+    },
+    {
+      "n": "Sanitizer",
+      "def": "Input → SanitizedInput",
+      "d": "Removes or escapes unsafe content"
+    },
+    {
+      "n": "Encoder",
+      "def": "Input → EncodedOutput",
+      "d": "Encodes output for a specific context"
+    },
+    {
+      "n": "SecurityRule",
+      "def": "(pattern: Regex, action: Block | Sanitize | Warn)",
+      "d": "Rule describing how to handle risky input"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P60.1",
+      "n": "Bounded Attempts",
+      "spec": "attempts ≤ max\\_attempts",
+      "d": "Retry attempts are bounded",
+      "inv": [
+        "finite\\_retries"
+      ]
+    },
+    {
+      "id": "P.P60.2",
+      "n": "Exponential Backoff",
+      "spec": "wait\\_time grows\\_exponentially",
+      "d": "Backoff time increases exponentially",
+      "inv": [
+        "increasing\\_backoff"
+      ]
+    },
+    {
+      "id": "P.P60.3",
+      "n": "Error Classification",
+      "spec": "only\\_transient\\_errors retried",
+      "d": "Only transient errors retried",
+      "inv": [
+        "smart\\_retry"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Validate Input",
+      "sig": "validate(input: Input, schema: Schema) → Valid | Invalid",
+      "def": "$validate(input: Input, schema: Schema) → Valid | Invalid = check\\_type(input, schema.type); check\\_constraints(input, schema.rules); if passed: Valid(input) else: Invalid(errors)$",
+      "pre": [
+        "input \\neq null \\wedge schema \\neq null",
+        "schema.rules \\neq \\emptyset"
+      ],
+      "post": [
+        "result = Valid \\implies conforms(input, schema)",
+        "result = Invalid \\implies \\neg conforms(input, schema)"
+      ],
+      "fx": [
+        "Checks input against validation schema",
+        "Returns errors for non-conforming input"
+      ]
+    },
+    {
+      "n": "Sanitize Input",
+      "sig": "sanitize(input: Input, rules: SanitizeRules) → Input",
+      "def": "$sanitize(input: Input, rules: SanitizeRules) → Input = escape\\_html(input); remove\\_dangerous\\_chars(input, rules); normalize(input)$",
+      "pre": [
+        "input \\neq null \\wedge rules \\neq null"
+      ],
+      "post": [
+        "safe(result) = true",
+        "preserves\\_meaning(input, result)"
+      ],
+      "fx": [
+        "Removes or escapes dangerous content",
+        "Preserves valid data"
+      ]
+    },
+    {
+      "n": "XSS (Cross-Site Scripting)",
+      "sig": "prevent_xss(input: String) → String",
+      "def": "$prevent\\_xss(input: String) → String = escape\\_html\\_entities(input); sanitize\\_attributes(); content\\_security\\_policy()$",
+      "pre": [
+        "input \\neq null"
+      ],
+      "post": [
+        "\\neg contains\\_script\\_tags(result)",
+        "html\\_entities\\_escaped(result)"
+      ],
+      "fx": [
+        "Escapes HTML special characters",
+        "Prevents script injection in web pages"
+      ]
+    },
+    {
+      "n": "SQL Injection",
+      "sig": "prevent_sql_injection(query: String, params: Map) → PreparedStatement",
+      "def": "$prevent\\_sql\\_injection(query: String, params: Map) → PreparedStatement = use\\_prepared\\_statement(query); bind\\_parameters(params); escape\\_literals()$",
+      "pre": [
+        "query \\neq null \\wedge params \\neq null",
+        "uses\\_placeholders(query)"
+      ],
+      "post": [
+        "result.parameterized = true",
+        "\\neg direct\\_string\\_concatenation(result)"
+      ],
+      "fx": [
+        "Uses parameterized queries",
+        "Separates SQL code from data"
+      ]
+    },
+    {
+      "n": "Path Traversal",
+      "sig": "prevent_path_traversal(path: String) → String | Error",
+      "def": "$prevent\\_path\\_traversal(path: String) → String | Error = normalized := normalize\\_path(path); if contains(normalized, \\\"..\\\"): return Error(\\\"Invalid path\\\"); validate\\_in\\_whitelist(normalized)$",
+      "pre": [
+        "path \\neq null"
+      ],
+      "post": [
+        "success(result) \\implies normalized(result) \\wedge within\\_allowed\\_dir(result)",
+        "error(result) \\implies contains\\_traversal\\_attempt(path)"
+      ],
+      "fx": [
+        "Normalizes and validates file paths",
+        "Blocks ../ and absolute path attacks"
+      ]
+    },
+    {
+      "n": "Command Injection",
+      "sig": "prevent_command_injection(cmd: String, args: Array⟨String⟩) → SafeCommand",
+      "def": "$prevent\\_command\\_injection(cmd: String, args: Array⟨String⟩) → SafeCommand = whitelist\\_command(cmd); escape\\_shell\\_args(args); use\\_parameterized\\_execution()$",
+      "pre": [
+        "cmd \\in whitelist\\_commands",
+        "\\forall a \\in args: safe\\_arg(a)"
+      ],
+      "post": [
+        "result.escaped\\_args = true",
+        "\\neg contains\\_shell\\_metacharacters(result.args)"
+      ],
+      "fx": [
+        "Validates command against whitelist",
+        "Escapes shell metacharacters in arguments"
+      ]
+    },
+    {
+      "n": "LDAP Injection",
+      "sig": "prevent_ldap_injection(filter: String) → String",
+      "def": "$prevent\\_ldap\\_injection(filter: String) → String = escape\\_ldap\\_special\\_chars(filter); validate\\_filter\\_syntax()$",
+      "pre": [
+        "filter \\neq null"
+      ],
+      "post": [
+        "ldap\\_special\\_chars\\_escaped(result)",
+        "valid\\_ldap\\_filter(result)"
+      ],
+      "fx": [
+        "Escapes LDAP special characters",
+        "Prevents filter manipulation"
+      ]
+    },
+    {
+      "n": "Encode Output",
+      "sig": "encode(input: Input, context: Context) → String",
+      "def": "$encode(input: Input, context: Context) → String = encoder := encoders[context] return encoder(input)$",
+      "pre": [
+        "input \\neq null \\wedge context \\in \\{HTML, JS, URL, CSS\\}"
+      ],
+      "post": [
+        "encoded\\_for\\_context(result, context)",
+        "safe\\_for\\_rendering(result, context)"
+      ],
+      "fx": [
+        "Context-aware output encoding",
+        "Prevents injection in target context"
+      ]
+    },
+    {
+      "n": "Execute With Retry",
+      "sig": "execute(operation: Operation, policy: RetryPolicy) → Result",
+      "def": "$execute(operation: Operation, policy: RetryPolicy) → Result = attempt := 0; while attempt < policy.max\\_attempts: try: result := operation(); return Success(result) catch error: if retryable(error) ∧ attempt < policy.max\\_attempts - 1: wait(policy.backoff(attempt)); attempt := attempt + 1 else: return Failure(error)$",
+      "pre": [
+        "operation ≠ null ∧ policy.max\\_attempts > 0"
+      ],
+      "post": [
+        "result = Success(v) ∨ result = Failure(e)"
+      ],
+      "fx": [
+        "Attempts operation",
+        "Waits between retries",
+        "Returns result or failure"
+      ]
+    },
+    {
+      "n": "Calculate Backoff",
+      "sig": "backoff(attempt: ℕ, strategy: BackoffStrategy) → Time",
+      "def": "$backoff(attempt: ℕ, strategy: BackoffStrategy) → Time = match strategy with | Exponential(base) → base × 2^{attempt} | Linear(interval) → interval × attempt | Fixed(delay) → delay$",
+      "pre": [
+        "attempt ≥ 0"
+      ],
+      "post": [
+        "result > 0"
+      ],
+      "fx": [
+        "Calculates wait time based on strategy"
+      ]
+    },
+    {
+      "n": "Is Retryable",
+      "sig": "retryable(error: Error) → 𝔹",
+      "def": "$retryable(error: Error) → 𝔹 = error.type ∈ {NetworkTimeout, ServiceUnavailable, RateLimited}$",
+      "pre": [
+        "error ≠ null"
+      ],
+      "post": [
+        "result ⇔ transient(error)"
+      ],
+      "fx": [
+        "Classifies error as retryable or not"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Form input validation",
+      "d": "Client/server validation and sanitization"
+    },
+    {
+      "n": "API input sanitization",
+      "d": "Validate and sanitize request payloads"
+    },
+    {
+      "n": "Template rendering",
+      "d": "auto-escaping"
+    },
+    {
+      "n": "Database query builders",
+      "d": "Parameterization and sanitization of queries"
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "id": "P37",
+  "v": "1.1",
+  "name": "Empty State Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (C, \\epsilon_{37}, P, A)$",
+  "desc": "Empty state pattern provides helpful UI when no data or content is available.",
+  "comps": [
+    {
+      "n": "\\epsilon_{37}",
+      "t": "C → \\{\\text{empty}, \\text{populated}\\}",
+      "d": "**emptiness predicate**",
+      "nota": "\\epsilon_{37}"
+    }
+  ],
+  "types": [
+    {
+      "n": "EmptyState",
+      "def": "(message: String, illustration: Image, actions: Set⟨Action⟩)",
+      "d": "Empty state display"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P37.1",
+      "n": "Contextual Guidance",
+      "spec": "∀context: helpful\\_message(context)",
+      "d": "Empty states provide helpful context",
+      "inv": [
+        "informative\\_messages"
+      ]
+    },
+    {
+      "id": "P.P37.2",
+      "n": "Actionable",
+      "spec": "provides\\_actionable\\_next\\_steps",
+      "d": "Empty states suggest actions",
+      "inv": [
+        "actionable\\_guidance"
+      ]
+    },
+    {
+      "id": "P.P37.3",
+      "n": "Visual Appeal",
+      "spec": "aesthetically\\_pleasing",
+      "d": "Empty states are visually appealing",
+      "inv": [
+        "pleasant\\_design"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show Empty State",
+      "sig": "show(context: Context) → Effect",
+      "def": "$show(context: Context) → Effect = message := generate\\_message(context); actions := suggest\\_actions(context); display\\_empty\\_state(message, actions)$",
+      "pre": [
+        "is\\_empty(context)"
+      ],
+      "post": [
+        "visible(empty\\_state)"
+      ],
+      "fx": [
+        "Generates contextual message",
+        "Suggests actions",
+        "Displays empty state"
+      ]
+    },
+    {
+      "n": "Hide Empty State",
+      "sig": "hide() → Effect",
+      "def": "$hide() → Effect = empty\\_state.visible := false$",
+      "pre": [
+        "empty\\_state.visible = true"
+      ],
+      "post": [
+        "¬visible(empty\\_state)"
+      ],
+      "fx": [
+        "Hides empty state"
+      ]
+    },
+    {
+      "n": "Trigger Action",
+      "sig": "trigger(action: Action) → Effect",
+      "def": "$trigger(action: Action) → Effect = execute(action); if successful: hide()$",
+      "pre": [
+        "action ∈ suggested\\_actions"
+      ],
+      "post": [
+        "executed(action)"
+      ],
+      "fx": [
+        "Executes suggested action",
+        "Hides if successful"
+      ]
+    },
+    {
+      "n": "Check Empty",
+      "sig": "check_empty(C: Container) → 𝔹",
+      "def": "$check_empty(C: Container) → 𝔹 = items(C) = ∅$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Render Placeholder",
+      "sig": "render(P: Placeholder) → Component",
+      "def": "$\\text{render}(\\text{data}) = \\text{visual}$where$\\text{visual} = \\text{apply\\_templates}(\\text{data})$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "\"No annotations yet\"",
+      "d": "empty annotation list with a prompt to add one"
+    },
+    {
+      "n": "Empty inbox",
+      "d": "inbox with no messages and suggested actions"
+    },
+    {
+      "n": "Empty canvas",
+      "d": "blank workspace inviting the first item"
+    },
+    {
+      "n": "No search results",
+      "d": "zero-result state with tips to refine search"
+    }
+  ]
+}

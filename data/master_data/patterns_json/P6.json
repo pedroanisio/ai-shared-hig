@@ -1,0 +1,215 @@
+{
+  "id": "P6",
+  "v": "1.1",
+  "name": "Palette/Toolbar",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$pal = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Contextual menus provide actions relevant to the current selection or location.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to palette/toolbar",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from palette/toolbar",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Menu",
+      "def": "(actions: Sequence⟨Action⟩, position: Point)",
+      "d": "Contextual menu"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Selection or context that determines available actions"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Chosen action or menu result"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Current UI state and selection metadata"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P6.1",
+      "n": "Context Awareness",
+      "spec": "actions relevant\\_to\\_context",
+      "d": "Shows only relevant actions",
+      "inv": [
+        "contextual\\_actions"
+      ]
+    },
+    {
+      "id": "P.P6.2",
+      "n": "Smart Positioning",
+      "spec": "menu visible\\_in\\_viewport",
+      "d": "Menu positioned within viewport",
+      "inv": [
+        "visible\\_placement"
+      ]
+    },
+    {
+      "id": "P.P6.3",
+      "n": "Keyboard Support",
+      "spec": "keyboard\\_navigable",
+      "d": "Supports keyboard navigation",
+      "inv": [
+        "keyboard\\_accessible"
+      ]
+    },
+    {
+      "id": "P.P6.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Actions are easy to discover and execute in context",
+      "inv": [
+        "discoverable\\_actions"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show Menu",
+      "sig": "show(position: Point, context: Context) → Menu",
+      "def": "$show(position: Point, context: Context) → Menu = actions := get\\_contextual\\_actions(context); menu := Menu(actions, position); adjust\\_position\\_for\\_viewport(menu); display(menu); return menu$",
+      "pre": [
+        "context ≠ null"
+      ],
+      "post": [
+        "visible(menu)"
+      ],
+      "fx": [
+        "Gets contextual actions",
+        "Creates menu",
+        "Adjusts position",
+        "Displays"
+      ]
+    },
+    {
+      "n": "Execute Action",
+      "sig": "execute(action: Action, context: Context) → Effect",
+      "def": "$execute(action: Action, context: Context) → Effect = if enabled(action, context): close\\_menu(); action.handler(context)$",
+      "pre": [
+        "enabled(action, context)"
+      ],
+      "post": [
+        "action\\_executed ∧ ¬visible(menu)"
+      ],
+      "fx": [
+        "Closes menu",
+        "Executes action handler"
+      ]
+    },
+    {
+      "n": "Close Menu",
+      "sig": "close() → Effect",
+      "def": "$close() → Effect = hide(menu); remove(menu)$",
+      "pre": [
+        "visible(menu)"
+      ],
+      "post": [
+        "¬visible(menu)"
+      ],
+      "fx": [
+        "Hides menu",
+        "Removes from DOM"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Palette/Toolbar in modern applications",
+      "d": "implements palette/toolbar pattern"
+    },
+    {
+      "n": "Web-based palette/toolbar",
+      "d": "browser implementation of palette/toolbar"
+    },
+    {
+      "n": "Mobile palette/toolbar",
+      "d": "mobile app implementation"
+    }
+  ]
+}

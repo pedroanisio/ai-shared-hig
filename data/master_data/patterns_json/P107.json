@@ -1,0 +1,235 @@
+{
+  "id": "P107",
+  "v": "1.1",
+  "name": "Suggested Edits",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E_{suggest} = (Content, Improvements, Confidence, Approval) : \\text{Document} \\to \\text{Edits}_{suggested}$",
+  "desc": "Suggested edits propose automated improvements based on analysis and patterns.",
+  "comps": [
+    {
+      "n": "Content",
+      "t": "Document",
+      "d": "original document content to be improved",
+      "nota": "Content"
+    },
+    {
+      "n": "Improvements",
+      "t": "Set⟨Edit⟩",
+      "d": "set of AI-suggested edits with rationale",
+      "nota": "Improvements"
+    },
+    {
+      "n": "Confidence",
+      "t": "Edit → [0,1]",
+      "d": "confidence score for each suggested edit",
+      "nota": "Confidence"
+    },
+    {
+      "n": "Approval",
+      "t": "Edit → \\{\\text{pending}, \\text{accepted}, \\text{rejected}\\}",
+      "d": "approval state for each edit",
+      "nota": "Approval"
+    }
+  ],
+  "types": [
+    {
+      "n": "Issue",
+      "def": "(type: IssueType, location: Location, severity: Severity)",
+      "d": "Detected problem in content"
+    },
+    {
+      "n": "Suggestion",
+      "def": "(fix: Fix, explanation: String, confidence: ℝ)",
+      "d": "Proposed fix with explanation"
+    },
+    {
+      "n": "Fix",
+      "def": "Transformation to resolve issue",
+      "d": "Edit that resolves the issue"
+    },
+    {
+      "n": "Edit",
+      "def": "$\\text{Edit} = (\\text{span}, \\text{original}, \\text{replacement}, \\text{reason}, \\text{category})$",
+      "d": "Proposed text change with reason and category"
+    },
+    {
+      "n": "EditCategory",
+      "def": "$\\text{Category} = \\{\\text{grammar}, \\text{clarity}, \\text{factual}, \\text{style}, \\text{structure}\\}$",
+      "d": "Classification of edit type"
+    },
+    {
+      "n": "Span",
+      "def": "$\\text{Span} = (\\text{start}, \\text{end}) \\subset \\mathbb{N} \\times \\mathbb{N}$",
+      "d": "Character range affected by an edit"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P107.1",
+      "n": "Correctness",
+      "spec": "∀suggestion: apply(suggestion) resolves issue ∧ ¬introduces\\_new\\_issues",
+      "d": "Suggestions fix issues without creating new ones",
+      "inv": [
+        "safe\\_suggestions"
+      ]
+    },
+    {
+      "id": "P.P107.2",
+      "n": "Explainability",
+      "spec": "∀suggestion: understandable(suggestion.explanation)",
+      "d": "All suggestions include clear explanations",
+      "inv": [
+        "transparent\\_suggestions"
+      ]
+    },
+    {
+      "id": "P.P107.3",
+      "n": "User Control",
+      "spec": "¬auto\\_apply(suggestion) without user\\_approval",
+      "d": "Users must approve suggestions before application",
+      "inv": [
+        "user\\_in\\_control"
+      ]
+    },
+    {
+      "id": "P.P107.4",
+      "n": "Content Preservation",
+      "spec": "$\\forall e \\in Improvements : \\text{semantics}(e.original) \\approx \\text{semantics}(e.replacement)$",
+      "d": "Edits preserve the original meaning",
+      "inv": [
+        "meaning_preserved"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Analyze",
+      "sig": "analyze(content: Content) → Set⟨Issue⟩",
+      "def": "$analyze(content: Content) → Set⟨Issue⟩ = issues := ∅; for rule in rules: violations := rule.check(content); issues := issues ∪ violations; return issues$",
+      "pre": [
+        "content ≠ null"
+      ],
+      "post": [
+        "∀issue ∈ result: fixable(issue)"
+      ],
+      "fx": [
+        "Applies analysis rules",
+        "Identifies issues",
+        "Filters fixable issues"
+      ]
+    },
+    {
+      "n": "Generate Suggestion",
+      "sig": "suggest(issue: Issue) → Suggestion",
+      "def": "$suggest(issue: Issue) → Suggestion = fix := compute\\_fix(issue); explanation := explain\\_fix(fix); confidence := assess\\_confidence(fix); return Suggestion(fix, explanation, confidence)$",
+      "pre": [
+        "fixable(issue)"
+      ],
+      "post": [
+        "resolves(result.fix, issue)"
+      ],
+      "fx": [
+        "Computes fix",
+        "Generates explanation",
+        "Assesses confidence"
+      ]
+    },
+    {
+      "n": "Apply Suggestion",
+      "sig": "apply(suggestion: Suggestion, content: Content) → Content",
+      "def": "$apply(suggestion: Suggestion, content: Content) → Content = if user\\_approved(suggestion): return suggestion.fix.apply(content) else: return content$",
+      "pre": [
+        "compatible(suggestion, content)"
+      ],
+      "post": [
+        "¬has\\_issue(result, suggestion.issue)"
+      ],
+      "fx": [
+        "Applies fix to content",
+        "Resolves issue"
+      ]
+    },
+    {
+      "n": "Generate Suggestions",
+      "sig": "generateSuggestions: Document → Set⟨Edit⟩",
+      "def": "$\\text{generateSuggestions}(doc) = \\{e \\mid$$e = \\text{LLM}_{\\text{editor}}(span, \\text{context}(span)) \\land$$Confidence(e) \\geq \\theta_{min}\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Apply Edit",
+      "sig": "applyEdit: Document × Edit → Document",
+      "def": "$\\text{applyEdit}(doc, e) = doc'$where$doc'[e.span] = e.replacement$$Approval(e) \\leftarrow \\text{accepted}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Batch Apply",
+      "sig": "batchApply: Document × Set⟨Edit⟩ → Document",
+      "def": "$\\text{batchApply}(doc, E) = \\text{fold}(\\text{applyEdit}, doc, \\text{sorted}(E))$where$\\text{sorted}$orders by span position",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P47",
+      "P102"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Grammarly suggestions",
+      "d": "inline grammar and style improvements"
+    },
+    {
+      "n": "GitHub Copilot code suggestions",
+      "d": "AI-suggested code improvements"
+    },
+    {
+      "n": "Google Docs Smart Compose",
+      "d": "contextual writing suggestions"
+    },
+    {
+      "n": "Notion AI suggested edits",
+      "d": "content improvement recommendations"
+    }
+  ]
+}

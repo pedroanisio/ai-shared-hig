@@ -1,0 +1,231 @@
+{
+  "id": "P67",
+  "v": "1.1",
+  "name": "Progressive Disclosure by AI",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Progressive Disclosure",
+    "UX"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D = (H_{info}, score_{rel}, \\sigma_{disc}) : \\text{Information} \\to \\text{Revealed}_t$",
+  "desc": "Event sourcing pattern persists state changes as a sequence of events.",
+  "comps": [
+    {
+      "n": "H_{info}",
+      "t": "Hierarchy⟨InfoNode⟩",
+      "d": "hierarchical structure of information to disclose",
+      "nota": "H_{info}"
+    },
+    {
+      "n": "score_{rel}",
+      "t": "InfoNode → [0,1]",
+      "d": "relevance scoring function for each node",
+      "nota": "score_{rel}"
+    },
+    {
+      "n": "\\sigma_{disc}",
+      "t": "DisclosureStrategy",
+      "d": "strategy for progressive information revelation",
+      "nota": "\\sigma_{disc}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Event",
+      "def": "(type: EventType, data: Data, version: ℕ, timestamp: Time)",
+      "d": "State change event"
+    },
+    {
+      "n": "Snapshot",
+      "def": "(stream: StreamID, state: State, version: ℕ, timestamp: Time)",
+      "d": "State snapshot"
+    },
+    {
+      "n": "InfoNode",
+      "def": "$\\text{InfoNode} = (\\text{content}, \\text{children}, \\text{depth}, \\text{importance})$",
+      "d": "Information unit with hierarchy and importance"
+    },
+    {
+      "n": "Hierarchy",
+      "def": "$\\text{Hierarchy}\\langle T \\rangle = (\\text{root}, \\text{parent}: T \\to T, \\text{children}: T \\to \\text{Set}\\langle T \\rangle)$",
+      "d": "Tree structure of information nodes"
+    },
+    {
+      "n": "DisclosureStrategy",
+      "def": "$\\text{Strategy} = \\{\\text{depth-first}, \\text{breadth-first}, \\text{relevance-first}, \\text{adaptive}\\}$",
+      "d": "Policy for ordering information disclosure"
+    },
+    {
+      "n": "Revealed",
+      "def": "$\\text{Revealed}_t = \\{n \\in H_{info} \\mid t_{reveal}(n) \\leq t\\}$ (time-dependent)",
+      "d": "Set of nodes disclosed by time t"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P67.1",
+      "n": "Complete History",
+      "spec": "all\\_state\\_changes recorded",
+      "d": "Complete change history recorded",
+      "inv": [
+        "full\\_audit\\_trail"
+      ]
+    },
+    {
+      "id": "P.P67.2",
+      "n": "Event Immutability",
+      "spec": "∀event: immutable(event)",
+      "d": "Events are immutable",
+      "inv": [
+        "append\\_only"
+      ]
+    },
+    {
+      "id": "P.P67.3",
+      "n": "Reproducible State",
+      "spec": "replay(events) = current\\_state",
+      "d": "State reproducible from events",
+      "inv": [
+        "deterministic\\_replay"
+      ]
+    },
+    {
+      "id": "P.P67.4",
+      "n": "Cognitive Load Management",
+      "spec": "$\\forall t : |\\text{Revealed}_t \\setminus \\text{Revealed}_{t-\\Delta t}| \\leq k$ (bounded disclosure rate)",
+      "d": "Disclosure rate stays within a manageable bound",
+      "inv": [
+        "bounded\\_disclosure"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Append Event",
+      "sig": "append(stream: StreamID, event: Event) → Effect",
+      "def": "$append(stream: StreamID, event: Event) → Effect = validate\\_event(event); version := get\\_stream\\_version(stream); event.version := version + 1; event.timestamp := now(); persist(stream, event); notify\\_subscribers(stream, event)$",
+      "pre": [
+        "valid\\_event(event)"
+      ],
+      "post": [
+        "event ∈ stream ∧ event.version = old\\_version + 1"
+      ],
+      "fx": [
+        "Validates event",
+        "Assigns version",
+        "Persists",
+        "Notifies subscribers"
+      ]
+    },
+    {
+      "n": "Replay Events",
+      "sig": "replay(stream: StreamID, from: ℕ) → State",
+      "def": "$replay(stream: StreamID, from: ℕ) → State = events := load\\_events(stream, from); state := initial\\_state(); for event in events: state := apply(state, event); return state$",
+      "pre": [
+        "from ≥ 0"
+      ],
+      "post": [
+        "state consistent\\_with events"
+      ],
+      "fx": [
+        "Loads events",
+        "Applies sequentially",
+        "Returns state"
+      ]
+    },
+    {
+      "n": "Create Snapshot",
+      "sig": "snapshot(stream: StreamID, state: State, version: ℕ) → Effect",
+      "def": "$snapshot(stream: StreamID, state: State, version: ℕ) → Effect = snapshot := Snapshot(stream, state, version, timestamp=now()); persist\\_snapshot(snapshot)$",
+      "pre": [
+        "state consistent\\_at version"
+      ],
+      "post": [
+        "snapshot\\_exists(stream, version)"
+      ],
+      "fx": [
+        "Creates snapshot",
+        "Persists snapshot"
+      ]
+    },
+    {
+      "n": "Score Relevance",
+      "sig": "score: InfoNode × Context → [0,1]",
+      "def": "$\\text{score}(n, ctx) = w_1 \\cdot \\text{sim}(n.content, ctx.query)$$+ w_2 \\cdot n.importance$$+ w_3 \\cdot \\text{novelty}(n, \\text{Revealed}_t)$where$w_1 + w_2 + w_3 = 1$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Next To Reveal",
+      "sig": "next: H_info × Revealed_t → InfoNode",
+      "def": "$\\text{next}(H, R) = \\arg\\max_{n \\in H \\setminus R} \\text{score}(n, ctx)$subject to:$\\text{parent}(n) \\in R$(parent revealed)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Expand Node",
+      "sig": "expand: InfoNode → Set⟨InfoNode⟩",
+      "def": "$\\text{expand}(n) = \\text{Revealed}_t \\cup \\{n\\} \\cup \\text{immediate\\_children}(n)$with animation and transition effects",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P3",
+      "P37"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Apple Vision Pro spatial UI",
+      "d": "progressively reveals interface elements as needed"
+    },
+    {
+      "n": "GitHub Copilot suggestions",
+      "d": "reveals code suggestions progressively based on context"
+    },
+    {
+      "n": "Notion database views",
+      "d": "AI-driven progressive revelation of database properties"
+    },
+    {
+      "n": "ChatGPT function calling",
+      "d": "progressively reveals tool outputs"
+    }
+  ]
+}

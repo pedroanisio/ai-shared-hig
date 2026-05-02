@@ -1,0 +1,258 @@
+{
+  "id": "P50",
+  "v": "1.1",
+  "name": "Form Dependency Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D = (fields, deps, update, cascade)$",
+  "desc": "Form dependency pattern manages field interdependencies and conditional visibility.",
+  "comps": [
+    {
+      "n": "fields",
+      "t": "Map⟨String, Field⟩",
+      "d": "form fields",
+      "nota": "fields"
+    },
+    {
+      "n": "deps",
+      "t": "Map⟨String, Set⟨String⟩⟩",
+      "d": "defines dependencies",
+      "nota": "deps"
+    },
+    {
+      "n": "update",
+      "t": "String × Value → Effect",
+      "d": "propagates changes",
+      "nota": "update"
+    },
+    {
+      "n": "cascade",
+      "t": "𝔹",
+      "d": "enables cascading updates",
+      "nota": "cascade"
+    }
+  ],
+  "types": [
+    {
+      "n": "Condition",
+      "def": "Value → 𝔹",
+      "d": "Dependency condition function"
+    },
+    {
+      "n": "Dependency",
+      "def": "(source: String, targets: Set⟨String⟩)",
+      "d": "Defines dependent targets for a source field"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P50.1",
+      "n": "Automatic Updates",
+      "spec": "dependency\\_change ⇒ dependent\\_update",
+      "d": "Dependents update automatically",
+      "inv": [
+        "reactive\\_dependencies"
+      ]
+    },
+    {
+      "id": "P.P50.2",
+      "n": "Cascade Handling",
+      "spec": "handles\\_cascading\\_dependencies",
+      "d": "Handles cascading dependencies",
+      "inv": [
+        "transitive\\_dependencies"
+      ]
+    },
+    {
+      "id": "P.P50.3",
+      "n": "Cycle Prevention",
+      "spec": "¬circular\\_dependencies",
+      "d": "Prevents circular dependencies",
+      "inv": [
+        "acyclic\\_dependencies"
+      ]
+    },
+    {
+      "id": "P.P50.4",
+      "n": "Value Computation",
+      "spec": "computed_field.value = compute(dependencies.values)",
+      "d": "Derived fields compute values from dependencies",
+      "inv": [
+        "derived\\_values\\_consistent"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Conditional Visibility",
+      "sig": "show_if(condition: 𝔹, field: Field) → Effect",
+      "def": "$show\\_if(condition: 𝔹, field: Field) → Effect = field.visible := condition$",
+      "pre": [
+        "field \\neq null"
+      ],
+      "post": [
+        "field.visible' = condition",
+        "\\neg field.visible' \\implies field.value' = null"
+      ],
+      "fx": [
+        "Shows or hides field based on condition",
+        "Clears value when hidden"
+      ]
+    },
+    {
+      "n": "Value Computation",
+      "sig": "compute(deps: Set⟨Field⟩, f: Values → Value) → Value",
+      "def": "$compute(deps: Set⟨Field⟩, f: Values → Value) → Value = watch(deps); on\\_change: f(map(get\\_value, deps))$",
+      "pre": [
+        "deps \\neq \\emptyset \\wedge f \\neq null",
+        "\\forall d \\in deps: has\\_value(d)"
+      ],
+      "post": [
+        "result = f(\\{d.value | d \\in deps\\})"
+      ],
+      "fx": [
+        "Calculates value from dependencies",
+        "Updates when dependencies change"
+      ]
+    },
+    {
+      "n": "Update Field",
+      "sig": "update_field(field: String, value: Value) → Effect",
+      "def": "$update_field(field: String, value: Value) → Effect = fields[field].value := value if cascade: for target in deps[field]: rule := rules[(field, target)] new_value := rule(value) update_field(target, new_value)$",
+      "pre": [
+        "field \\in form.fields",
+        "valid\\_value(field, value)"
+      ],
+      "post": [
+        "form.fields[field].value' = value",
+        "dependents\\_notified(field)"
+      ],
+      "fx": [
+        "Sets field value",
+        "Triggers dependent field updates"
+      ]
+    },
+    {
+      "n": "Compute Derived Value",
+      "sig": "compute_derived(field: String) → Value",
+      "def": "$compute_derived(field: String) → Value = sources := {f : field ∈ deps[f]} values := map(sources, λf: fields[f].value) compute_function[field](values)$",
+      "pre": [
+        "field \\in derived\\_fields",
+        "all\\_dependencies\\_satisfied(field)"
+      ],
+      "post": [
+        "result = compute\\_function[field](dependencies)"
+      ],
+      "fx": [
+        "Computes field from source fields",
+        "Returns calculated value"
+      ]
+    },
+    {
+      "n": "Cascading Defaults",
+      "sig": "Country → State → City",
+      "def": "Country → State → City Changing country resets state and city Changing state resets city",
+      "pre": [
+        "country\\_selected = true"
+      ],
+      "post": [
+        "state\\_options' = states\\_for(country)",
+        "city\\_options' = \\emptyset \\text{ until state selected}"
+      ],
+      "fx": [
+        "Filters options based on parent selection",
+        "Resets dependent fields on parent change"
+      ]
+    },
+    {
+      "n": "Dynamic Options",
+      "sig": "Category → Subcategory options",
+      "def": "$Category → Subcategory options deps[\"category\"] := {\"subcategory\"} rules[(\"category\", \"subcategory\")] := λcat: {options: get_subcategories(cat)}$",
+      "pre": [
+        "category\\_field.value \\neq null"
+      ],
+      "post": [
+        "subcategory\\_options' = fetch\\_subcategories(category)",
+        "subcategory\\_enabled = true"
+      ],
+      "fx": [
+        "Loads options dynamically",
+        "Enables dependent field"
+      ]
+    },
+    {
+      "n": "Register Dependency",
+      "sig": "register(field: Field, depends_on: Field, condition: Condition) → Effect",
+      "def": "$register(field: Field, depends\\_on: Field, condition: Condition) → Effect = dependencies[field] := (depends\\_on, condition); observe(depends\\_on, λvalue: update\\_dependent(field, condition(value)))$",
+      "pre": [
+        "field ≠ depends\\_on"
+      ],
+      "post": [
+        "field ∈ dependencies"
+      ],
+      "fx": [
+        "Registers dependency",
+        "Sets up observer"
+      ]
+    },
+    {
+      "n": "Update Dependent",
+      "sig": "update(field: Field, visible: 𝔹) → Effect",
+      "def": "$update(field: Field, visible: 𝔹) → Effect = field.visible := visible; if ¬visible: clear\\_value(field); cascade\\_update(field)$",
+      "pre": [
+        "field ∈ dependencies"
+      ],
+      "post": [
+        "field.visible = visible"
+      ],
+      "fx": [
+        "Updates visibility",
+        "Clears if hidden",
+        "Cascades to dependents"
+      ]
+    },
+    {
+      "n": "Evaluate Conditions",
+      "sig": "evaluate(form: Form) → Effect",
+      "def": "$evaluate(form: Form) → Effect = for (field, (depends\\_on, condition)) in dependencies: value := form[depends\\_on].value; update(field, condition(value))$",
+      "pre": [
+        "form ≠ null"
+      ],
+      "post": [
+        "all\\_dependencies\\_evaluated"
+      ],
+      "fx": [
+        "Evaluates all conditions",
+        "Updates all dependent fields"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Address forms",
+      "d": "country→state→city"
+    },
+    {
+      "n": "Product configurators",
+      "d": "Options update based on prior selections"
+    },
+    {
+      "n": "Tax calculators",
+      "d": "Rates and fields change by jurisdiction"
+    },
+    {
+      "n": "Dynamic pricing forms",
+      "d": "Prices recompute from dependent inputs"
+    },
+    {
+      "n": "Conditional survey questions",
+      "d": "Questions shown based on earlier answers"
+    }
+  ]
+}

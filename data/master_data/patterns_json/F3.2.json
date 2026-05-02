@@ -1,0 +1,226 @@
+{
+  "id": "F3.2",
+  "v": "1.1",
+  "name": "Event-Driven Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V = (validate, report, correct, verify)$",
+  "desc": "Event-driven flows react to events by dispatching handlers and updating state.",
+  "comps": [
+    {
+      "n": "validate",
+      "t": "Data → Set⟨Violation⟩",
+      "d": "checks constraints",
+      "nota": "validate"
+    },
+    {
+      "n": "report",
+      "t": "Violation → Notification",
+      "d": "reports issues",
+      "nota": "report"
+    },
+    {
+      "n": "correct",
+      "t": "Violation → Correction",
+      "d": "attempts fixes",
+      "nota": "correct"
+    },
+    {
+      "n": "verify",
+      "t": "Correction → 𝔹",
+      "d": "confirms fix",
+      "nota": "verify"
+    }
+  ],
+  "types": [
+    {
+      "n": "Event",
+      "def": "(type: EventType, data: Data, timestamp: Time)",
+      "d": "Event with type, payload, and timestamp"
+    },
+    {
+      "n": "Handler",
+      "def": "(process: Event → Effect)",
+      "d": "Function that processes events"
+    },
+    {
+      "n": "Subscription",
+      "def": "(id: String, unsubscribe: () → Effect)",
+      "d": "Active event subscription"
+    },
+    {
+      "n": "Violation",
+      "def": "(rule: Rule, location: Location, severity: Severity)",
+      "d": "Detected rule breach with location and severity"
+    },
+    {
+      "n": "Rule",
+      "def": "(id: String, check: Data → 𝔹, message: String)",
+      "d": "Validation rule with check and message"
+    },
+    {
+      "n": "Correction",
+      "def": "Automatic(fix: Fix) | Manual(suggestion: String)",
+      "d": "Remediation action for a violation"
+    },
+    {
+      "n": "Severity",
+      "def": "Error | Warning | Info",
+      "d": "Priority level used to route handling"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F3.2.1",
+      "n": "Loose Coupling",
+      "spec": "emitter ⊥ handlers",
+      "d": "Event emitters are decoupled from handlers",
+      "inv": [
+        "decoupled\\_components"
+      ]
+    },
+    {
+      "id": "P.F3.2.2",
+      "n": "Async Processing",
+      "spec": "emit(e) returns before handlers complete",
+      "d": "Event emission is asynchronous",
+      "inv": [
+        "non\\_blocking\\_emit"
+      ]
+    },
+    {
+      "id": "P.F3.2.3",
+      "n": "Handler Isolation",
+      "spec": "handler\\_failure ⊥ other\\_handlers",
+      "d": "Handler failures don't affect other handlers",
+      "inv": [
+        "isolated\\_handlers"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Execute Validation",
+      "sig": "execute(data: Data) → Report",
+      "def": "$execute(data: Data) → Report = violations := validate(data) if empty(violations): return Success else: for v in violations: report(v) if auto_correctable(v): correction := correct(v) if verify(correction): apply(correction)$",
+      "pre": [
+        "data \\neq null",
+        "validation\\_rules\\_defined()"
+      ],
+      "post": [
+        "report.violations = validate(data)",
+        "report.status \\in \\{valid, invalid\\}"
+      ],
+      "fx": [
+        "Runs all validation rules on data",
+        "Produces comprehensive validation report"
+      ]
+    },
+    {
+      "n": "Validate",
+      "sig": "validate(data: Data) → Set⟨Violation⟩",
+      "def": "$validate(data: Data) → Set⟨Violation⟩ = violations := {} for rule in rules: if ¬rule.check(data): violations := violations ∪ {Violation(rule, location(data), severity(rule))} return violations$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "result = \\{v : rule\\_violated(data, v)\\}",
+        "result = \\emptyset \\iff valid(data)"
+      ],
+      "fx": [
+        "Identifies all data violations",
+        "Returns empty set if data valid"
+      ]
+    },
+    {
+      "n": "Correct",
+      "sig": "correct(violation: Violation) → Correction",
+      "def": "$correct(violation: Violation) → Correction = if has_automatic_fix(violation): return Automatic(generate_fix(violation)) else: return Manual(suggest_fix(violation))$",
+      "pre": [
+        "violation \\neq null",
+        "correctable(violation)"
+      ],
+      "post": [
+        "result.fixes(violation)",
+        "apply(result) \\implies \\neg violation"
+      ],
+      "fx": [
+        "Generates correction for violation",
+        "Produces actionable fix"
+      ]
+    },
+    {
+      "n": "Emit Event",
+      "sig": "emit(event: Event) → Effect",
+      "def": "$emit(event: Event) → Effect = listeners := get\\_listeners(event.type); for listener in listeners: dispatch(listener, event)$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "∀listener: notified(listener, event)"
+      ],
+      "fx": [
+        "Notifies all listeners",
+        "Dispatches event to handlers"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(event_type: EventType, handler: Handler) → Subscription",
+      "def": "$subscribe(event\\_type: EventType, handler: Handler) → Subscription = listeners[event\\_type] := listeners[event\\_type] ∪ {handler}; return Subscription(id, unsubscribe)$",
+      "pre": [
+        "valid\\_handler(handler)"
+      ],
+      "post": [
+        "handler ∈ listeners[event\\_type]"
+      ],
+      "fx": [
+        "Registers event handler",
+        "Returns subscription handle"
+      ]
+    },
+    {
+      "n": "Handle Event",
+      "sig": "handle(event: Event, handler: Handler) → Effect",
+      "def": "$handle(event: Event, handler: Handler) → Effect = try: handler.process(event) catch error: log\\_error(error); retry\\_or\\_skip()$",
+      "pre": [
+        "subscribed(handler, event.type)"
+      ],
+      "post": [
+        "processed(event) ∨ logged(error)"
+      ],
+      "fx": [
+        "Executes handler logic",
+        "Handles errors gracefully"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Form validation with corrections",
+      "d": "Validation workflows with inline fixes"
+    },
+    {
+      "n": "Code linters with auto-fix",
+      "d": "Static analysis that suggests or applies fixes"
+    },
+    {
+      "n": "Data quality checks",
+      "d": "Automated validation and remediation pipelines"
+    },
+    {
+      "n": "Schema validation",
+      "d": "Schema checks with actionable errors"
+    },
+    {
+      "n": "Constraint satisfaction solvers",
+      "d": "Systems that detect and resolve constraint violations"
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "id": "P155",
+  "v": "1.1",
+  "name": "Trust Score Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{trust} = (Agent, Behavior_{history}, Reliability, Score) : Agent \\to Trust \\in [0,1]$",
+  "desc": "Trust score indicators display reliability and trustworthiness metrics for data sources and agents.",
+  "comps": [
+    {
+      "n": "Score",
+      "t": "ℝ ∈ [0,1]",
+      "d": "Computed trust score",
+      "nota": "Score"
+    },
+    {
+      "n": "Factors",
+      "t": "Set⟨TrustFactor⟩",
+      "d": "Factors contributing to trust",
+      "nota": "Factors"
+    },
+    {
+      "n": "History",
+      "t": "Sequence⟨Interaction⟩",
+      "d": "Historical interactions",
+      "nota": "History"
+    },
+    {
+      "n": "Indicator",
+      "t": "Score → Visual",
+      "d": "Visual trust indicator",
+      "nota": "Indicator"
+    }
+  ],
+  "types": [
+    {
+      "n": "TrustScore",
+      "def": "(score: ℝ, factors: Map⟨String,ℝ⟩)",
+      "d": "Trust score with contributing factors"
+    },
+    {
+      "n": "Indicator",
+      "def": "(level: TrustLevel, color: Color, icon: Icon)",
+      "d": "Visual trust indicator"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P155.1",
+      "n": "Objective Scoring",
+      "spec": "∀s1,s2: same\\_history ⇒ same\\_score",
+      "d": "Scores are objective and deterministic",
+      "inv": [
+        "deterministic\\_scoring"
+      ]
+    },
+    {
+      "id": "P.P155.2",
+      "n": "Visual Clarity",
+      "spec": "easily\\_distinguishable(trust\\_levels)",
+      "d": "Different trust levels are visually distinct",
+      "inv": [
+        "clear\\_indicators"
+      ]
+    },
+    {
+      "id": "P.P155.3",
+      "n": "Explainability",
+      "spec": "∀score: explainable(score)",
+      "d": "Scores can be explained",
+      "inv": [
+        "transparent\\_scoring"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Compute Trust Score",
+      "sig": "compute(source: Source, history: History) → TrustScore",
+      "def": "$compute(source: Source, history: History) → TrustScore = accuracy := compute\\_accuracy(history); reliability := compute\\_reliability(history); recency := compute\\_recency(history); score := weighted\\_average(accuracy, reliability, recency); return TrustScore(score, factors={accuracy, reliability, recency})$",
+      "pre": [
+        "|history| > min\\_observations"
+      ],
+      "post": [
+        "0 ≤ result.score ≤ 1"
+      ],
+      "fx": [
+        "Computes accuracy",
+        "Computes reliability",
+        "Computes recency",
+        "Combines into score"
+      ]
+    },
+    {
+      "n": "Display Indicator",
+      "sig": "display(score: TrustScore) → Indicator",
+      "def": "$display(score: TrustScore) → Indicator = level := categorize(score.score); color := get\\_color(level); icon := get\\_icon(level); return Indicator(level, color, icon)$",
+      "pre": [
+        "score ≠ null"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Categorizes score",
+        "Determines visual elements",
+        "Creates indicator"
+      ]
+    },
+    {
+      "n": "Explain Score",
+      "sig": "explain(score: TrustScore) → Explanation",
+      "def": "$explain(score: TrustScore) → Explanation = factor\\_explanations := {explain\\_factor(f) : f ∈ score.factors}; recommendations := generate\\_improvement\\_suggestions(score); return Explanation(score.score, factor\\_explanations, recommendations)$",
+      "pre": [
+        "score ≠ null"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Explains each factor",
+        "Generates recommendations"
+      ]
+    },
+    {
+      "n": "ComputeScore",
+      "sig": "compute() → ℝ",
+      "def": "compute() calculates trust score from factors and history",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetFactors",
+      "sig": "factors() → Set⟨TrustFactor⟩",
+      "def": "factors() returns contributing trust factors",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "UpdateHistory",
+      "sig": "update(interaction: Interaction) → Effect",
+      "def": "update(interaction) appends to interaction history",
+      "pre": [
+        "interaction_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing interaction",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

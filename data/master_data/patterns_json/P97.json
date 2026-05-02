@@ -1,0 +1,141 @@
+{
+  "id": "P97",
+  "v": "1.1",
+  "name": "Resource Usage Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "Resources",
+    "Monitoring"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{usage} = (API_{calls}, Tokens_{used}, Cost_{current}, Limits) : Resources \\to Usage_{display}$",
+  "desc": "Mobile-first design pattern prioritizes mobile experience, progressively enhancing for larger screens.",
+  "comps": [
+    {
+      "n": "API_{calls}",
+      "t": "Component",
+      "d": "Component implementing Resource Usage Indicator functionality",
+      "nota": "API_{calls}"
+    },
+    {
+      "n": "Tokens_{used}",
+      "t": "Component",
+      "d": "Component implementing Resource Usage Indicator functionality",
+      "nota": "Tokens_{used}"
+    },
+    {
+      "n": "Cost_{current}",
+      "t": "Component",
+      "d": "Component implementing Resource Usage Indicator functionality",
+      "nota": "Cost_{current}"
+    },
+    {
+      "n": "Limits",
+      "t": "Component",
+      "d": "Component implementing Resource Usage Indicator functionality",
+      "nota": "Limits"
+    }
+  ],
+  "types": [
+    {
+      "n": "MobileLayout",
+      "def": "(viewport: String, content: Content, touch: TouchConfig)",
+      "d": "Mobile-optimized layout"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P97.1",
+      "n": "Mobile Priority",
+      "spec": "mobile\\_experience\\_optimized\\_first",
+      "d": "Mobile experience optimized first",
+      "inv": [
+        "mobile\\_first"
+      ]
+    },
+    {
+      "id": "P.P97.2",
+      "n": "Progressive Enhancement",
+      "spec": "larger\\_screens\\_enhanced",
+      "d": "Larger screens receive enhancements",
+      "inv": [
+        "additive\\_enhancements"
+      ]
+    },
+    {
+      "id": "P.P97.3",
+      "n": "Performance",
+      "spec": "mobile\\_loads\\_minimal\\_resources",
+      "d": "Mobile loads minimal resources",
+      "inv": [
+        "lightweight\\_mobile"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Design Mobile",
+      "sig": "mobile(content: Content) → MobileLayout",
+      "def": "$mobile(content: Content) → MobileLayout = layout := MobileLayout(); layout.viewport := \"width=device-width\"; layout.content := linearize(content); layout.touch := enable\\_touch\\_targets(); return layout$",
+      "pre": [
+        "content ≠ null"
+      ],
+      "post": [
+        "mobile\\_optimized(result)"
+      ],
+      "fx": [
+        "Sets viewport",
+        "Linearizes content",
+        "Enables touch targets"
+      ]
+    },
+    {
+      "n": "Add Breakpoint",
+      "sig": "breakpoint(layout: Layout, min_width: ℝ, enhancements: Enhancements) → Layout",
+      "def": "$breakpoint(layout: Layout, min\\_width: ℝ, enhancements: Enhancements) → Layout = media\\_query := \"@media (min-width: \" + min\\_width + \")\"; layout.breakpoints[media\\_query] := enhancements; return layout$",
+      "pre": [
+        "min\\_width > 0"
+      ],
+      "post": [
+        "breakpoint\\_registered"
+      ],
+      "fx": [
+        "Creates media query",
+        "Registers enhancements"
+      ]
+    },
+    {
+      "n": "Progressive Layout",
+      "sig": "progressive(mobile: MobileLayout, tablet: TabletEnhancements, desktop: DesktopEnhancements) → ResponsiveLayout",
+      "def": "$progressive(mobile: MobileLayout, tablet: TabletEnhancements, desktop: DesktopEnhancements) → ResponsiveLayout = layout := ResponsiveLayout(mobile); add\\_breakpoint(layout, 768, tablet); add\\_breakpoint(layout, 1024, desktop); return layout$",
+      "pre": [
+        "mobile ≠ null"
+      ],
+      "post": [
+        "|layout.breakpoints| = 2"
+      ],
+      "fx": [
+        "Starts with mobile",
+        "Adds tablet breakpoint",
+        "Adds desktop breakpoint"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Resources implementation",
+      "d": "Applied in ai, resources systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

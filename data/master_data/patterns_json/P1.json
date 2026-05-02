@@ -1,0 +1,179 @@
+{
+  "id": "P1",
+  "v": "1.1",
+  "name": "Direct Manipulation Canvas",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C = (viewport, objects, cursor, tools, state)$",
+  "desc": "Direct manipulation canvases enable users to interact with visual objects through direct gestures.",
+  "comps": [
+    {
+      "n": "viewport",
+      "t": "Rectangle",
+      "d": "visible area",
+      "nota": "viewport"
+    },
+    {
+      "n": "objects",
+      "t": "Set⟨Element⟩",
+      "d": "manipulable objects",
+      "nota": "objects"
+    },
+    {
+      "n": "cursor",
+      "t": "Point",
+      "d": "current cursor position",
+      "nota": "cursor"
+    },
+    {
+      "n": "tools",
+      "t": "Set⟨Tool⟩",
+      "d": "available interaction tools",
+      "nota": "tools"
+    },
+    {
+      "n": "state",
+      "t": "σ_1 ∈ \\{\\text{idle}, \\text{dragging}",
+      "d": "\\text{selecting}\\}$",
+      "nota": "state"
+    }
+  ],
+  "types": [
+    {
+      "n": "Element",
+      "def": "Visual object on canvas",
+      "d": "Drawable canvas element"
+    },
+    {
+      "n": "Point",
+      "def": "(x: ℝ, y: ℝ)",
+      "d": "2D coordinate"
+    },
+    {
+      "n": "Vector",
+      "def": "(dx: ℝ, dy: ℝ)",
+      "d": "2D displacement"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P1.1",
+      "n": "Direct Feedback",
+      "spec": "∀action: visual\\_feedback\\_immediate(action)",
+      "d": "Actions produce immediate visual feedback",
+      "inv": [
+        "responsive\\_ui"
+      ]
+    },
+    {
+      "id": "P.P1.2",
+      "n": "Undo/Redo",
+      "spec": "∀action: reversible(action)",
+      "d": "All actions are reversible",
+      "inv": [
+        "history\\_tracked"
+      ]
+    },
+    {
+      "id": "P.P1.3",
+      "n": "Snapping",
+      "spec": "near\\_guide ⇒ snap\\_to\\_guide",
+      "d": "Elements snap to guides when nearby",
+      "inv": [
+        "helpful\\_snapping"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Select",
+      "sig": "select(point: Point) → Element | null",
+      "def": "$select(point: Point) → Element | null = elements := hit\\_test(point); if |elements| > 0: return topmost(elements) else: return null$",
+      "pre": [
+        "valid\\_point(point)"
+      ],
+      "post": [
+        "result ∈ canvas\\_elements ∪ {null}"
+      ],
+      "fx": [
+        "Performs hit testing",
+        "Returns topmost element at point"
+      ]
+    },
+    {
+      "n": "Drag",
+      "sig": "drag(element: Element, delta: Vector) → Effect",
+      "def": "$drag(element: Element, delta: Vector) → Effect = element.position := element.position + delta; update\\_connections(element); redraw()$",
+      "pre": [
+        "draggable(element)"
+      ],
+      "post": [
+        "element.position = old\\_position + delta"
+      ],
+      "fx": [
+        "Updates element position",
+        "Redraws canvas"
+      ]
+    },
+    {
+      "n": "Resize",
+      "sig": "resize(element: Element, handle: Handle, delta: Vector) → Effect",
+      "def": "$resize(element: Element, handle: Handle, delta: Vector) → Effect = new\\_bounds := compute\\_bounds(element, handle, delta); element.bounds := new\\_bounds; maintain\\_aspect\\_ratio(); redraw()$",
+      "pre": [
+        "resizable(element)"
+      ],
+      "post": [
+        "valid\\_bounds(element.bounds)"
+      ],
+      "fx": [
+        "Resizes element",
+        "Maintains constraints"
+      ]
+    },
+    {
+      "n": "Interpret Gesture",
+      "sig": "interpret(gesture: Gesture) → Action",
+      "def": "$interpret(gesture: Gesture) → Action = case gesture of Click(p) → Select(objectAt(p)) Drag(p₁, p₂) → Move(selected, p₂ - p₁) Scroll(Δ) → Pan(viewport, Δ) persist(objects: Set⟨Element⟩) → Effect = save_to_storage(objects); notify_observers(objects)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Graph editor",
+      "d": "knowledge graphs"
+    },
+    {
+      "n": "3D viewport",
+      "d": "CAD"
+    },
+    {
+      "n": "Drawing canvas",
+      "d": "vector graphics"
+    },
+    {
+      "n": "Visual editor",
+      "d": "page builders"
+    },
+    {
+      "n": "Diagram editors",
+      "d": "flowchart tools with drag-and-drop shapes"
+    }
+  ]
+}

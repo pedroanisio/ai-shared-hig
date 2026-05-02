@@ -1,0 +1,198 @@
+{
+  "id": "P145",
+  "v": "1.1",
+  "name": "Workflow Monitoring Dashboard",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M_{workflow} = (Workflows, Status, Metrics, Control) : Workflows \\to Dashboard$",
+  "desc": "Workflow monitoring dashboards provide real-time visibility into running workflows and their status.",
+  "comps": [
+    {
+      "n": "Workflows",
+      "t": "Set⟨Workflow⟩",
+      "d": "Active workflows being monitored",
+      "nota": "Workflows"
+    },
+    {
+      "n": "Status",
+      "t": "Workflow → WorkflowStatus",
+      "d": "Current status of each workflow",
+      "nota": "Status"
+    },
+    {
+      "n": "Metrics",
+      "t": "Workflow → Map⟨Metric, Value⟩",
+      "d": "Performance metrics per workflow",
+      "nota": "Metrics"
+    },
+    {
+      "n": "Visualization",
+      "t": "Set⟨Workflow⟩ → Dashboard",
+      "d": "Dashboard visualization function",
+      "nota": "Visualization"
+    }
+  ],
+  "types": [
+    {
+      "n": "WorkflowStatus",
+      "def": "(workflow_id: WorkflowID, current_step: Step, progress: ℝ, status: Status)",
+      "d": "Current workflow status"
+    },
+    {
+      "n": "Dashboard",
+      "def": "(charts: Set⟨Chart⟩, metrics: Metrics, alerts: Set⟨Alert⟩)",
+      "d": "Monitoring dashboard"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P145.1",
+      "n": "Real-Time Monitoring",
+      "spec": "workflow\\_state\\_change ⇒ dashboard\\_update immediately",
+      "d": "Dashboard updates in real-time",
+      "inv": [
+        "live\\_monitoring"
+      ]
+    },
+    {
+      "id": "P.P145.2",
+      "n": "Comprehensive View",
+      "spec": "∀workflow: status\\_visible(workflow)",
+      "d": "All workflows are visible",
+      "inv": [
+        "complete\\_visibility"
+      ]
+    },
+    {
+      "id": "P.P145.3",
+      "n": "Proactive Alerts",
+      "spec": "issue\\_detected ⇒ alert\\_raised before critical",
+      "d": "Issues trigger alerts proactively",
+      "inv": [
+        "early\\_warning"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Monitor Workflow",
+      "sig": "monitor(workflow_id: WorkflowID) → WorkflowStatus",
+      "def": "$monitor(workflow\\_id: WorkflowID) → WorkflowStatus = workflow := get\\_workflow(workflow\\_id); current\\_step := workflow.current\\_step; progress := compute\\_progress(workflow); status := WorkflowStatus(workflow\\_id, current\\_step, progress); return status$",
+      "pre": [
+        "exists(workflow\\_id)"
+      ],
+      "post": [
+        "current(result)"
+      ],
+      "fx": [
+        "Retrieves workflow state",
+        "Computes progress",
+        "Returns status"
+      ]
+    },
+    {
+      "n": "Display Dashboard",
+      "sig": "display(workflows: Set⟨Workflow⟩) → Dashboard",
+      "def": "$display(workflows: Set⟨Workflow⟩) → Dashboard = statuses := {monitor(w.id) : w ∈ workflows}; charts := create\\_status\\_charts(statuses); metrics := compute\\_aggregate\\_metrics(statuses); alerts := check\\_for\\_issues(statuses); return Dashboard(charts, metrics, alerts)$",
+      "pre": [
+        "|workflows| > 0"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Monitors all workflows",
+        "Creates charts",
+        "Computes metrics",
+        "Checks for issues"
+      ]
+    },
+    {
+      "n": "Alert On Failure",
+      "sig": "alert(workflow: Workflow, failure: Failure) → Alert",
+      "def": "$alert(workflow: Workflow, failure: Failure) → Alert = severity := classify\\_failure(failure); message := format\\_alert(workflow, failure); alert := Alert(workflow.id, severity, message); notify\\_stakeholders(alert); return alert$",
+      "pre": [
+        "failure ≠ null"
+      ],
+      "post": [
+        "notified(stakeholders, alert)"
+      ],
+      "fx": [
+        "Classifies failure severity",
+        "Formats alert message",
+        "Notifies stakeholders"
+      ]
+    },
+    {
+      "n": "RegisterWorkflow",
+      "sig": "register(w: Workflow) → Effect",
+      "def": "register(w) adds workflow to monitoring",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "UpdateStatus",
+      "sig": "update(w: Workflow, s: Status) → Effect",
+      "def": "update(w, s) sets workflow status",
+      "pre": [
+        "w_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing w",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetDashboard",
+      "sig": "dashboard() → Visual",
+      "def": "dashboard() renders current state of all workflows",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

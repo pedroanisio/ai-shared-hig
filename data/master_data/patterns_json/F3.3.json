@@ -1,0 +1,193 @@
+{
+  "id": "F3.3",
+  "v": "1.1",
+  "name": "Adaptation Loop Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (monitor, detect, adjust, measure)$",
+  "desc": "Adaptation loops monitor system behavior and adjust parameters dynamically.",
+  "comps": [
+    {
+      "n": "monitor",
+      "t": "System → Metrics",
+      "d": "observes system behavior",
+      "nota": "monitor"
+    },
+    {
+      "n": "detect",
+      "t": "Metrics → Anomalies",
+      "d": "identifies issues",
+      "nota": "detect"
+    },
+    {
+      "n": "adjust",
+      "t": "Anomalies → Adjustments",
+      "d": "modifies system",
+      "nota": "adjust"
+    },
+    {
+      "n": "measure",
+      "t": "Adjustments → Performance",
+      "d": "evaluates changes",
+      "nota": "measure"
+    }
+  ],
+  "types": [
+    {
+      "n": "Metric",
+      "def": "Measurable system property",
+      "d": "System property that can be measured"
+    },
+    {
+      "n": "Observations",
+      "def": "Current metric values",
+      "d": "Collected metric measurements"
+    },
+    {
+      "n": "Analysis",
+      "def": "Deviation diagnosis",
+      "d": "Analysis of deviations from goals"
+    },
+    {
+      "n": "Metrics",
+      "def": "Map⟨String, Value⟩",
+      "d": "Current metric values keyed by name"
+    },
+    {
+      "n": "Anomaly",
+      "def": "(metric: String, threshold: ℝ, actual: ℝ, severity: ℕ)",
+      "d": "Threshold breach detected for a metric"
+    },
+    {
+      "n": "Adjustment",
+      "def": "(parameter: String, old_value: Value, new_value: Value)",
+      "d": "Parameter change applied to the system"
+    },
+    {
+      "n": "Performance",
+      "def": "Improvement | Degradation | Neutral",
+      "d": "Outcome classification after adaptation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F3.3.1",
+      "n": "Convergence",
+      "spec": "lim(t→∞) deviation(t) → 0",
+      "d": "System converges to goals over time",
+      "inv": [
+        "stable\\_convergence"
+      ]
+    },
+    {
+      "id": "P.F3.3.2",
+      "n": "Bounded Adaptation",
+      "spec": "∀adjustment: |adjustment| < max\\_change",
+      "d": "Adaptations are bounded to prevent instability",
+      "inv": [
+        "safe\\_adaptation\\_rate"
+      ]
+    },
+    {
+      "id": "P.F3.3.3",
+      "n": "Monotonic Improvement",
+      "spec": "performance(t+1) ≥ performance(t)",
+      "d": "Each adaptation improves or maintains performance",
+      "inv": [
+        "non\\_regressing"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Monitor",
+      "sig": "monitor(metrics: Set⟨Metric⟩) → Observations",
+      "def": "$monitor(metrics: Set⟨Metric⟩) → Observations = collect\\_current\\_values(metrics); analyze\\_trends()$",
+      "pre": [
+        "∀m ∈ metrics: measurable(m)"
+      ],
+      "post": [
+        "current(result)"
+      ],
+      "fx": [
+        "Collects metric values",
+        "Analyzes trends"
+      ]
+    },
+    {
+      "n": "Analyze",
+      "sig": "analyze(obs: Observations, goals: Goals) → Analysis",
+      "def": "$analyze(obs: Observations, goals: Goals) → Analysis = deviations := compare(obs, goals); diagnose\\_issues(deviations)$",
+      "pre": [
+        "recent(obs)"
+      ],
+      "post": [
+        "actionable(result)"
+      ],
+      "fx": [
+        "Compares with goals",
+        "Identifies deviations"
+      ]
+    },
+    {
+      "n": "Adapt",
+      "sig": "adapt(analysis: Analysis) → Effect",
+      "def": "$adapt(analysis: Analysis) → Effect = adjustments := compute\\_adjustments(analysis); apply\\_safely(adjustments)$",
+      "pre": [
+        "safe\\_to\\_adapt()"
+      ],
+      "post": [
+        "adjusted(parameters)"
+      ],
+      "fx": [
+        "Computes parameter adjustments",
+        "Applies changes safely"
+      ]
+    },
+    {
+      "n": "Execute",
+      "sig": "execute(metrics: Set⟨Metric⟩, goals: Goals) → Performance",
+      "def": "$execute(metrics: Set⟨Metric⟩, goals: Goals) → Performance = obs := monitor(metrics) analysis := analyze(obs, goals) adjustments := compute\\_adjustments(analysis) apply\\_safely(adjustments) return measure(adjustments)$",
+      "pre": [
+        "|metrics| > 0",
+        "goals \\neq null"
+      ],
+      "post": [
+        "result ∈ {Improvement, Degradation, Neutral}"
+      ],
+      "fx": [
+        "Runs adaptation cycle",
+        "Applies adjustments",
+        "Reports performance outcome"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Auto-scaling systems",
+      "d": "Scale decisions based on observed metrics"
+    },
+    {
+      "n": "Self-healing infrastructure",
+      "d": "Automated remediation based on anomalies"
+    },
+    {
+      "n": "Adaptive bitrate streaming",
+      "d": "Adjusts quality based on network conditions"
+    },
+    {
+      "n": "Dynamic resource allocation",
+      "d": "Resource tuning from performance feedback"
+    },
+    {
+      "n": "Traffic load balancing",
+      "d": "Traffic shifts based on observed throughput"
+    }
+  ]
+}

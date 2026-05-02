@@ -1,0 +1,215 @@
+{
+  "id": "P38",
+  "v": "1.1",
+  "name": "Badge/Indicator Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$bp = (state, measure, visualize, update) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Badge and indicator patterns display status, counts, or notifications on UI elements.",
+  "comps": [
+    {
+      "n": "state",
+      "t": "State",
+      "d": "current badge/indicator pattern state",
+      "nota": "state"
+    },
+    {
+      "n": "measure",
+      "t": "State → Metric",
+      "d": "measurement function",
+      "nota": "measure"
+    },
+    {
+      "n": "visualize",
+      "t": "Metric → Visual",
+      "d": "visualization function",
+      "nota": "visualize"
+    },
+    {
+      "n": "update",
+      "t": "Visual → Effect",
+      "d": "display update function",
+      "nota": "update"
+    }
+  ],
+  "types": [
+    {
+      "n": "Badge",
+      "def": "(count: ℕ, color: Color, position: Position)",
+      "d": "Status badge"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Events or counts that update the badge"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Rendered badge state"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Current badge values and metadata"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P38.1",
+      "n": "Visibility",
+      "spec": "badge.count > 0 ⇔ visible(badge)",
+      "d": "Badges visible when count > 0",
+      "inv": [
+        "conditional\\_visibility"
+      ]
+    },
+    {
+      "id": "P.P38.2",
+      "n": "Compact Display",
+      "spec": "badge.size minimized",
+      "d": "Badges use minimal space",
+      "inv": [
+        "space\\_efficient"
+      ]
+    },
+    {
+      "id": "P.P38.3",
+      "n": "Color Coding",
+      "spec": "badge.color indicates\\_severity",
+      "d": "Colors indicate status severity",
+      "inv": [
+        "meaningful\\_colors"
+      ]
+    },
+    {
+      "id": "P.P38.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Badges are legible and communicate status clearly",
+      "inv": [
+        "legible\\_indicators"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Badge",
+      "sig": "add(element: Element, badge: Badge) → Effect",
+      "def": "$add(element: Element, badge: Badge) → Effect = element.badge := badge; position\\_badge(element, badge); display(badge)$",
+      "pre": [
+        "element ≠ null"
+      ],
+      "post": [
+        "visible(badge) ∧ attached(badge, element)"
+      ],
+      "fx": [
+        "Attaches badge to element",
+        "Positions badge",
+        "Displays badge"
+      ]
+    },
+    {
+      "n": "Update Count",
+      "sig": "update(badge: Badge, count: ℕ) → Effect",
+      "def": "$update(badge: Badge, count: ℕ) → Effect = badge.count := count; if count = 0: hide(badge) else: show(badge); refresh\\_display()$",
+      "pre": [
+        "count ≥ 0"
+      ],
+      "post": [
+        "badge.count = count"
+      ],
+      "fx": [
+        "Updates count",
+        "Hides if zero",
+        "Refreshes display"
+      ]
+    },
+    {
+      "n": "Remove Badge",
+      "sig": "remove(element: Element) → Effect",
+      "def": "$remove(element: Element) → Effect = badge := element.badge; hide(badge); element.badge := null$",
+      "pre": [
+        "element.badge ≠ null"
+      ],
+      "post": [
+        "element.badge = null"
+      ],
+      "fx": [
+        "Hides badge",
+        "Removes from element"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Badge/Indicator Pattern in modern applications",
+      "d": "implements badge/indicator pattern pattern"
+    },
+    {
+      "n": "Web-based badge/indicator pattern",
+      "d": "browser implementation of badge/indicator pattern"
+    },
+    {
+      "n": "Mobile badge/indicator pattern",
+      "d": "mobile app implementation"
+    }
+  ]
+}

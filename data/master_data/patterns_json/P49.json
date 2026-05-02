@@ -1,0 +1,252 @@
+{
+  "id": "P49",
+  "v": "1.1",
+  "name": "Multi-Step Form (Wizard) Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$W = (steps, current, data, nav, progress)$",
+  "desc": "Multi-step form wizards guide users through complex processes with sequential steps.",
+  "comps": [
+    {
+      "n": "steps",
+      "t": "Sequence⟨Step⟩",
+      "d": "form steps",
+      "nota": "steps"
+    },
+    {
+      "n": "current",
+      "t": "ℕ",
+      "d": "active step index",
+      "nota": "current"
+    },
+    {
+      "n": "data",
+      "t": "Map⟨String, Value⟩",
+      "d": "accumulates form data",
+      "nota": "data"
+    },
+    {
+      "n": "nav",
+      "t": "Navigation",
+      "d": "controls step transitions",
+      "nota": "nav"
+    },
+    {
+      "n": "progress",
+      "t": "ℕ/ℕ",
+      "d": "shows completion progress",
+      "nota": "progress"
+    }
+  ],
+  "types": [
+    {
+      "n": "Step",
+      "def": "(index: ℕ, fields: Set⟨Field⟩, validation: ValidationRules)",
+      "d": "Single wizard step"
+    },
+    {
+      "n": "Navigation",
+      "def": "{prev: () → Effect, next: () → Effect, goto: ℕ → Effect}",
+      "d": "Controls for step-to-step navigation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P49.1",
+      "n": "Linear Progress",
+      "spec": "steps completed\\_in\\_order",
+      "d": "Steps completed sequentially",
+      "inv": [
+        "ordered\\_progression"
+      ]
+    },
+    {
+      "id": "P.P49.2",
+      "n": "State Preservation",
+      "spec": "step\\_data preserved\\_across\\_navigation",
+      "d": "Data preserved when navigating",
+      "inv": [
+        "persistent\\_state"
+      ]
+    },
+    {
+      "id": "P.P49.3",
+      "n": "Progress Visibility",
+      "spec": "current\\_step visually\\_indicated",
+      "d": "Current step clearly shown",
+      "inv": [
+        "clear\\_progress"
+      ]
+    },
+    {
+      "id": "P.P49.4",
+      "n": "Non-Linear Navigation",
+      "spec": "∀i < current: can_goto(i) // Can revisit completed steps",
+      "d": "Allows revisiting completed steps without losing data",
+      "inv": [
+        "revisitable\\_steps"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Linear",
+      "sig": "linear_progress(current: ℕ, total: ℕ) → ℕ",
+      "def": "$linear\\_progress(current: ℕ, total: ℕ) → ℕ = ⌊(current / total) × 100⌋$",
+      "pre": [
+        "0 < current \\leq total",
+        "total > 0"
+      ],
+      "post": [
+        "result = \\lfloor \\frac{current}{total} \\times 100 \\rfloor",
+        "0 \\leq result \\leq 100"
+      ],
+      "fx": [
+        "Calculates percentage completion",
+        "Shows continuous progress"
+      ]
+    },
+    {
+      "n": "Stepped",
+      "sig": "stepped_progress(current_step: ℕ, total_steps: ℕ) → (ℕ, ℕ)",
+      "def": "$stepped\\_progress(current\\_step: ℕ, total\\_steps: ℕ) → (ℕ, ℕ) = (current\\_step, total\\_steps)$",
+      "pre": [
+        "0 < current\\_step \\leq total\\_steps",
+        "total\\_steps > 1"
+      ],
+      "post": [
+        "result = (current\\_step, total\\_steps)"
+      ],
+      "fx": [
+        "Shows discrete step progress",
+        "Displays step N of M"
+      ]
+    },
+    {
+      "n": "Breadcrumb",
+      "sig": "breadcrumb(path: Sequence⟨Step⟩, current: ℕ) → Sequence⟨Step⟩",
+      "def": "$breadcrumb(path: Sequence⟨Step⟩, current: ℕ) → Sequence⟨Step⟩ = path with current highlighted$",
+      "pre": [
+        "|path| > 0 \\wedge 0 \\leq current < |path|"
+      ],
+      "post": [
+        "result = path",
+        "result[current].active = true"
+      ],
+      "fx": [
+        "Shows navigation path",
+        "Highlights current step"
+      ]
+    },
+    {
+      "n": "Next Step",
+      "sig": "next() → Effect",
+      "def": "$next() → Effect = if validate(steps[current]): data := data ∪ extract_values(steps[current]) if current < |steps| - 1: current := current + 1 render(steps[current]) else: submit(data)$",
+      "pre": [
+        "current\\_step < total\\_steps",
+        "valid(current\\_step\\_data)"
+      ],
+      "post": [
+        "current\\_step' = current\\_step + 1",
+        "step\\_data\\_saved(current\\_step)"
+      ],
+      "fx": [
+        "Advances to next step",
+        "Saves current step data"
+      ]
+    },
+    {
+      "n": "Previous Step",
+      "sig": "prev() → Effect",
+      "def": "$prev() → Effect = if current > 0: current := current - 1 render(steps[current]) progress() → (ℕ, ℕ) = (current + 1, |steps|)$",
+      "pre": [
+        "current\\_step > 1"
+      ],
+      "post": [
+        "current\\_step' = current\\_step - 1",
+        "previous\\_data\\_restored = true"
+      ],
+      "fx": [
+        "Returns to previous step",
+        "Restores saved data"
+      ]
+    },
+    {
+      "n": "Go To Step",
+      "sig": "goto(step_index: ℕ) → Effect",
+      "def": "$goto(step\\_index: ℕ) → Effect = if valid\\_transition(current\\_step, step\\_index): save\\_step\\_data(current\\_step); current\\_step := step\\_index; load\\_step(step\\_index); update\\_progress\\_indicator()$",
+      "pre": [
+        "0 ≤ step\\_index < total\\_steps"
+      ],
+      "post": [
+        "current\\_step = step\\_index"
+      ],
+      "fx": [
+        "Saves current data",
+        "Changes step",
+        "Loads new step",
+        "Updates progress"
+      ]
+    },
+    {
+      "n": "Validate Step",
+      "sig": "validate(step: Step) → ValidationResult",
+      "def": "$validate(step: Step) → ValidationResult = errors := ∅; for field in step.fields: result := validate\\_field(field); if ¬result.valid: errors := errors ∪ result.errors; return ValidationResult(|errors| = 0, errors)$",
+      "pre": [
+        "step ≠ null"
+      ],
+      "post": [
+        "result.valid ⇔ |result.errors| = 0"
+      ],
+      "fx": [
+        "Validates all fields",
+        "Collects errors",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Submit Wizard",
+      "sig": "submit() → Effect",
+      "def": "$submit() → Effect = if all\\_steps\\_valid(): data := aggregate\\_all\\_data(); result := process(data); display\\_completion(); return result else: show\\_first\\_invalid\\_step()$",
+      "pre": [
+        "on\\_final\\_step"
+      ],
+      "post": [
+        "submitted ∨ shown\\_errors"
+      ],
+      "fx": [
+        "Validates all",
+        "Aggregates data",
+        "Processes or shows errors"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Checkout flow",
+      "d": "e-commerce"
+    },
+    {
+      "n": "Onboarding wizard",
+      "d": "Guides users through setup steps"
+    },
+    {
+      "n": "Setup assistant",
+      "d": "Step-by-step configuration tasks"
+    },
+    {
+      "n": "Multi-page survey",
+      "d": "Long surveys broken into steps"
+    },
+    {
+      "n": "Installation wizard",
+      "d": "Guided install with progress tracking"
+    }
+  ]
+}

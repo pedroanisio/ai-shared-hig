@@ -1,0 +1,201 @@
+{
+  "id": "P8",
+  "v": "1.1",
+  "name": "Search-Based Navigation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (query, index, results, ranker)$",
+  "desc": "Card-based layouts organize content into self-contained, reusable card components.",
+  "comps": [
+    {
+      "n": "query",
+      "t": "String",
+      "d": "search query",
+      "nota": "query"
+    },
+    {
+      "n": "index",
+      "t": "Index⟨Item⟩",
+      "d": "searchable index",
+      "nota": "index"
+    },
+    {
+      "n": "results",
+      "t": "Sequence⟨Item⟩",
+      "d": "ranked results",
+      "nota": "results"
+    },
+    {
+      "n": "ranker",
+      "t": "(Item, String) → ℝ",
+      "d": "scores relevance",
+      "nota": "ranker"
+    }
+  ],
+  "types": [
+    {
+      "n": "Card",
+      "def": "(id: CardID, content: Content, style: CardStyle, actions: Set⟨Action⟩)",
+      "d": "Card component"
+    },
+    {
+      "n": "CardStyle",
+      "def": "(elevation: ℕ, padding: Spacing, borderRadius: ℝ)",
+      "d": "Card visual style"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P8.1",
+      "n": "Self-Contained",
+      "spec": "∀card: independent\\_content",
+      "d": "Cards are self-contained",
+      "inv": [
+        "content\\_independence"
+      ]
+    },
+    {
+      "id": "P.P8.2",
+      "n": "Responsive Grid",
+      "spec": "layout adapts\\_to\\_screen",
+      "d": "Card layout adapts to screen",
+      "inv": [
+        "responsive\\_arrangement"
+      ]
+    },
+    {
+      "id": "P.P8.3",
+      "n": "Consistent Styling",
+      "spec": "cards follow\\_design\\_system",
+      "d": "Cards follow design system",
+      "inv": [
+        "style\\_consistency"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Card",
+      "sig": "create(content: Content, style: CardStyle) → Card",
+      "def": "$create(content: Content, style: CardStyle) → Card = card := Card(id=generate\\_id(), content, style); render\\_card(card); return card$",
+      "pre": [
+        "content ≠ null"
+      ],
+      "post": [
+        "card.id ≠ null ∧ rendered(card)"
+      ],
+      "fx": [
+        "Generates card ID",
+        "Creates card",
+        "Renders"
+      ]
+    },
+    {
+      "n": "Arrange Cards",
+      "sig": "arrange(cards: Sequence⟨Card⟩, layout: Layout) → Effect",
+      "def": "$arrange(cards: Sequence⟨Card⟩, layout: Layout) → Effect = positions := calculate\\_positions(cards, layout); for (card, pos) in zip(cards, positions): set\\_position(card, pos); apply\\_spacing(layout.spacing)$",
+      "pre": [
+        "|cards| > 0"
+      ],
+      "post": [
+        "∀card: positioned(card)"
+      ],
+      "fx": [
+        "Calculates positions",
+        "Positions cards",
+        "Applies spacing"
+      ]
+    },
+    {
+      "n": "Make Interactive",
+      "sig": "interactive(card: Card, actions: Set⟨Action⟩) → Effect",
+      "def": "$interactive(card: Card, actions: Set⟨Action⟩) → Effect = card.actions := actions; add\\_hover\\_state(card); add\\_click\\_handlers(card, actions)$",
+      "pre": [
+        "card ≠ null"
+      ],
+      "post": [
+        "interactive(card)"
+      ],
+      "fx": [
+        "Sets actions",
+        "Adds hover state",
+        "Adds click handlers"
+      ]
+    },
+    {
+      "n": "Search",
+      "sig": "search(q: String) → Sequence⟨Item⟩",
+      "def": "$search(q: String) → Sequence⟨Item⟩ = candidates := fuzzy_match(index, q) scores := map(candidates, λitem: ranker(item, q)) sort(zip(candidates, scores), by: score, desc) → take(20)$",
+      "pre": [
+        "search_criteria ≠ null",
+        "valid_filters(params)"
+      ],
+      "post": [
+        "∀item ∈ results: matches(criteria)",
+        "results_ordered()"
+      ],
+      "fx": [
+        "Searches collection",
+        "Returns filtered results"
+      ]
+    },
+    {
+      "n": "Update Index",
+      "sig": "index(items: Set⟨Item⟩) → Effect",
+      "def": "$index(items: Set⟨Item⟩) → Effect = for item in items: tokens := tokenize(item) for token in tokens: inverted_index[token] := inverted_index[token] ∪ {item}$",
+      "pre": [
+        "items_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing items",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Rank",
+      "sig": "ranker(item: Item, query: String) → ℝ",
+      "def": "$ranker(item: Item, query: String) → ℝ = w₁·string_similarity(item.name, query) + w₂·recency_score(item.timestamp) + w₃·frequency_score(item.access_count)$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File search",
+      "d": "Spotlight, Everything"
+    },
+    {
+      "n": "Theorem search",
+      "d": "Lean libraries"
+    },
+    {
+      "n": "Command palette",
+      "d": "editors"
+    },
+    {
+      "n": "Symbol search",
+      "d": "code navigation"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "id": "P72",
+  "v": "1.1",
+  "name": "Agent Role Selector",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Agent Roles",
+    "Management"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S_{role} = (R_{available}, T_{task}, M_{match}, A_{assign}) : \\text{Task} \\to \\text{Agent} \\times \\text{Role}$",
+  "desc": "Request/Reply pattern enables synchronous request-response communication.",
+  "comps": [
+    {
+      "n": "R_{available}",
+      "t": "Set⟨Role⟩",
+      "d": "set of available agent roles",
+      "nota": "R_{available}"
+    },
+    {
+      "n": "T_{task}",
+      "t": "TaskSpec",
+      "d": "task specification requiring role assignment",
+      "nota": "T_{task}"
+    },
+    {
+      "n": "M_{match}",
+      "t": "Role × Task → [0,1]",
+      "d": "role-task matching score function",
+      "nota": "M_{match}"
+    },
+    {
+      "n": "A_{assign}",
+      "t": "(Role, Task) → Agent",
+      "d": "assignment function mapping role to agent",
+      "nota": "A_{assign}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Request",
+      "def": "(id: RequestID, payload: Data, reply_to: Endpoint)",
+      "d": "Request message"
+    },
+    {
+      "n": "Response",
+      "def": "(request_id: RequestID, payload: Data, success: 𝔹)",
+      "d": "Response message"
+    },
+    {
+      "n": "Role",
+      "def": "$\\text{Role} = (\\text{name}, \\text{capabilities}, \\text{expertise}, \\text{constraints})$",
+      "d": "Role definition with capabilities and constraints"
+    },
+    {
+      "n": "TaskSpec",
+      "def": "$\\text{TaskSpec} = (\\text{description}, \\text{requirements}, \\text{priority}, \\text{deadline})$",
+      "d": "Task requirements and priority metadata"
+    },
+    {
+      "n": "Agent",
+      "def": "$\\text{Agent} = (\\text{id}, \\text{model}, \\text{role}, \\text{state})$",
+      "d": "Agent with assigned role and state"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P72.1",
+      "n": "Correlation",
+      "spec": "∀response: matched\\_to\\_request",
+      "d": "Responses matched to requests",
+      "inv": [
+        "correlation\\_id"
+      ]
+    },
+    {
+      "id": "P.P72.2",
+      "n": "Timeout Handling",
+      "spec": "timeout ⇒ request\\_fails\\_gracefully",
+      "d": "Timeouts handled gracefully",
+      "inv": [
+        "bounded\\_wait"
+      ]
+    },
+    {
+      "id": "P.P72.3",
+      "n": "Synchronous Semantics",
+      "spec": "caller\\_waits\\_for response",
+      "d": "Caller waits for response",
+      "inv": [
+        "blocking\\_request"
+      ]
+    },
+    {
+      "id": "P.P72.4",
+      "n": "Load Balancing",
+      "spec": "$\\text{variance}(\\{|\\text{tasks}(a)| \\mid a \\in \\text{Agents}\\}) < \\theta$ (balanced workload)",
+      "d": "Assignments keep workload variance low",
+      "inv": [
+        "balanced\\_assignment"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Send Request",
+      "sig": "request(endpoint: Endpoint, payload: Data, timeout: Time) → Response",
+      "def": "$request(endpoint: Endpoint, payload: Data, timeout: Time) → Response = request\\_id := generate\\_id(); response\\_promise := create\\_promise(); pending\\_requests[request\\_id] := response\\_promise; send\\_message(endpoint, Request(request\\_id, payload)); response := await\\_with\\_timeout(response\\_promise, timeout); return response$",
+      "pre": [
+        "valid\\_endpoint(endpoint)"
+      ],
+      "post": [
+        "response\\_received ∨ timeout\\_occurred"
+      ],
+      "fx": [
+        "Creates request",
+        "Sends message",
+        "Waits for response"
+      ]
+    },
+    {
+      "n": "Handle Request",
+      "sig": "handle(request: Request, handler: RequestHandler) → Effect",
+      "def": "$handle(request: Request, handler: RequestHandler) → Effect = try: result := handler(request.payload); send\\_response(request.reply\\_to, Response(request.id, result, success=true)) catch error: send\\_response(request.reply\\_to, Response(request.id, error, success=false))$",
+      "pre": [
+        "request ≠ null"
+      ],
+      "post": [
+        "response\\_sent"
+      ],
+      "fx": [
+        "Invokes handler",
+        "Sends response or error"
+      ]
+    },
+    {
+      "n": "Send Response",
+      "sig": "respond(request_id: RequestID, response: Response) → Effect",
+      "def": "$respond(request\\_id: RequestID, response: Response) → Effect = promise := pending\\_requests[request\\_id]; resolve(promise, response); delete pending\\_requests[request\\_id]$",
+      "pre": [
+        "request\\_id ∈ pending\\_requests"
+      ],
+      "post": [
+        "request\\_id ∉ pending\\_requests"
+      ],
+      "fx": [
+        "Resolves promise",
+        "Removes from pending"
+      ]
+    },
+    {
+      "n": "Match Role",
+      "sig": "match: Role × TaskSpec → ℝ",
+      "def": "$\\text{match}(r, t) = w_1 \\cdot \\text{capability\\_score}(r, t)$$+ w_2 \\cdot \\text{expertise\\_score}(r, t)$$+ w_3 \\cdot \\text{availability}(r)$where$w_1 + w_2 + w_3 = 1$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Select Best Role",
+      "sig": "select: TaskSpec → Role",
+      "def": "$\\text{select}(t) = \\arg\\max_{r \\in R_{available}} M_{match}(r, t)$subject to:$r.\\text{state} = \\text{available}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Assign Agent",
+      "sig": "assign: Role × TaskSpec → Agent",
+      "def": "$\\text{assign}(r, t) = a$where$a = A_{assign}(r, t)$$a.\\text{role} \\leftarrow r$$a.\\text{state} \\leftarrow \\text{assigned}(t)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P14"
+    ],
+    "use": [
+      "P71"
+    ]
+  },
+  "manif": [
+    {
+      "n": "CrewAI role assignment",
+      "d": "assigns specialized roles to agents for tasks"
+    },
+    {
+      "n": "MetaGPT role system",
+      "d": "product manager, architect, engineer roles"
+    },
+    {
+      "n": "AutoGen agent selection",
+      "d": "selects appropriate agent based on task type"
+    },
+    {
+      "n": "LangGraph conditional routing",
+      "d": "routes to specialized agent nodes"
+    }
+  ]
+}

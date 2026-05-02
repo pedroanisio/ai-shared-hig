@@ -1,0 +1,162 @@
+{
+  "id": "P35",
+  "v": "1.1",
+  "name": "Split-Pane Layout",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (P, D, R, \\delta_{35}, \\sigma_{35})$",
+  "desc": "Split-pane layouts divide screen space into resizable panels for multiple concurrent views.",
+  "comps": [
+    {
+      "n": "R",
+      "t": "P → [0,1]",
+      "d": "maps panes to **proportional sizes**",
+      "nota": "R"
+    },
+    {
+      "n": "\\delta_{35}",
+      "t": "P \\times P → \\{\\text{splitter}, \\text{null}\\}",
+      "d": "indicates splitters",
+      "nota": "\\delta_{35}"
+    },
+    {
+      "n": "\\sigma_{35}",
+      "t": "P → \\{\\text{visible}, \\text{collapsed}\\}",
+      "d": "**state function**",
+      "nota": "\\sigma_{35}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Pane",
+      "def": "(size: ℝ, content: View, parent: Pane | null)",
+      "d": "Resizable pane"
+    },
+    {
+      "n": "Direction",
+      "def": "Horizontal | Vertical",
+      "d": "Split direction"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P35.1",
+      "n": "Space Conservation",
+      "spec": "sum(pane\\_sizes) = total\\_available\\_space",
+      "d": "All available space is used",
+      "inv": [
+        "no\\_wasted\\_space"
+      ]
+    },
+    {
+      "id": "P.P35.2",
+      "n": "Interactive Resizing",
+      "spec": "drag\\_divider ⇒ proportional\\_resize",
+      "d": "Users can interactively resize",
+      "inv": [
+        "user\\_resizable"
+      ]
+    },
+    {
+      "id": "P.P35.3",
+      "n": "Minimum Size",
+      "spec": "∀pane: pane.size ≥ min\\_size",
+      "d": "Panes maintain minimum size",
+      "inv": [
+        "enfored\\_minimums"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Split Pane",
+      "sig": "split(pane: Pane, direction: Direction, ratio: ℝ) → (Pane, Pane)",
+      "def": "$split(pane: Pane, direction: Direction, ratio: ℝ) → (Pane, Pane) = (pane1, pane2) := divide(pane, direction, ratio); layout.panes := layout.panes ∪ {pane1, pane2} \\ {pane}; return (pane1, pane2)$",
+      "pre": [
+        "0 < ratio < 1"
+      ],
+      "post": [
+        "area(pane1) + area(pane2) = area(pane)"
+      ],
+      "fx": [
+        "Divides pane by ratio",
+        "Creates two new panes",
+        "Updates layout"
+      ]
+    },
+    {
+      "n": "Resize Pane",
+      "sig": "resize(pane: Pane, delta: ℝ) → Effect",
+      "def": "$resize(pane: Pane, delta: ℝ) → Effect = sibling := find\\_sibling(pane); pane.size := pane.size + delta; sibling.size := sibling.size - delta; enforce\\_min\\_size(); redraw()$",
+      "pre": [
+        "has\\_sibling(pane)"
+      ],
+      "post": [
+        "pane.size ≥ min\\_size"
+      ],
+      "fx": [
+        "Adjusts pane size",
+        "Adjusts sibling size",
+        "Enforces minimum",
+        "Redraws"
+      ]
+    },
+    {
+      "n": "Close Pane",
+      "sig": "close(pane: Pane) → Effect",
+      "def": "$close(pane: Pane) → Effect = sibling := find\\_sibling(pane); sibling.size := sibling.size + pane.size; layout.panes := layout.panes \\ {pane}; redraw()$",
+      "pre": [
+        "pane ∈ layout.panes ∧ |layout.panes| > 1"
+      ],
+      "post": [
+        "pane ∉ layout.panes"
+      ],
+      "fx": [
+        "Gives space to sibling",
+        "Removes pane",
+        "Redraws"
+      ]
+    },
+    {
+      "n": "Resize",
+      "sig": "resize(p_i: Pane, p_j: Pane, Δ: ℝ) → Effect",
+      "def": "$resize(p_i: Pane, p_j: Pane, Δ: ℝ) → Effect = if R_min(p_i) ≤ R(p_i) + Δ ≤ R_max(p_i): R(p_i) := R(p_i) + Δ R(p_j) := R(p_j) - Δ persist(S) → Storage = save({pane_id: R(pane), state: σ₃₅(pane)} for pane in P)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "3-column CMS editor",
+      "d": "multi-pane content editor layout"
+    },
+    {
+      "n": "VS Code panels",
+      "d": "editor and sidebar split panes"
+    },
+    {
+      "n": "Split terminal windows",
+      "d": "resizable terminal panes"
+    },
+    {
+      "n": "IDE layouts",
+      "d": "dockable panes for code and tools"
+    }
+  ]
+}

@@ -1,0 +1,308 @@
+{
+  "id": "P52",
+  "v": "1.1",
+  "name": "Pagination Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P = (data, page, size, total, nav)$",
+  "desc": "Pagination pattern divides large datasets into manageable pages for display.",
+  "comps": [
+    {
+      "n": "data",
+      "t": "Sequence⟨Item⟩",
+      "d": "full dataset",
+      "nota": "data"
+    },
+    {
+      "n": "page",
+      "t": "ℕ",
+      "d": "current page number (1-indexed)",
+      "nota": "page"
+    },
+    {
+      "n": "size",
+      "t": "ℕ",
+      "d": "items per page",
+      "nota": "size"
+    },
+    {
+      "n": "total",
+      "t": "ℕ",
+      "d": "total item count",
+      "nota": "total"
+    },
+    {
+      "n": "nav",
+      "t": "Navigation",
+      "d": "provides navigation controls",
+      "nota": "nav"
+    }
+  ],
+  "types": [
+    {
+      "n": "Page",
+      "def": "(items: Sequence⟨Item⟩, page_num: ℕ)",
+      "d": "Single page of items"
+    },
+    {
+      "n": "Navigation",
+      "def": "{prev: () → Effect, next: () → Effect, goto: ℕ → Effect, set_size: ℕ → Effect}",
+      "d": "Navigation controls for paging and size changes"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P52.1",
+      "n": "Complete Coverage",
+      "spec": "∀item: item appears\\_on\\_exactly\\_one\\_page",
+      "d": "All items covered exactly once",
+      "inv": [
+        "complete\\_partitioning"
+      ]
+    },
+    {
+      "id": "P.P52.2",
+      "n": "Page Size Consistency",
+      "spec": "∀page: |page.items| = page\\_size ∨ last\\_page",
+      "d": "Pages have consistent size",
+      "inv": [
+        "uniform\\_pages"
+      ]
+    },
+    {
+      "id": "P.P52.3",
+      "n": "Navigation Clarity",
+      "spec": "current\\_page clearly\\_indicated",
+      "d": "Current page clearly shown",
+      "inv": [
+        "clear\\_navigation"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Offset-Based (Traditional)",
+      "sig": "paginate_offset(page: ℕ, size: ℕ) → (ℕ, ℕ)",
+      "def": "$paginate\\_offset(page: ℕ, size: ℕ) → (ℕ, ℕ) = offset := (page - 1) × size; (offset, size)$",
+      "pre": [
+        "page > 0 \\wedge size > 0",
+        "size \\leq max\\_page\\_size"
+      ],
+      "post": [
+        "result = (offset, limit) where offset = (page - 1) \\times size",
+        "limit = size"
+      ],
+      "fx": [
+        "Calculates SQL OFFSET and LIMIT values",
+        "Enables direct page number access"
+      ]
+    },
+    {
+      "n": "Cursor-Based (API)",
+      "sig": "paginate_cursor(cursor: String | null, size: ℕ) → (Cursor, ℕ)",
+      "def": "$paginate\\_cursor(cursor: String | null, size: ℕ) → (Cursor, ℕ) = start := decode(cursor); (start, size)$",
+      "pre": [
+        "size > 0 \\wedge size \\leq max\\_page\\_size",
+        "cursor = null \\vee valid\\_cursor(cursor)"
+      ],
+      "post": [
+        "result.next\\_cursor encodes last item position",
+        "result.count \\leq size"
+      ],
+      "fx": [
+        "Returns next page starting from cursor",
+        "Handles insertions/deletions gracefully"
+      ]
+    },
+    {
+      "n": "Numbered",
+      "sig": "numbered_pages(current: ℕ, total: ℕ) → Sequence⟨ℕ⟩",
+      "def": "$numbered\\_pages(current: ℕ, total: ℕ) → Sequence⟨ℕ⟩ = [1, ..., current-1, current, current+1, ..., total]$",
+      "pre": [
+        "current > 0 \\wedge total > 0",
+        "current \\leq total"
+      ],
+      "post": [
+        "current \\in result",
+        "|result| \\leq max\\_visible\\_pages"
+      ],
+      "fx": [
+        "Generates page number sequence for UI",
+        "Shows ellipsis for large page counts"
+      ]
+    },
+    {
+      "n": "Simple",
+      "sig": "simple_nav() → (Button, Button)",
+      "def": "$simple\\_nav() → (Button, Button) = (Previous, Next)$",
+      "pre": [
+        "paginated\\_view\\_active()"
+      ],
+      "post": [
+        "result = (prev\\_button, next\\_button)",
+        "prev\\_button.enabled = has\\_prev"
+      ],
+      "fx": [
+        "Provides previous/next navigation only",
+        "Minimal UI footprint"
+      ]
+    },
+    {
+      "n": "Load More",
+      "sig": "load_more(loaded: ℕ, increment: ℕ) → ℕ",
+      "def": "$load\\_more(loaded: ℕ, increment: ℕ) → ℕ = loaded + increment$",
+      "pre": [
+        "loaded \\geq 0 \\wedge increment > 0",
+        "more\\_items\\_available()"
+      ],
+      "post": [
+        "result = loaded + increment",
+        "items\\_displayed = result"
+      ],
+      "fx": [
+        "Appends next batch to existing list",
+        "User-triggered incremental loading"
+      ]
+    },
+    {
+      "n": "Get Page",
+      "sig": "get_page(page_num: ℕ) → Sequence⟨Item⟩",
+      "def": "$get_page(page_num: ℕ) → Sequence⟨Item⟩ = start := (page_num - 1) · size end := min(start + size,\n        total) return data[start:end]$",
+      "pre": [
+        "page\\_num > 0",
+        "page\\_num \\leq total\\_pages"
+      ],
+      "post": [
+        "|result| \\leq page\\_size",
+        "\\forall i \\in result: belongs\\_to\\_page(i, page\\_num)"
+      ],
+      "fx": [
+        "Fetches specific page of items",
+        "Returns empty if page beyond range"
+      ]
+    },
+    {
+      "n": "Navigate",
+      "sig": "next() → Effect",
+      "def": "$next() → Effect =\n    if page < total_pages: page := page + 1 load_page(page) prev() → Effect =\n    if page > 1: page := page - 1 load_page(page) goto(p: ℕ) → Effect =\n    if 1 ≤ p ≤ total_pages: page := p load_page(p)$",
+      "pre": [
+        "has\\_next\\_page()"
+      ],
+      "post": [
+        "current\\_page' = current\\_page + 1",
+        "view\\_updated = true"
+      ],
+      "fx": [
+        "Advances to next page",
+        "Updates displayed items"
+      ]
+    },
+    {
+      "n": "Change Page Size",
+      "sig": "set_page_size(new_size: ℕ) → Effect",
+      "def": "$set_page_size(new_size: ℕ) → Effect = size := new_size page := 1 // Reset to first page load_page(1)$",
+      "pre": [
+        "new\\_size > 0 \\wedge new\\_size \\leq max\\_page\\_size"
+      ],
+      "post": [
+        "page\\_size' = new\\_size",
+        "current\\_page' = 1"
+      ],
+      "fx": [
+        "Adjusts items per page",
+        "Resets to first page"
+      ]
+    },
+    {
+      "n": "Infinite Scroll",
+      "sig": "Scroll to bottom → load_next_page() → append to list",
+      "def": "Scroll to bottom → load_next_page() → append to list Pros: Smooth UX Cons: No page bookmarks, harder navigation",
+      "pre": [
+        "scroll\\_position \\geq threshold",
+        "\\neg loading \\wedge has\\_more\\_items"
+      ],
+      "post": [
+        "items\\_appended = true",
+        "|displayed\\_items'| > |displayed\\_items|"
+      ],
+      "fx": [
+        "Automatically loads on scroll",
+        "Seamless continuous browsing"
+      ]
+    },
+    {
+      "n": "Go To Page",
+      "sig": "goto(page_num: ℕ) → Page",
+      "def": "$goto(page\\_num: ℕ) → Page = if valid\\_page(page\\_num): offset := (page\\_num - 1) × page\\_size; items := fetch\\_items(offset, page\\_size); current\\_page := page\\_num; return Page(items, page\\_num)$",
+      "pre": [
+        "1 ≤ page\\_num ≤ total\\_pages"
+      ],
+      "post": [
+        "current\\_page = page\\_num"
+      ],
+      "fx": [
+        "Calculates offset",
+        "Fetches items",
+        "Updates current page"
+      ]
+    },
+    {
+      "n": "Next Page",
+      "sig": "next() → Page",
+      "def": "$next() → Page = if current\\_page < total\\_pages: return goto(current\\_page + 1)$",
+      "pre": [
+        "current\\_page < total\\_pages"
+      ],
+      "post": [
+        "current\\_page = old\\_page + 1"
+      ],
+      "fx": [
+        "Advances to next page"
+      ]
+    },
+    {
+      "n": "Set Page Size",
+      "sig": "set_size(size: ℕ) → Effect",
+      "def": "$set\\_size(size: ℕ) → Effect = page\\_size := size; total\\_pages := ⌈total\\_items / size⌉; goto(1)$",
+      "pre": [
+        "size > 0"
+      ],
+      "post": [
+        "page\\_size = size"
+      ],
+      "fx": [
+        "Sets new page size",
+        "Recalculates total pages",
+        "Resets to page 1"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Search results",
+      "d": "Paging through result lists"
+    },
+    {
+      "n": "Product listings",
+      "d": "Catalog pages with page controls"
+    },
+    {
+      "n": "Data tables",
+      "d": "Paginated rows in tabular views"
+    },
+    {
+      "n": "Blog archives",
+      "d": "Page-by-page archive navigation"
+    },
+    {
+      "n": "API responses",
+      "d": "Offset or cursor-based pagination"
+    }
+  ]
+}

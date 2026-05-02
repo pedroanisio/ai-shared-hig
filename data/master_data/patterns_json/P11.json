@@ -1,0 +1,172 @@
+{
+  "id": "P11",
+  "v": "1.1",
+  "name": "Validator/Checker",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$val = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Validators check data against rules and constraints to ensure correctness and completeness.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to validator/checker",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from validator/checker",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "ValidationResult",
+      "def": "(errors: Set⟨Error⟩, valid: 𝔹)",
+      "d": "Result of validation with errors"
+    },
+    {
+      "n": "Rule",
+      "def": "(name: String, check: Data → 𝔹, message: String)",
+      "d": "Validation rule"
+    },
+    {
+      "n": "Violation",
+      "def": "(rule: Rule, field: String, actual: Value)",
+      "d": "Rule violation details"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Data to validate against rules"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Validation report or error set"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Rule configuration and validation context"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P11.1",
+      "n": "Completeness",
+      "spec": "∀rule ∈ schema: checked(rule, data)",
+      "d": "All rules are checked during validation",
+      "inv": [
+        "exhaustive\\_validation"
+      ]
+    },
+    {
+      "id": "P.P11.2",
+      "n": "Determinism",
+      "spec": "validate(data) always produces same result",
+      "d": "Validation is deterministic",
+      "inv": [
+        "deterministic\\_checking"
+      ]
+    },
+    {
+      "id": "P.P11.3",
+      "n": "Clear Errors",
+      "spec": "∀violation: actionable(violation.message)",
+      "d": "Error messages are clear and actionable",
+      "inv": [
+        "helpful\\_errors"
+      ]
+    },
+    {
+      "id": "P.P11.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Validation results are easy to interpret and act on",
+      "inv": [
+        "actionable\\_feedback"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Type Error",
+      "sig": "Type mismatch: expected T1, got T2",
+      "def": "$type\\_error(expected: Type, actual: Type) → Error = create\\_error(\"Type mismatch: expected \" + expected + \", got \" + actual, location)$",
+      "pre": [
+        "expected \\neq actual"
+      ],
+      "post": [
+        "error\\_reported = true"
+      ],
+      "fx": [
+        "Reports type mismatch",
+        "Includes location info"
+      ]
+    },
+    {
+      "n": "Semantic Error",
+      "sig": "Undeclared variable, invalid operation, etc.",
+      "def": "$semantic\\_error(kind: ErrorKind, context: Context) → Error = create\\_error(error\\_message(kind), context.location)$",
+      "pre": [
+        "kind \\in \\{undeclared, invalid\\_op, scope\\_error\\}"
+      ],
+      "post": [
+        "error\\_logged = true"
+      ],
+      "fx": [
+        "Reports semantic violation",
+        "Provides context"
+      ]
+    },
+    {
+      "n": "Syntax Error",
+      "sig": "Unexpected token, missing semicolon, etc.",
+      "def": "$syntax\\_error(token: Token, expected: Set⟨Token⟩) → Error = create\\_error(\"Unexpected \" + token + \", expected one of \" + expected, token.location)$",
+      "pre": [
+        "token \\notin expected"
+      ],
+      "post": [
+        "parsing\\_halted = true"
+      ],
+      "fx": [
+        "Reports syntax violation",
+        "Stops parsing"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Validator/Checker in modern applications",
+      "d": "implements validator/checker pattern"
+    },
+    {
+      "n": "Web-based validator/checker",
+      "d": "browser implementation of validator/checker"
+    },
+    {
+      "n": "Mobile validator/checker",
+      "d": "mobile app implementation"
+    }
+  ]
+}

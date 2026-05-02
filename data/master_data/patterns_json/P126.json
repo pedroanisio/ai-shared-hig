@@ -1,0 +1,194 @@
+{
+  "id": "P126",
+  "v": "1.1",
+  "name": "Token Usage Display",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D_{tokens} = (Usage, Cost, Limits, Breakdown) : Tokens_{used} \\to Display_{cost}$",
+  "desc": "Token usage display shows AI model token consumption metrics and cost estimates.",
+  "comps": [
+    {
+      "n": "Usage",
+      "t": "(ℕ_{input}, ℕ_{output}, ℕ_{total})",
+      "d": "Tuple of input tokens, output tokens, and total tokens consumed",
+      "nota": "Usage"
+    },
+    {
+      "n": "Cost",
+      "t": "ℝ₊",
+      "d": "Monetary cost of token usage",
+      "nota": "Cost"
+    },
+    {
+      "n": "Limits",
+      "t": "(ℕ_{max}, ℝ_{budget})",
+      "d": "Maximum token and budget limits",
+      "nota": "Limits"
+    },
+    {
+      "n": "Breakdown",
+      "t": "Map⟨Model, (ℕ, ℝ)⟩",
+      "d": "Per-model breakdown of tokens and costs",
+      "nota": "Breakdown"
+    }
+  ],
+  "types": [
+    {
+      "n": "Usage",
+      "def": "(input_tokens: ℕ, output_tokens: ℕ, cost: ℝ, timestamp: Time)",
+      "d": "Token usage metrics"
+    },
+    {
+      "n": "AggregateUsage",
+      "def": "(total_tokens: ℕ, total_cost: ℝ, period: TimePeriod)",
+      "d": "Aggregated usage over period"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P126.1",
+      "n": "Accuracy",
+      "spec": "∀usage: accurate\\_count(usage.tokens)",
+      "d": "Token counts are accurate",
+      "inv": [
+        "precise\\_counting"
+      ]
+    },
+    {
+      "id": "P.P126.2",
+      "n": "Real-Time Updates",
+      "spec": "new\\_usage ⇒ display\\_updated immediately",
+      "d": "Display updates in real-time",
+      "inv": [
+        "live\\_tracking"
+      ]
+    },
+    {
+      "id": "P.P126.3",
+      "n": "Cost Transparency",
+      "spec": "∀usage: visible(usage.cost\\_breakdown)",
+      "d": "Cost breakdown is transparent",
+      "inv": [
+        "clear\\_costs"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Track Usage",
+      "sig": "track(request: Request, response: Response) → Usage",
+      "def": "$track(request: Request, response: Response) → Usage = input\\_tokens := count\\_tokens(request); output\\_tokens := count\\_tokens(response); cost := estimate\\_cost(input\\_tokens, output\\_tokens); return Usage(input\\_tokens, output\\_tokens, cost)$",
+      "pre": [
+        "request ≠ null ∧ response ≠ null"
+      ],
+      "post": [
+        "result.total = input\\_tokens + output\\_tokens"
+      ],
+      "fx": [
+        "Counts input and output tokens",
+        "Estimates cost"
+      ]
+    },
+    {
+      "n": "Display Usage",
+      "sig": "display(usage: Usage) → Visualization",
+      "def": "$display(usage: Usage) → Visualization = chart := create\\_usage\\_chart(usage); stats := format\\_statistics(usage); cost\\_info := format\\_cost(usage.cost); return Visualization(chart, stats, cost\\_info)$",
+      "pre": [
+        "usage ≠ null"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Creates usage chart",
+        "Formats statistics and cost"
+      ]
+    },
+    {
+      "n": "Aggregate Usage",
+      "sig": "aggregate(usages: Sequence⟨Usage⟩, period: TimePeriod) → AggregateUsage",
+      "def": "$aggregate(usages: Sequence⟨Usage⟩, period: TimePeriod) → AggregateUsage = filtered := filter\\_by\\_period(usages, period); total\\_tokens := sum({u.total : u ∈ filtered}); total\\_cost := sum({u.cost : u ∈ filtered}); return AggregateUsage(total\\_tokens, total\\_cost, period)$",
+      "pre": [
+        "|usages| > 0"
+      ],
+      "post": [
+        "result.period = period"
+      ],
+      "fx": [
+        "Filters by time period",
+        "Aggregates tokens and cost"
+      ]
+    },
+    {
+      "n": "RecordUsage",
+      "sig": "record(model: Model, tokens_in: ℕ, tokens_out: ℕ) → Effect",
+      "def": "record(m, tin, tout) = Usage := (Usage.input + tin, Usage.output + tout, Usage.total + tin + tout); Breakdown[m] := (Breakdown[m].tokens + tin + tout, Breakdown[m].cost + calculate_cost(m, tin, tout))",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetBreakdown",
+      "sig": "breakdown() → Map⟨Model, (ℕ, ℝ)⟩",
+      "def": "breakdown() = Breakdown",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "CheckLimit",
+      "sig": "within_limits() → 𝔹",
+      "def": "within_limits() = Usage.total ≤ Limits.max ∧ Cost ≤ Limits.budget",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+{
+  "id": "P79",
+  "v": "1.1",
+  "name": "Anticipatory Action",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Anticipatory",
+    "Prediction"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A_{antic} = (P_{intent}, Prep_{res}, E_{spec}, V_{gate}) : Context \\to Actions_{prepared}$",
+  "desc": "Monolithic architecture pattern organizes application as a single deployable unit.",
+  "comps": [
+    {
+      "n": "P_{intent}",
+      "t": "Component",
+      "d": "Component implementing Anticipatory Action functionality",
+      "nota": "P_{intent}"
+    },
+    {
+      "n": "Prep_{res}",
+      "t": "Component",
+      "d": "Component implementing Anticipatory Action functionality",
+      "nota": "Prep_{res}"
+    },
+    {
+      "n": "E_{spec}",
+      "t": "Component",
+      "d": "Component implementing Anticipatory Action functionality",
+      "nota": "E_{spec}"
+    },
+    {
+      "n": "V_{gate}",
+      "t": "Component",
+      "d": "Component implementing Anticipatory Action functionality",
+      "nota": "V_{gate}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Application",
+      "def": "(id: ApplicationID, components: Set⟨Component⟩, version: Version)",
+      "d": "Monolithic application"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P79.1",
+      "n": "Single Deployment",
+      "spec": "all\\_components deployed\\_together",
+      "d": "All components deployed as unit",
+      "inv": [
+        "unified\\_deployment"
+      ]
+    },
+    {
+      "id": "P.P79.2",
+      "n": "Shared Database",
+      "spec": "components share\\_database",
+      "d": "Components share database",
+      "inv": [
+        "centralized\\_data"
+      ]
+    },
+    {
+      "id": "P.P79.3",
+      "n": "Process Coupling",
+      "spec": "components in\\_same\\_process",
+      "d": "Components run in same process",
+      "inv": [
+        "process\\_coupling"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Deploy Application",
+      "sig": "deploy(app: Application, target: Environment) → Deployment",
+      "def": "$deploy(app: Application, target: Environment) → Deployment = build := compile\\_and\\_package(app); test\\_suite := run\\_tests(build); if test\\_suite.passed: artifact := create\\_artifact(build); deploy\\_to\\_environment(artifact, target); return Deployment(app, target, Success) else: return Deployment(app, target, Failed)$",
+      "pre": [
+        "valid\\_application(app)"
+      ],
+      "post": [
+        "deployed ∨ failed"
+      ],
+      "fx": [
+        "Compiles and packages",
+        "Runs tests",
+        "Deploys if passed"
+      ]
+    },
+    {
+      "n": "Scale Application",
+      "sig": "scale(app: ApplicationID, instances: ℕ) → Effect",
+      "def": "$scale(app: ApplicationID, instances: ℕ) → Effect = for i in 1..instances: deploy\\_instance(app); configure\\_load\\_balancer(app, instances)$",
+      "pre": [
+        "instances > 0"
+      ],
+      "post": [
+        "instance\\_count(app) = instances"
+      ],
+      "fx": [
+        "Deploys instances",
+        "Configures load balancer"
+      ]
+    },
+    {
+      "n": "Update Application",
+      "sig": "update(app: ApplicationID, new_version: Version) → Effect",
+      "def": "$update(app: ApplicationID, new\\_version: Version) → Effect = schedule\\_downtime(); stop\\_application(app); deploy(new\\_version); run\\_migrations(); start\\_application(app); end\\_downtime()$",
+      "pre": [
+        "valid\\_version(new\\_version)"
+      ],
+      "post": [
+        "app.version = new\\_version"
+      ],
+      "fx": [
+        "Schedules downtime",
+        "Stops",
+        "Deploys new version",
+        "Runs migrations",
+        "Starts"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Anticipatory implementation",
+      "d": "Applied in ai, anticipatory systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

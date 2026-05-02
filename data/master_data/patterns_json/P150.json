@@ -1,0 +1,194 @@
+{
+  "id": "P150",
+  "v": "1.1",
+  "name": "Rate Limit Warning",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$W_{rate} = (Rate, Limit, Warning_{threshold}, Alert) : Usage_{rate} \\to Warning$",
+  "desc": "Rate limit warnings alert users before hitting API rate limits to prevent service interruption.",
+  "comps": [
+    {
+      "n": "Rate_{current}",
+      "t": "ℕ",
+      "d": "Current request rate",
+      "nota": "Rate_{current}"
+    },
+    {
+      "n": "Rate_{limit}",
+      "t": "ℕ",
+      "d": "Maximum allowed rate",
+      "nota": "Rate_{limit}"
+    },
+    {
+      "n": "Window",
+      "t": "Duration",
+      "d": "Time window for rate calculation",
+      "nota": "Window"
+    },
+    {
+      "n": "Warning",
+      "t": "(Rate, Limit) → Alert",
+      "d": "Warning generation function",
+      "nota": "Warning"
+    }
+  ],
+  "types": [
+    {
+      "n": "RateStatus",
+      "def": "(remaining: ℕ, window: TimeWindow, reset_at: Time)",
+      "d": "Current rate limit status"
+    },
+    {
+      "n": "Warning",
+      "def": "(message: String, remaining: ℕ, reset_at: Time)",
+      "d": "Rate limit warning"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P150.1",
+      "n": "Early Warning",
+      "spec": "warning\\_shown before limit\\_reached",
+      "d": "Warnings appear before hitting limit",
+      "inv": [
+        "proactive\\_warnings"
+      ]
+    },
+    {
+      "id": "P.P150.2",
+      "n": "Accurate Tracking",
+      "spec": "tracked\\_requests = actual\\_requests",
+      "d": "Request tracking is accurate",
+      "inv": [
+        "precise\\_tracking"
+      ]
+    },
+    {
+      "id": "P.P150.3",
+      "n": "Clear Communication",
+      "spec": "∀warning: includes\\_reset\\_time(warning)",
+      "d": "Warnings include reset time",
+      "inv": [
+        "informative\\_warnings"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Track Rate",
+      "sig": "track(endpoint: Endpoint, request: Request) → RateStatus",
+      "def": "$track(endpoint: Endpoint, request: Request) → RateStatus = window := get\\_rate\\_window(endpoint); requests[endpoint][window] := requests[endpoint][window] + 1; remaining := limit[endpoint] - requests[endpoint][window]; return RateStatus(remaining, window)$",
+      "pre": [
+        "endpoint ≠ null"
+      ],
+      "post": [
+        "remaining ≥ 0"
+      ],
+      "fx": [
+        "Increments request counter",
+        "Computes remaining requests"
+      ]
+    },
+    {
+      "n": "Warn On Threshold",
+      "sig": "warn(status: RateStatus, threshold: ℝ) → Warning | null",
+      "def": "$warn(status: RateStatus, threshold: ℝ) → Warning | null = percentage := 1 - (status.remaining / limit); if percentage ≥ threshold: return Warning(\"Approaching rate limit\", status.remaining, reset\\_time(status.window)) else: return null$",
+      "pre": [
+        "0 ≤ threshold ≤ 1"
+      ],
+      "post": [
+        "(1 - status.remaining/limit ≥ threshold) ⇔ result ≠ null"
+      ],
+      "fx": [
+        "Computes usage percentage",
+        "Returns warning if threshold exceeded"
+      ]
+    },
+    {
+      "n": "Block On Limit",
+      "sig": "block(endpoint: Endpoint) → Effect",
+      "def": "$block(endpoint: Endpoint) → Effect = if requests[endpoint] ≥ limit[endpoint]: throw RateLimitExceeded(endpoint, reset\\_time(current\\_window))$",
+      "pre": [
+        "endpoint ≠ null"
+      ],
+      "post": [
+        "requests[endpoint] < limit[endpoint]"
+      ],
+      "fx": [
+        "Checks rate limit",
+        "Throws error if exceeded"
+      ]
+    },
+    {
+      "n": "RecordRequest",
+      "sig": "record() → Effect",
+      "def": "record() increments request count in current window",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetRate",
+      "sig": "rate() → ℕ",
+      "def": "rate() returns requests per window",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "CheckWarning",
+      "sig": "check() → Alert?",
+      "def": "check() returns warning if approaching limit",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

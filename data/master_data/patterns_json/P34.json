@@ -1,0 +1,206 @@
+{
+  "id": "P34",
+  "v": "1.1",
+  "name": "Strategy Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (interface, implementations, selector, current)$",
+  "desc": "Strategy pattern encapsulates algorithms as interchangeable objects for runtime selection.",
+  "comps": [
+    {
+      "n": "interface",
+      "t": "Interface",
+      "d": "defines algorithm contract",
+      "nota": "interface"
+    },
+    {
+      "n": "implementations",
+      "t": "Map⟨ID, Implementation⟩",
+      "d": "concrete strategies",
+      "nota": "implementations"
+    },
+    {
+      "n": "selector",
+      "t": "Context → ID",
+      "d": "chooses strategy",
+      "nota": "selector"
+    },
+    {
+      "n": "current",
+      "t": "Implementation",
+      "d": "active strategy",
+      "nota": "current"
+    }
+  ],
+  "types": [
+    {
+      "n": "Strategy",
+      "def": "(name: String, algorithm: Data → Result)",
+      "d": "Encapsulated algorithm"
+    },
+    {
+      "n": "Interface",
+      "def": "Set⟨MethodSignature⟩",
+      "d": "Required method signatures"
+    },
+    {
+      "n": "Implementation",
+      "def": "(id: ID, methods: Map⟨String, Function⟩)",
+      "d": "Concrete strategy implementation"
+    },
+    {
+      "n": "Context",
+      "def": "Map⟨String, Value⟩  // Decision criteria",
+      "d": "Selection context for strategy"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P34.1",
+      "n": "Runtime Selection",
+      "spec": "strategy changeable at\\_runtime",
+      "d": "Strategy can change at runtime",
+      "inv": [
+        "dynamic\\_strategy"
+      ]
+    },
+    {
+      "id": "P.P34.2",
+      "n": "Interface Uniformity",
+      "spec": "∀strategy: same\\_interface",
+      "d": "All strategies share same interface",
+      "inv": [
+        "uniform\\_interface"
+      ]
+    },
+    {
+      "id": "P.P34.3",
+      "n": "Encapsulation",
+      "spec": "algorithm\\_details hidden",
+      "d": "Algorithm details are encapsulated",
+      "inv": [
+        "hidden\\_implementation"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Set Strategy",
+      "sig": "set(strategy: Strategy) → Effect",
+      "def": "$set(strategy: Strategy) → Effect = validate\\_strategy(strategy); current\\_strategy := strategy$",
+      "pre": [
+        "valid\\_strategy(strategy)"
+      ],
+      "post": [
+        "current\\_strategy = strategy"
+      ],
+      "fx": [
+        "Validates strategy",
+        "Sets as current"
+      ]
+    },
+    {
+      "n": "Execute Strategy",
+      "sig": "execute(data: Data) → Result",
+      "def": "$execute(data: Data) → Result = return current\\_strategy.algorithm(data)$",
+      "pre": [
+        "current\\_strategy ≠ null"
+      ],
+      "post": [
+        "result computed by current\\_strategy"
+      ],
+      "fx": [
+        "Delegates to strategy algorithm"
+      ]
+    },
+    {
+      "n": "Get Available Strategies",
+      "sig": "available() → Set⟨Strategy⟩",
+      "def": "$available() → Set⟨Strategy⟩ = return registered\\_strategies$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "|result| > 0"
+      ],
+      "fx": [
+        "Returns registered strategies"
+      ]
+    },
+    {
+      "n": "Select Strategy",
+      "sig": "select_strategy(context: Context) → Implementation",
+      "def": "$select_strategy(context: Context) → Implementation = id := selector(context) return implementations[id]$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Execute",
+      "sig": "execute(method: String, args: Sequence⟨Value⟩) → Value",
+      "def": "$execute(method: String, args: Sequence⟨Value⟩) → Value = return current.methods[method](args)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Register Strategy",
+      "sig": "register(impl: Implementation) → Effect",
+      "def": "$register(impl: Implementation) → Effect = validate(impl, interface) implementations[impl.id] := impl$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File format handlers",
+      "d": "strategies for parsing and writing formats"
+    },
+    {
+      "n": "Solver algorithms",
+      "d": "swappable solving strategies"
+    },
+    {
+      "n": "Rendering engines",
+      "d": "selectable renderers for output"
+    },
+    {
+      "n": "Compression algorithms",
+      "d": "choose compression strategy per context"
+    }
+  ]
+}

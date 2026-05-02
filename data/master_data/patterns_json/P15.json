@@ -1,0 +1,132 @@
+{
+  "id": "P15",
+  "v": "1.1",
+  "name": "Reasoning Chain",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R = (steps, state, deps, result)$",
+  "desc": "Reasoning chains show step-by-step logical inference and decision-making processes.",
+  "comps": [
+    {
+      "n": "steps",
+      "t": "Sequence⟨Step⟩",
+      "d": "reasoning steps",
+      "nota": "steps"
+    },
+    {
+      "n": "state",
+      "t": "Map⟨ℕ, State⟩",
+      "d": "tracks state at each step",
+      "nota": "state"
+    },
+    {
+      "n": "deps",
+      "t": "Map⟨ℕ, Set⟨ℕ⟩⟩",
+      "d": "defines step dependencies",
+      "nota": "deps"
+    },
+    {
+      "n": "result",
+      "t": "Result",
+      "d": "final conclusion",
+      "nota": "result"
+    }
+  ],
+  "types": [
+    {
+      "n": "ReasoningStep",
+      "def": "(premise: Statement, inference: Rule, conclusion: Statement)",
+      "d": "Single reasoning step"
+    },
+    {
+      "n": "Chain",
+      "def": "(steps: Sequence⟨ReasoningStep⟩, initial_premises: Set⟨Statement⟩)",
+      "d": "Complete reasoning chain"
+    },
+    {
+      "n": "Step",
+      "def": "(id: ℕ, operation: Operation, inputs: Set⟨ℕ⟩, output: Value)",
+      "d": "Structured step with inputs and output"
+    },
+    {
+      "n": "Operation",
+      "def": "Infer | Deduce | Calculate | Verify | ...",
+      "d": "Reasoning operation type"
+    },
+    {
+      "n": "State",
+      "def": "Map⟨String, Value⟩  // Variable bindings",
+      "d": "Variable bindings at a step"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P15.1",
+      "n": "Logical Validity",
+      "spec": "∀chain: logically\\_valid(chain)",
+      "d": "Reasoning chains are logically valid",
+      "inv": [
+        "sound\\_reasoning"
+      ]
+    },
+    {
+      "id": "P.P15.2",
+      "n": "Traceability",
+      "spec": "∀conclusion: traceable\\_to\\_premises(conclusion)",
+      "d": "Conclusions are traceable to premises",
+      "inv": [
+        "transparent\\_reasoning"
+      ]
+    },
+    {
+      "id": "P.P15.3",
+      "n": "Comprehensibility",
+      "spec": "∀step: understandable(step.rationale)",
+      "d": "Each step is comprehensible",
+      "inv": [
+        "explainable\\_steps"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := format(data) render(formatted)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "visible(data)"
+      ],
+      "fx": [
+        "Displays reasoning chain",
+        "Shows inference steps"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI reasoning",
+      "d": "chain-of-thought"
+    },
+    {
+      "n": "Proof derivation",
+      "d": "stepwise formal proof chains"
+    },
+    {
+      "n": "Build pipelines",
+      "d": "ordered build steps with dependencies"
+    },
+    {
+      "n": "Computation traces",
+      "d": "step-by-step execution traces"
+    }
+  ]
+}

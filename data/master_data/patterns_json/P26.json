@@ -1,0 +1,219 @@
+{
+  "id": "P26",
+  "v": "1.1",
+  "name": "Status Bar/Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$sb = (state, measure, visualize, update) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Status bars and indicators display system state and notifications in a persistent UI element.",
+  "comps": [
+    {
+      "n": "state",
+      "t": "State",
+      "d": "current status bar/indicator state",
+      "nota": "state"
+    },
+    {
+      "n": "measure",
+      "t": "State → Metric",
+      "d": "measurement function",
+      "nota": "measure"
+    },
+    {
+      "n": "visualize",
+      "t": "Metric → Visual",
+      "d": "visualization function",
+      "nota": "visualize"
+    },
+    {
+      "n": "update",
+      "t": "Visual → Effect",
+      "d": "display update function",
+      "nota": "update"
+    }
+  ],
+  "types": [
+    {
+      "n": "Indicator",
+      "def": "(icon: Icon, text: String, color: Color)",
+      "d": "Visual status indicator"
+    },
+    {
+      "n": "Position",
+      "def": "Left | Center | Right",
+      "d": "Position in status bar"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "System events or signals that update status"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Rendered status indicator state"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Current status items and update time"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P26.1",
+      "n": "Always Visible",
+      "spec": "status\\_bar permanently\\_visible",
+      "d": "Status bar is always visible",
+      "inv": [
+        "persistent\\_display"
+      ]
+    },
+    {
+      "id": "P.P26.2",
+      "n": "Non-Intrusive",
+      "spec": "¬blocks\\_main\\_content",
+      "d": "Status bar doesn't block content",
+      "inv": [
+        "unobtrusive"
+      ]
+    },
+    {
+      "id": "P.P26.3",
+      "n": "Quick Update",
+      "spec": "update\\_latency < threshold",
+      "d": "Status updates are quick",
+      "inv": [
+        "responsive\\_updates"
+      ]
+    },
+    {
+      "id": "P.P26.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Status information is legible and glanceable",
+      "inv": [
+        "glanceable\\_status"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update Status",
+      "sig": "update(key: String, value: String) → Effect",
+      "def": "$update(key: String, value: String) → Effect = status\\_items[key] := value; refresh\\_display()$",
+      "pre": [
+        "key ≠ null"
+      ],
+      "post": [
+        "status\\_items[key] = value"
+      ],
+      "fx": [
+        "Updates status value",
+        "Refreshes display"
+      ]
+    },
+    {
+      "n": "Add Indicator",
+      "sig": "add(indicator: Indicator, position: Position) → Effect",
+      "def": "$add(indicator: Indicator, position: Position) → Effect = indicators[position] := indicator; relayout(); refresh\\_display()$",
+      "pre": [
+        "valid\\_position(position)"
+      ],
+      "post": [
+        "visible(indicator)"
+      ],
+      "fx": [
+        "Adds indicator at position",
+        "Relayouts status bar",
+        "Refreshes display"
+      ]
+    },
+    {
+      "n": "Clear",
+      "sig": "clear(key: String) → Effect",
+      "def": "$clear(key: String) → Effect = status\\_items := status\\_items \\ {key}; refresh\\_display()$",
+      "pre": [
+        "key ∈ status\\_items"
+      ],
+      "post": [
+        "key ∉ status\\_items"
+      ],
+      "fx": [
+        "Removes status item",
+        "Refreshes display"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Status Bar/Indicator in modern applications",
+      "d": "implements status bar/indicator pattern"
+    },
+    {
+      "n": "Web-based status bar/indicator",
+      "d": "browser implementation of status bar/indicator"
+    },
+    {
+      "n": "Mobile status bar/indicator",
+      "d": "mobile app implementation"
+    }
+  ]
+}

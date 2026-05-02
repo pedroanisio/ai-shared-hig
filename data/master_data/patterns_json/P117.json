@@ -1,0 +1,228 @@
+{
+  "id": "P117",
+  "v": "1.1",
+  "name": "Event Filter & Query",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$Q_{event} = (Stream, Filters, Query_{language}, Results) : \\text{Events} \\to \\text{Events}_{filtered}$",
+  "desc": "Event filter and query system enables complex filtering and querying of event streams.",
+  "comps": [
+    {
+      "n": "Stream",
+      "t": "Stream⟨Event⟩",
+      "d": "event stream to be queried",
+      "nota": "Stream"
+    },
+    {
+      "n": "Filters",
+      "t": "Set⟨Predicate⟩",
+      "d": "collection of filter predicates",
+      "nota": "Filters"
+    },
+    {
+      "n": "Query_{language}",
+      "t": "QueryLanguage",
+      "d": "domain-specific query language for events",
+      "nota": "Query_{language}"
+    },
+    {
+      "n": "Results",
+      "t": "Stream⟨Event⟩",
+      "d": "filtered/queried result stream",
+      "nota": "Results"
+    }
+  ],
+  "types": [
+    {
+      "n": "Predicate",
+      "def": "Event → 𝔹",
+      "d": "Boolean function on events"
+    },
+    {
+      "n": "EventPattern",
+      "def": "Sequence of event type constraints",
+      "d": "Pattern matching template"
+    },
+    {
+      "n": "Match",
+      "def": "Sequence⟨Event⟩ matching pattern",
+      "d": "Events matching the pattern"
+    },
+    {
+      "n": "QueryLanguage",
+      "def": "$\\text{QueryLanguage} = \\{\\text{SQL-like}, \\text{CEP}, \\text{pattern-matching}, \\text{temporal-logic}\\}$",
+      "d": "Event query language family"
+    },
+    {
+      "n": "Query",
+      "def": "$\\text{Query} = (\\text{select}, \\text{where}, \\text{window}, \\text{aggregate})$",
+      "d": "Structured query with selection, predicates, and windowing"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P117.1",
+      "n": "Expressiveness",
+      "spec": "can\\_express(temporal\\_patterns ∪ value\\_constraints ∪ aggregations)",
+      "d": "Query language is expressive for common patterns",
+      "inv": [
+        "comprehensive\\_queries"
+      ]
+    },
+    {
+      "id": "P.P117.2",
+      "n": "Efficiency",
+      "spec": "query\\_time = O(n) where n = |relevant\\_events|",
+      "d": "Queries execute efficiently",
+      "inv": [
+        "efficient\\_execution"
+      ]
+    },
+    {
+      "id": "P.P117.3",
+      "n": "Composability",
+      "spec": "compose(q1, q2) creates valid query",
+      "d": "Queries can be composed",
+      "inv": [
+        "composable\\_queries"
+      ]
+    },
+    {
+      "id": "P.P117.4",
+      "n": "Pattern Matching Expressiveness",
+      "spec": "$\\text{Query}_{language} \\supseteq \\{\\text{SEQ}, \\text{AND}, \\text{OR}, \\text{NOT}, \\text{WITHIN}\\}$ (temporal operators)",
+      "d": "Query language supports core temporal operators",
+      "inv": [
+        "temporal_operators"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Filter",
+      "sig": "filter(stream: EventStream, predicate: Predicate) → EventStream",
+      "def": "$filter(stream: EventStream, predicate: Predicate) → EventStream = {e ∈ stream : predicate(e)}$",
+      "pre": [
+        "valid\\_predicate(predicate)"
+      ],
+      "post": [
+        "∀e ∈ result: predicate(e)"
+      ],
+      "fx": [
+        "Filters events by predicate"
+      ]
+    },
+    {
+      "n": "Query",
+      "sig": "query(stream: EventStream, pattern: EventPattern) → Set⟨Match⟩",
+      "def": "$query(stream: EventStream, pattern: EventPattern) → Set⟨Match⟩ = find\\_sequences\\_matching(stream, pattern)$",
+      "pre": [
+        "valid\\_pattern(pattern)"
+      ],
+      "post": [
+        "∀m ∈ result: matches(m, pattern)"
+      ],
+      "fx": [
+        "Finds event sequences matching pattern"
+      ]
+    },
+    {
+      "n": "Build Query",
+      "sig": "build(constraints: Set⟨Constraint⟩) → Query",
+      "def": "$build(constraints: Set⟨Constraint⟩) → Query = compile(constraints); optimize(); return Query(constraints)$",
+      "pre": [
+        "consistent(constraints)"
+      ],
+      "post": [
+        "executable(result)"
+      ],
+      "fx": [
+        "Compiles constraints into query",
+        "Optimizes execution plan"
+      ]
+    },
+    {
+      "n": "Apply Filter",
+      "sig": "applyFilter: Stream⟨Event⟩ × Predicate → Stream⟨Event⟩",
+      "def": "$\\text{applyFilter}(S, p) = \\{e \\in S \\mid p(e) = \\text{true}\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Execute Query",
+      "sig": "executeQuery: Stream⟨Event⟩ × Query → Stream⟨Event⟩",
+      "def": "$\\text{executeQuery}(S, q) = \\text{Results}$where$\\text{filtered} = \\{e \\in S \\mid q.\\text{where}(e)\\}$$\\text{windowed} = \\text{window}(\\text{filtered}, q.\\text{window})$$\\text{Results} = q.\\text{select}(\\text{windowed})$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "Pattern Match",
+      "sig": "matchPattern: Stream⟨Event⟩ × Pattern → Stream⟨Match⟩",
+      "def": "$\\text{matchPattern}(S, pat) = \\{m \\mid m \\text{ satisfies } pat \\land m \\subseteq S\\}$where Pattern can be regular expression or temporal logic formula",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22"
+    ],
+    "use": [
+      "P53"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Apache Flink CEP (Complex Event Processing)",
+      "d": "pattern matching on event streams"
+    },
+    {
+      "n": "Kafka Streams filtering",
+      "d": "stream transformations with predicates"
+    },
+    {
+      "n": "Elasticsearch Percolator",
+      "d": "stored queries matching incoming events"
+    },
+    {
+      "n": "AG-UI event filtering",
+      "d": "filtering 16 event types by user preferences"
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "id": "P119",
+  "v": "1.1",
+  "name": "Cross-Domain Integration View",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{cross} = (Domains, Data_{integrated}, Relationships, Unified_{display}) : \\text{Set}\\langle \\text{Domain} \\rangle \\to \\text{View}$",
+  "desc": "Cross-domain integration view shows relationships and data flow between different domains.",
+  "comps": [
+    {
+      "n": "Domains",
+      "t": "Set⟨Domain⟩",
+      "d": "collection of distinct business/data domains",
+      "nota": "Domains"
+    },
+    {
+      "n": "Data_{integrated}",
+      "t": "Domain → DataSet",
+      "d": "integrated data from each domain",
+      "nota": "Data_{integrated}"
+    },
+    {
+      "n": "Relationships",
+      "t": "Set⟨CrossDomainLink⟩",
+      "d": "relationships spanning domain boundaries",
+      "nota": "Relationships"
+    },
+    {
+      "n": "Unified_{display}",
+      "t": "Visualization",
+      "d": "unified view integrating all domains",
+      "nota": "Unified_{display}"
+    }
+  ],
+  "types": [
+    {
+      "n": "IntegrationMap",
+      "def": "(domains: Set⟨Domain⟩, connections: Set⟨Connection⟩, data_flows: Set⟨DataFlow⟩)",
+      "d": "Map of domain integrations"
+    },
+    {
+      "n": "Connection",
+      "def": "(from: Domain, to: Domain, type: ConnectionType)",
+      "d": "Connection between domains"
+    },
+    {
+      "n": "DataFlow",
+      "def": "Path of data between domains",
+      "d": "Data transfer path"
+    },
+    {
+      "n": "Domain",
+      "def": "$\\text{Domain} = (\\text{id}, \\text{schema}, \\text{agents}, \\text{context})$ (bounded context)",
+      "d": "Bounded context with schema and assigned agents"
+    },
+    {
+      "n": "CrossDomainLink",
+      "def": "$\\text{CrossDomainLink} = (\\text{source\\_domain}, \\text{target\\_domain}, \\text{mapping}, \\text{translator})$",
+      "d": "Mapping between domains with translation logic"
+    },
+    {
+      "n": "DataSet",
+      "def": "$\\text{DataSet} = \\text{Set}\\langle \\text{Entity} \\rangle$ where Entity is domain-specific",
+      "d": "Collection of domain entities"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P119.1",
+      "n": "Completeness",
+      "spec": "∀connection ∈ actual\\_integrations: shown(connection)",
+      "d": "All integrations are shown",
+      "inv": [
+        "complete\\_visualization"
+      ]
+    },
+    {
+      "id": "P.P119.2",
+      "n": "Clarity",
+      "spec": "understandable(integration\\_view)",
+      "d": "Integration relationships are clear",
+      "inv": [
+        "clear\\_representation"
+      ]
+    },
+    {
+      "id": "P.P119.3",
+      "n": "Navigability",
+      "spec": "∀domain: clickable(domain) ⇒ navigate\\_to(domain)",
+      "d": "Users can navigate between domains",
+      "inv": [
+        "interactive\\_navigation"
+      ]
+    },
+    {
+      "id": "P.P119.4",
+      "n": "Agent Domain Assignment",
+      "spec": "$\\forall a \\in \\text{Agents} : \\exists! d \\in Domains : a \\in d.\\text{agents}$ (unique assignment)",
+      "d": "Each agent belongs to exactly one domain",
+      "inv": [
+        "unique_agent_domain"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Build Integration Map",
+      "sig": "build_map(domains: Set⟨Domain⟩) → IntegrationMap",
+      "def": "$build\\_map(domains: Set⟨Domain⟩) → IntegrationMap = connections := find\\_connections(domains); data\\_flows := identify\\_data\\_flows(connections); return IntegrationMap(domains, connections, data\\_flows)$",
+      "pre": [
+        "|domains| ≥ 2"
+      ],
+      "post": [
+        "complete\\_map(result)"
+      ],
+      "fx": [
+        "Finds connections between domains",
+        "Identifies data flows",
+        "Creates integration map"
+      ]
+    },
+    {
+      "n": "Visualize Integration",
+      "sig": "visualize(map: IntegrationMap) → Visualization",
+      "def": "$visualize(map: IntegrationMap) → Visualization = layout := compute\\_layout(map.domains); render\\_domains(map.domains, layout); render\\_connections(map.connections, layout); render\\_flows(map.data\\_flows, layout); return Visualization(layout)$",
+      "pre": [
+        "map ≠ null"
+      ],
+      "post": [
+        "readable(result)"
+      ],
+      "fx": [
+        "Computes visual layout",
+        "Renders domains and connections"
+      ]
+    },
+    {
+      "n": "Trace Data Flow",
+      "sig": "trace(source: Domain, target: Domain) → Sequence⟨Domain⟩",
+      "def": "$trace(source: Domain, target: Domain) → Sequence⟨Domain⟩ = path\\_find(source, target, integration\\_graph)$",
+      "pre": [
+        "source ≠ target"
+      ],
+      "post": [
+        "result[0] = source ∧ result[|result|-1] = target"
+      ],
+      "fx": [
+        "Finds path between domains",
+        "Shows data flow sequence"
+      ]
+    },
+    {
+      "n": "Integrate Domains",
+      "sig": "integrate: Set⟨Domain⟩ → Unified_display",
+      "def": "$\\text{integrate}(D) = v$where$v.\\text{data} = \\bigcup_{d \\in D} Data_{integrated}(d)$$v.\\text{links} = \\{l \\in Relationships \\mid l.\\text{source}, l.\\text{target} \\in D\\}$$v.\\text{render} = \\text{visualize}(v.\\text{data}, v.\\text{links})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Translate Across Domains",
+      "sig": "translate: Entity × Domain × Domain → Entity",
+      "def": "$\\text{translate}(e, d_1, d_2) = e'$where$l = \\text{findLink}(d_1, d_2, Relationships)$$e' = l.\\text{translator}(e)$(schema mapping)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Query Cross-Domain",
+      "sig": "queryCrossDomain: Query × Set⟨Domain⟩ → ResultSet",
+      "def": "$\\text{queryCrossDomain}(q, D) = \\bigcup_{d \\in D} \\text{execute}(q, Data_{integrated}(d))$with result unification and deduplication",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P118",
+      "P120",
+      "P122"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Enterprise data integration dashboards",
+      "d": "unified view across CRM, ERP, Finance domains"
+    },
+    {
+      "n": "Multi-domain AI agent coordination",
+      "d": "agents from different domains collaborating"
+    },
+    {
+      "n": "Federated search interfaces",
+      "d": "searching across multiple domain-specific databases"
+    },
+    {
+      "n": "Healthcare information exchange",
+      "d": "integrating patient data across health systems"
+    }
+  ]
+}

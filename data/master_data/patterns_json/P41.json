@@ -1,0 +1,171 @@
+{
+  "id": "P41",
+  "v": "1.1",
+  "name": "Inline Status Chip",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (I, L, \\theta_{41}, \\sigma_{41}, \\alpha_{41})$",
+  "desc": "Inline status chips display compact status indicators within text or lists.",
+  "comps": [
+    {
+      "n": "\\sigma_{41}",
+      "t": "States → Styles",
+      "d": "**styling function**",
+      "nota": "\\sigma_{41}"
+    },
+    {
+      "n": "\\alpha_{41}",
+      "t": "Chip → Action",
+      "d": "optional **click action**",
+      "nota": "\\alpha_{41}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Chip",
+      "def": "(text: String, color: Color, icon: Icon, status: Status)",
+      "d": "Inline status chip"
+    },
+    {
+      "n": "Status",
+      "def": "Active | Inactive | Pending | Complete | Error",
+      "d": "Status type"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P41.1",
+      "n": "Compact Display",
+      "spec": "minimal\\_space\\_usage",
+      "d": "Chips use minimal space",
+      "inv": [
+        "space\\_efficient"
+      ]
+    },
+    {
+      "id": "P.P41.2",
+      "n": "Status Colors",
+      "spec": "color indicates\\_status",
+      "d": "Colors clearly indicate status",
+      "inv": [
+        "meaningful\\_colors"
+      ]
+    },
+    {
+      "id": "P.P41.3",
+      "n": "Inline Flow",
+      "spec": "flows\\_with\\_text",
+      "d": "Chips flow inline with text",
+      "inv": [
+        "inline\\_layout"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Chip",
+      "sig": "create(status: Status, text: String) → Chip",
+      "def": "$create(status: Status, text: String) → Chip = color := get\\_status\\_color(status); icon := get\\_status\\_icon(status); chip := Chip(text, color, icon); return chip$",
+      "pre": [
+        "valid\\_status(status)"
+      ],
+      "post": [
+        "chip.status = status"
+      ],
+      "fx": [
+        "Determines color",
+        "Gets icon",
+        "Creates chip"
+      ]
+    },
+    {
+      "n": "Update Chip",
+      "sig": "update(chip: Chip, new_status: Status) → Effect",
+      "def": "$update(chip: Chip, new\\_status: Status) → Effect = chip.status := new\\_status; chip.color := get\\_status\\_color(new\\_status); chip.icon := get\\_status\\_icon(new\\_status); animate\\_transition()$",
+      "pre": [
+        "chip ≠ null"
+      ],
+      "post": [
+        "chip.status = new\\_status"
+      ],
+      "fx": [
+        "Updates status",
+        "Updates color and icon",
+        "Animates transition"
+      ]
+    },
+    {
+      "n": "Remove Chip",
+      "sig": "remove(chip: Chip) → Effect",
+      "def": "$remove(chip: Chip) → Effect = animate\\_out(chip); detach(chip)$",
+      "pre": [
+        "chip ≠ null"
+      ],
+      "post": [
+        "¬visible(chip)"
+      ],
+      "fx": [
+        "Animates removal",
+        "Detaches from DOM"
+      ]
+    },
+    {
+      "n": "Update State",
+      "sig": "set_state(θ_new: State) → Effect",
+      "def": "$set_state(θ_new: State) → Effect = θ₄₁ := θ_new apply_style(σ₄₁(θ_new))$",
+      "pre": [
+        "_new_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing _new",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Render",
+      "sig": "render(S: Chip) → Component",
+      "def": "$render(S: Chip) → Component = HStack([ if I ≠ null then Icon(I), Text(L), ], style: σ₄₁(θ₄₁))$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "\"AI: Partial\" warning chip",
+      "d": "warns that AI coverage is partial"
+    },
+    {
+      "n": "\"✓ Saved\" success chip",
+      "d": "confirms a successful save state"
+    },
+    {
+      "n": "\"⏱ Syncing...\" info chip",
+      "d": "indicates syncing is in progress"
+    },
+    {
+      "n": "\"❌ 2 errors\" error chip",
+      "d": "shows the current error count"
+    }
+  ]
+}

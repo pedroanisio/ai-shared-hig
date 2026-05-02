@@ -1,0 +1,162 @@
+{
+  "id": "F1.1",
+  "v": "1.1",
+  "name": "Input Capture Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$F = (source, validator, normalizer, store)$",
+  "desc": "Input capture validates and normalizes external inputs before storing in the system.",
+  "comps": [
+    {
+      "n": "source",
+      "t": "Input",
+      "d": "external input source",
+      "nota": "source"
+    },
+    {
+      "n": "validator",
+      "t": "Input → Valid | Invalid",
+      "d": "validates input data against rules",
+      "nota": "validator"
+    },
+    {
+      "n": "normalizer",
+      "t": "Valid → Internal",
+      "d": "converts to internal format",
+      "nota": "normalizer"
+    },
+    {
+      "n": "store",
+      "t": "Internal → Effect",
+      "d": "persists in system",
+      "nota": "store"
+    }
+  ],
+  "types": [
+    {
+      "n": "Input",
+      "def": "External data or event",
+      "d": "Data received from external sources"
+    },
+    {
+      "n": "Valid",
+      "def": "Validated input that passed checks",
+      "d": "Input that passed all validation rules"
+    },
+    {
+      "n": "Internal",
+      "def": "Normalized internal representation",
+      "d": "Canonical internal format after normalization"
+    },
+    {
+      "n": "Effect",
+      "def": "Side effect of storage operation",
+      "d": "Observable effect of the capture operation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F1.1.1",
+      "n": "Validation Required",
+      "spec": "∀i ∈ Input: store(i) ⇒ validator(i) = Valid No invalid input reaches storage",
+      "d": "All stored inputs must pass validation",
+      "inv": [
+        "∀stored: validated(stored)"
+      ]
+    },
+    {
+      "id": "P.F1.1.2",
+      "n": "Normalization",
+      "spec": "∀v ∈ Valid: normalizer(v) produces consistent Internal format",
+      "d": "Validated inputs are normalized to consistent format",
+      "inv": [
+        "consistent\\_format(normalized)"
+      ]
+    },
+    {
+      "id": "P.F1.1.3",
+      "n": "Persistence",
+      "spec": "∀i ∈ Internal: store(i) ⇒ retrievable(i)",
+      "d": "Stored data is persistently retrievable",
+      "inv": [
+        "durable(storage)"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Capture",
+      "sig": "capture(input: Input) → Effect",
+      "def": "$capture(input: Input) → Effect = case validator(input) of Valid(v) → store(normalizer(v)) Invalid(e) → log_error(e); reject(input)$",
+      "pre": [
+        "input ≠ null"
+      ],
+      "post": [
+        "valid(input) ⇒ stored(normalize(input))"
+      ],
+      "fx": [
+        "Validates input",
+        "Normalizes if valid",
+        "Stores or rejects"
+      ]
+    },
+    {
+      "n": "Validate",
+      "sig": "validate(input: Input) → Valid | Invalid",
+      "def": "$validate(input: Input) → Valid | Invalid = apply\\_validation\\_rules(input); if passed: Valid(input) else: Invalid(errors)$",
+      "pre": [
+        "input ≠ null"
+      ],
+      "post": [
+        "result ∈ {Valid, Invalid}"
+      ],
+      "fx": [
+        "Checks validation rules",
+        "Returns validation result"
+      ]
+    },
+    {
+      "n": "Normalize",
+      "sig": "normalize(valid: Valid) → Internal",
+      "def": "$normalize(valid: Valid) → Internal = transform_to_canonical_format(valid)$",
+      "pre": [
+        "validated(valid)"
+      ],
+      "post": [
+        "canonical\\_form(result)"
+      ],
+      "fx": [
+        "Converts to internal format",
+        "Applies normalization rules"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "User input forms",
+      "d": "Form submissions validated and normalized before storage"
+    },
+    {
+      "n": "File upload handlers",
+      "d": "Upload pipelines that validate and normalize files"
+    },
+    {
+      "n": "API request handlers",
+      "d": "Inbound payload processing with validation and normalization"
+    },
+    {
+      "n": "Sensor data ingestion",
+      "d": "Continuous sensor inputs normalized on ingest"
+    },
+    {
+      "n": "Clipboard paste operations",
+      "d": "Pasted content sanitized and normalized"
+    }
+  ]
+}

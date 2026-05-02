@@ -1,0 +1,190 @@
+{
+  "id": "P94",
+  "v": "1.1",
+  "name": "Tool Execution Visualization",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "Tool Execution",
+    "Transparency"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{tool} = (T_{active}, P_{progress}, R_{results}, E_{errors}) : Tool_{exec} \\to Visualization$",
+  "desc": "Lazy loading pattern defers loading of non-critical resources until needed.",
+  "comps": [
+    {
+      "n": "T_{active}",
+      "t": "Set⟨Tool⟩",
+      "d": "Set of currently executing tools with real-time status tracking",
+      "nota": "T_{active}"
+    },
+    {
+      "n": "P_{progress}",
+      "t": "Tool → [0,1]",
+      "d": "Progress function mapping each tool to completion percentage",
+      "nota": "P_{progress}"
+    },
+    {
+      "n": "R_{results}",
+      "t": "Tool → Result",
+      "d": "Map of completed tools to their execution results",
+      "nota": "R_{results}"
+    },
+    {
+      "n": "E_{errors}",
+      "t": "Tool → Error?",
+      "d": "Partial function mapping failed tools to error information",
+      "nota": "E_{errors}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Loader",
+      "def": "() → Content",
+      "d": "Content loader function"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P94.1",
+      "n": "Viewport Detection",
+      "spec": "loads\\_when\\_near\\_viewport",
+      "d": "Loads when near viewport",
+      "inv": [
+        "smart\\_loading"
+      ]
+    },
+    {
+      "id": "P.P94.2",
+      "n": "Initial Performance",
+      "spec": "initial\\_page\\_load fast",
+      "d": "Initial page load is fast",
+      "inv": [
+        "optimized\\_initial\\_load"
+      ]
+    },
+    {
+      "id": "P.P94.3",
+      "n": "Placeholder Display",
+      "spec": "shows\\_placeholder\\_while\\_loading",
+      "d": "Shows placeholder while loading",
+      "inv": [
+        "loading\\_feedback"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Lazy Element",
+      "sig": "register(element: Element, loader: Loader) → Effect",
+      "def": "$register(element: Element, loader: Loader) → Effect = observer := create\\_intersection\\_observer(λentries: for entry in entries: if entry.intersecting: load\\_element(entry.target)); observer.observe(element); element.loader := loader$",
+      "pre": [
+        "element ≠ null ∧ loader ≠ null"
+      ],
+      "post": [
+        "observed(element)"
+      ],
+      "fx": [
+        "Creates intersection observer",
+        "Observes element"
+      ]
+    },
+    {
+      "n": "Load Element",
+      "sig": "load(element: Element) → Effect",
+      "def": "$load(element: Element) → Effect = if ¬element.loaded: element.loading := true; content := element.loader(); element.content := content; element.loaded := true; element.loading := false; observer.unobserve(element)$",
+      "pre": [
+        "¬element.loaded"
+      ],
+      "post": [
+        "element.loaded ∧ ¬element.loading"
+      ],
+      "fx": [
+        "Loads content",
+        "Marks as loaded",
+        "Stops observing"
+      ]
+    },
+    {
+      "n": "Preload Critical",
+      "sig": "preload(elements: Set⟨Element⟩) → Effect",
+      "def": "$preload(elements: Set⟨Element⟩) → Effect = for element in elements: if element.critical: load(element)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "∀e ∈ elements: e.critical ⇒ e.loaded"
+      ],
+      "fx": [
+        "Loads critical elements eagerly"
+      ]
+    },
+    {
+      "n": "GetResult",
+      "sig": "get_result(future: Future⟨T⟩) → T",
+      "def": "$get\\_result(future: Future⟨T⟩) → T = if future.ready: return future.value; else: block\\_until\\_ready(); return future.value$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(tool_id: UUID) → Stream⟨ToolUpdate⟩",
+      "def": "subscribe(tool_id) = stream of updates {(t, P_{progress}(t), status(t)",
+      "pre": [
+        "tool_id_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing tool_id",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetActive",
+      "sig": "get_active() → Set⟨Tool⟩",
+      "def": "get_active() = T_{active}",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Tool Execution implementation",
+      "d": "Applied in ai, tool execution systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

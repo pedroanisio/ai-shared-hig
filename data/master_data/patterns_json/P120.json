@@ -1,0 +1,150 @@
+{
+  "id": "P120",
+  "v": "1.1",
+  "name": "Domain-Specific Agent Activation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A_{domain} = (Domain, Agents_{specialist}, Activation, Context) : Domain \\to Agents_{active}$",
+  "desc": "Domain-specific agent activation triggers specialized AI agents for particular problem domains.",
+  "comps": [
+    {
+      "n": "Domain",
+      "t": "Component",
+      "d": "Component implementing Domain-Specific Agent Activation functionality",
+      "nota": "Domain"
+    },
+    {
+      "n": "Agents_{specialist}",
+      "t": "Component",
+      "d": "Generator producing dynamic Domain-Specific Agent Activation output",
+      "nota": "Agents_{specialist}"
+    },
+    {
+      "n": "Activation",
+      "t": "Component",
+      "d": "Component implementing Domain-Specific Agent Activation functionality",
+      "nota": "Activation"
+    },
+    {
+      "n": "Context",
+      "t": "Component",
+      "d": "Context container holding current application state for Domain-Specific Agent Activation",
+      "nota": "Context"
+    }
+  ],
+  "types": [
+    {
+      "n": "Agent",
+      "def": "Specialized AI agent for domain",
+      "d": "Domain-specific AI agent"
+    },
+    {
+      "n": "Context",
+      "def": "Task context with features",
+      "d": "Contextual information"
+    },
+    {
+      "n": "Task",
+      "def": "(description: String, domain: Domain, requirements: Set⟨Requirement⟩)",
+      "d": "Task to be delegated"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P120.1",
+      "n": "Specialization",
+      "spec": "∀domain: agent(domain) specialized\\_for domain",
+      "d": "Agents are specialized for their domains",
+      "inv": [
+        "domain\\_expertise"
+      ]
+    },
+    {
+      "id": "P.P120.2",
+      "n": "Correct Routing",
+      "spec": "detect(task) = domain ⇒ activate(domain) specialized\\_for task",
+      "d": "Tasks are routed to appropriate agents",
+      "inv": [
+        "accurate\\_routing"
+      ]
+    },
+    {
+      "id": "P.P120.3",
+      "n": "Graceful Degradation",
+      "spec": "¬specialized\\_agent\\_available ⇒ fallback\\_to\\_general",
+      "d": "System falls back gracefully when no specialist available",
+      "inv": [
+        "fallback\\_handling"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Detect Domain",
+      "sig": "detect(context: Context) → Domain | Unknown",
+      "def": "$detect(context: Context) → Domain | Unknown = features := extract\\_features(context); scores := {(d, classify(features, d)) : d ∈ domains}; if max(scores.values()) > threshold: return argmax(scores) else: return Unknown$",
+      "pre": [
+        "context ≠ null"
+      ],
+      "post": [
+        "result ∈ domains ∪ {Unknown}"
+      ],
+      "fx": [
+        "Extracts context features",
+        "Classifies domain",
+        "Returns domain or Unknown"
+      ]
+    },
+    {
+      "n": "Activate Agent",
+      "sig": "activate(domain: Domain) → Agent",
+      "def": "$activate(domain: Domain) → Agent = agent := get\\_or\\_create(domain); load\\_knowledge\\_base(agent, domain); initialize\\_tools(agent, domain); return agent$",
+      "pre": [
+        "registered(domain)"
+      ],
+      "post": [
+        "ready(result, domain)"
+      ],
+      "fx": [
+        "Gets or creates agent",
+        "Loads domain knowledge",
+        "Initializes domain tools"
+      ]
+    },
+    {
+      "n": "Delegate Task",
+      "sig": "delegate(task: Task, agent: Agent) → Result",
+      "def": "$delegate(task: Task, agent: Agent) → Result = if specialized(agent, task.domain): return agent.execute(task) else: return escalate(task)$",
+      "pre": [
+        "active(agent)"
+      ],
+      "post": [
+        "completed(result) ∨ escalated(result)"
+      ],
+      "fx": [
+        "Delegates to specialized agent",
+        "Returns result or escalates"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

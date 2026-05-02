@@ -1,0 +1,143 @@
+{
+  "id": "P121",
+  "v": "1.1",
+  "name": "Context Preservation Across Domains",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P_{ctx} = (Context, Domain_{src}, Domain_{tgt}, Transform) : Context_i \\to Context_j$",
+  "desc": "Context preservation maintains state and information when transitioning between domains.",
+  "comps": [
+    {
+      "n": "Context",
+      "t": "Component",
+      "d": "Context container holding current application state for Context Preservation Across Domains",
+      "nota": "Context"
+    },
+    {
+      "n": "Domain_{src}",
+      "t": "Component",
+      "d": "Component implementing Context Preservation Across Domains functionality",
+      "nota": "Domain_{src}"
+    },
+    {
+      "n": "Domain_{tgt}",
+      "t": "Component",
+      "d": "Component implementing Context Preservation Across Domains functionality",
+      "nota": "Domain_{tgt}"
+    },
+    {
+      "n": "Transform",
+      "t": "Component",
+      "d": "Component implementing Context Preservation Across Domains functionality",
+      "nota": "Transform"
+    }
+  ],
+  "types": [
+    {
+      "n": "Context",
+      "def": "Domain state and data",
+      "d": "Preserved domain context"
+    },
+    {
+      "n": "ContextHandle",
+      "def": "Unique identifier for stored context",
+      "d": "Handle for retrieval"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P121.1",
+      "n": "Persistence",
+      "spec": "save(c); restore() = c",
+      "d": "Saved context can be faithfully restored",
+      "inv": [
+        "faithful\\_restoration"
+      ]
+    },
+    {
+      "id": "P.P121.2",
+      "n": "Expiration",
+      "spec": "age(context) > max\\_age ⇒ expired(context)",
+      "d": "Old contexts expire automatically",
+      "inv": [
+        "automatic\\_cleanup"
+      ]
+    },
+    {
+      "id": "P.P121.3",
+      "n": "Privacy",
+      "spec": "¬accessible(context, unauthorized\\_user)",
+      "d": "Contexts are access-controlled",
+      "inv": [
+        "secure\\_storage"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Save Context",
+      "sig": "save(domain: Domain, context: Context) → ContextHandle",
+      "def": "$save(domain: Domain, context: Context) → ContextHandle = handle := generate\\_handle(); storage[handle] := (domain, context, timestamp=now()); return handle$",
+      "pre": [
+        "valid\\_context(context)"
+      ],
+      "post": [
+        "retrievable(handle)"
+      ],
+      "fx": [
+        "Generates unique handle",
+        "Stores context with timestamp"
+      ]
+    },
+    {
+      "n": "Restore Context",
+      "sig": "restore(handle: ContextHandle) → Context | Expired",
+      "def": "$restore(handle: ContextHandle) → Context | Expired = if exists(handle) ∧ ¬expired(handle): (domain, context, timestamp) := storage[handle]; return context else: return Expired$",
+      "pre": [
+        "handle ≠ null"
+      ],
+      "post": [
+        "result = original\\_context ∨ expired(result)"
+      ],
+      "fx": [
+        "Retrieves stored context",
+        "Returns context or Expired"
+      ]
+    },
+    {
+      "n": "Merge Contexts",
+      "sig": "merge(c1: Context, c2: Context) → Context",
+      "def": "$merge(c1: Context, c2: Context) → Context = shared := c1 ∩ c2; unique1 := c1 \\ c2; unique2 := c2 \\ c1; return shared ∪ unique1 ∪ unique2$",
+      "pre": [
+        "compatible(c1, c2)"
+      ],
+      "post": [
+        "contains(result, c1) ∧ contains(result, c2)"
+      ],
+      "fx": [
+        "Merges two contexts",
+        "Resolves conflicts"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

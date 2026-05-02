@@ -1,0 +1,200 @@
+{
+  "id": "P135",
+  "v": "1.1",
+  "name": "Conflict Resolution Interface",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{conflict} = (Conflicts, Options, Reasoning, Choose) : Conflicts \\to Resolution$",
+  "desc": "Conflict resolution interface helps users resolve editing conflicts through visual comparison and merging.",
+  "comps": [
+    {
+      "n": "Conflicts",
+      "t": "Set⟨Conflict⟩",
+      "d": "Detected conflicts requiring resolution",
+      "nota": "Conflicts"
+    },
+    {
+      "n": "Options",
+      "t": "Conflict → Set⟨Resolution⟩",
+      "d": "Available resolution options for each conflict",
+      "nota": "Options"
+    },
+    {
+      "n": "Reasoning",
+      "t": "Resolution → Justification",
+      "d": "Explanation for each resolution option",
+      "nota": "Reasoning"
+    },
+    {
+      "n": "Choose",
+      "t": "(Conflict, Resolution) → Effect",
+      "d": "Function to select and apply resolution",
+      "nota": "Choose"
+    }
+  ],
+  "types": [
+    {
+      "n": "Conflict",
+      "def": "(left: Change, right: Change, location: Location)",
+      "d": "Conflicting changes"
+    },
+    {
+      "n": "Resolution",
+      "def": "KeepLeft | KeepRight | KeepBoth | Manual(Change)",
+      "d": "Conflict resolution strategy"
+    },
+    {
+      "n": "ConflictView",
+      "def": "Visual representation of conflict",
+      "d": "UI for conflict resolution"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P135.1",
+      "n": "Clear Visualization",
+      "spec": "∀conflict: easily\\_understood(visualization(conflict))",
+      "d": "Conflicts are clearly visualized",
+      "inv": [
+        "understandable\\_conflicts"
+      ]
+    },
+    {
+      "id": "P.P135.2",
+      "n": "Safe Resolution",
+      "spec": "resolve(conflict) preserves data integrity",
+      "d": "Resolution preserves data integrity",
+      "inv": [
+        "safe\\_merging"
+      ]
+    },
+    {
+      "id": "P.P135.3",
+      "n": "Undo Support",
+      "spec": "∀resolution: undoable(resolution)",
+      "d": "Conflict resolutions can be undone",
+      "inv": [
+        "reversible\\_resolution"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Detect Conflict",
+      "sig": "detect(changes: Set⟨Change⟩) → Set⟨Conflict⟩",
+      "def": "$detect(changes: Set⟨Change⟩) → Set⟨Conflict⟩ = {(c1, c2) : c1,c2 ∈ changes, overlaps(c1, c2) ∧ incompatible(c1, c2)}$",
+      "pre": [
+        "|changes| > 1"
+      ],
+      "post": [
+        "∀(c1,c2) ∈ result: conflicts(c1, c2)"
+      ],
+      "fx": [
+        "Finds overlapping changes",
+        "Identifies incompatible pairs"
+      ]
+    },
+    {
+      "n": "Present Conflict",
+      "sig": "present(conflict: Conflict) → ConflictView",
+      "def": "$present(conflict: Conflict) → ConflictView = (c1, c2) := conflict; view := create\\_diff\\_view(c1, c2); highlight\\_differences(view); add\\_resolution\\_controls(view); return view$",
+      "pre": [
+        "conflict ≠ null"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Creates diff view",
+        "Highlights differences",
+        "Adds resolution controls"
+      ]
+    },
+    {
+      "n": "Resolve Conflict",
+      "sig": "resolve(conflict: Conflict, resolution: Resolution) → Change",
+      "def": "$resolve(conflict: Conflict, resolution: Resolution) → Change = merged := case resolution of KeepLeft → conflict.left KeepRight → conflict.right KeepBoth → merge(conflict.left, conflict.right) Manual(edit) → edit; return merged$",
+      "pre": [
+        "valid\\_resolution(resolution)"
+      ],
+      "post": [
+        "¬conflicts(result, _)"
+      ],
+      "fx": [
+        "Applies resolution strategy",
+        "Creates merged change"
+      ]
+    },
+    {
+      "n": "DetectConflicts",
+      "sig": "detect() → Set⟨Conflict⟩",
+      "def": "detect() identifies conflicts in shared state",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ProposeResolutions",
+      "sig": "propose(c: Conflict) → Set⟨Resolution⟩",
+      "def": "propose(c) generates resolution options",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ApplyResolution",
+      "sig": "apply(c: Conflict, r: Resolution) → State",
+      "def": "apply(c, r) resolves conflict and updates state",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

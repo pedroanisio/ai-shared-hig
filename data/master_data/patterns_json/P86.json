@@ -1,0 +1,145 @@
+{
+  "id": "P86",
+  "v": "1.1",
+  "name": "Approval Checkpoint",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Approval",
+    "Control"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{approve} = (T_{checkpoint}, G_{preview}, UI_{approve}, Gate_{exec}) : Action_{critical} \\to Approved \\cup Rejected$",
+  "desc": "Space-based architecture pattern scales by distributing processing and data across processing units.",
+  "comps": [
+    {
+      "n": "T_{checkpoint}",
+      "t": "Component",
+      "d": "Component implementing Approval Checkpoint functionality",
+      "nota": "T_{checkpoint}"
+    },
+    {
+      "n": "G_{preview}",
+      "t": "Component",
+      "d": "Component implementing Approval Checkpoint functionality",
+      "nota": "G_{preview}"
+    },
+    {
+      "n": "UI_{approve}",
+      "t": "Component",
+      "d": "Component implementing Approval Checkpoint functionality",
+      "nota": "UI_{approve}"
+    },
+    {
+      "n": "Gate_{exec}",
+      "t": "Component",
+      "d": "Component implementing Approval Checkpoint functionality",
+      "nota": "Gate_{exec}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Space",
+      "def": "(units: Set⟨ProcessingUnit⟩)",
+      "d": "Distributed data space"
+    },
+    {
+      "n": "ProcessingUnit",
+      "def": "(id: UnitID, data: DataStore, processor: Processor)",
+      "d": "Independent processing unit"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P86.1",
+      "n": "Linear Scalability",
+      "spec": "throughput ∝ processing\\_units",
+      "d": "Throughput scales linearly with units",
+      "inv": [
+        "linear\\_scaling"
+      ]
+    },
+    {
+      "id": "P.P86.2",
+      "n": "Data Replication",
+      "spec": "data replicated\\_across\\_units",
+      "d": "Data replicated across units",
+      "inv": [
+        "redundant\\_storage"
+      ]
+    },
+    {
+      "id": "P.P86.3",
+      "n": "High Availability",
+      "spec": "unit\\_failure ¬⇒ system\\_failure",
+      "d": "System survives unit failures",
+      "inv": [
+        "fault\\_tolerant"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Write To Space",
+      "sig": "write(data: Data, space: Space) → Effect",
+      "def": "$write(data: Data, space: Space) → Effect = replicate\\_to\\_units(data, space.units); notify\\_processors(space, data)$",
+      "pre": [
+        "data ≠ null"
+      ],
+      "post": [
+        "∀unit ∈ space.units: contains(unit, data)"
+      ],
+      "fx": [
+        "Replicates to all units",
+        "Notifies processors"
+      ]
+    },
+    {
+      "n": "Read From Space",
+      "sig": "read(query: Query, space: Space) → Data",
+      "def": "$read(query: Query, space: Space) → Data = unit := select\\_unit(space.units); data := unit.query(query); return data$",
+      "pre": [
+        "query ≠ null"
+      ],
+      "post": [
+        "result matches\\_query"
+      ],
+      "fx": [
+        "Selects processing unit",
+        "Queries unit"
+      ]
+    },
+    {
+      "n": "Add Processing Unit",
+      "sig": "add_unit(space: Space) → ProcessingUnit",
+      "def": "$add\\_unit(space: Space) → ProcessingUnit = unit := ProcessingUnit(id=generate\\_id()); replicate\\_data\\_to(unit, space); space.units := space.units ∪ {unit}; return unit$",
+      "pre": [
+        "space ≠ null"
+      ],
+      "post": [
+        "unit ∈ space.units"
+      ],
+      "fx": [
+        "Creates processing unit",
+        "Replicates data",
+        "Adds to space"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Approval implementation",
+      "d": "Applied in ai, approval systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

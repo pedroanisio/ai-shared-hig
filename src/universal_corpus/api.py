@@ -5,6 +5,7 @@ This API provides endpoints to create, retrieve, update, and manage patterns
 conforming to the Universal Corpus XML schema.
 """
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, status, Query, Depends, UploadFile, File
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from typing import List, Optional, Dict, Any
@@ -33,21 +34,22 @@ from universal_corpus.csv_compact import (
 )
 
 
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    """Initialize database tables on application startup."""
+    init_db()
+    yield
+
+
 # Initialize FastAPI application
 app = FastAPI(
     title="Universal Corpus Pattern API",
     description="API for managing formal mathematical and conceptual patterns",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan
 )
-
-
-# Initialize database on startup
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database tables on application startup."""
-    init_db()
 
 
 # Helper functions for XML conversion
@@ -1452,4 +1454,3 @@ async def get_statistics(db: Session = Depends(get_db)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

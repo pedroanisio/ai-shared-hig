@@ -1,0 +1,232 @@
+{
+  "id": "P114",
+  "v": "1.1",
+  "name": "Stream Backpressure",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B_{press} = (Stream, Buffer, Rate_{control}, Drop_{strategy}) : \\text{Events}_{overwhelming} \\to \\text{Events}_{managed}$",
+  "desc": "Stream backpressure mechanisms prevent buffer overflow by controlling producer rates.",
+  "comps": [
+    {
+      "n": "Stream",
+      "t": "Stream⟨Event⟩",
+      "d": "incoming event stream with variable rate",
+      "nota": "Stream"
+    },
+    {
+      "n": "Buffer",
+      "t": "BoundedQueue⟨Event⟩",
+      "d": "bounded buffer for temporary storage",
+      "nota": "Buffer"
+    },
+    {
+      "n": "Rate_{control}",
+      "t": "ℕ × Time",
+      "d": "maximum events per time unit",
+      "nota": "Rate_{control}"
+    },
+    {
+      "n": "Drop_{strategy}",
+      "t": "Strategy",
+      "d": "policy for dropping events when overwhelmed",
+      "nota": "Drop_{strategy}"
+    }
+  ],
+  "types": [
+    {
+      "n": "BufferState",
+      "def": "(usage: ℝ, fill_rate: ℝ)",
+      "d": "Current buffer state metrics"
+    },
+    {
+      "n": "Producer",
+      "def": "Source generating items",
+      "d": "Data source producing items"
+    },
+    {
+      "n": "Consumer",
+      "def": "Sink processing items",
+      "d": "Data sink consuming items"
+    },
+    {
+      "n": "Strategy",
+      "def": "$\\text{Strategy} = \\{\\text{drop-oldest}, \\text{drop-newest}, \\text{drop-random}, \\text{drop-lowest-priority}\\}$",
+      "d": "Policy for dropping events under load"
+    },
+    {
+      "n": "BoundedQueue",
+      "def": "$\\text{BoundedQueue}\\langle T \\rangle = \\{q \\mid |q| \\leq \\text{capacity}\\}$",
+      "d": "Queue with fixed maximum capacity"
+    },
+    {
+      "n": "Rate",
+      "def": "$\\text{Rate} = \\frac{\\text{events}}{\\text{second}} \\in \\mathbb{R}_{\\geq 0}$",
+      "d": "Event throughput rate"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P114.1",
+      "n": "Bounded Buffer",
+      "spec": "∀t: |buffer(t)| ≤ capacity",
+      "d": "Buffer never exceeds capacity",
+      "inv": [
+        "no\\_overflow"
+      ]
+    },
+    {
+      "id": "P.P114.2",
+      "n": "Flow Control",
+      "spec": "producer\\_rate ≤ consumer\\_rate + buffer\\_capacity/time",
+      "d": "Backpressure maintains sustainable flow",
+      "inv": [
+        "controlled\\_flow"
+      ]
+    },
+    {
+      "id": "P.P114.3",
+      "n": "Responsiveness",
+      "spec": "signal\\_latency < threshold",
+      "d": "Backpressure signals are timely",
+      "inv": [
+        "timely\\_signals"
+      ]
+    },
+    {
+      "id": "P.P114.4",
+      "n": "Fairness (when drop-random)",
+      "spec": "$\\forall e_1, e_2 \\in Buffer : P(\\text{drop}(e_1)) = P(\\text{drop}(e_2))$ (uniform probability)",
+      "d": "Random drops are uniformly distributed across buffered events",
+      "inv": [
+        "uniform_drop"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Monitor Buffer",
+      "sig": "monitor(buffer: Buffer) → BufferState",
+      "def": "$monitor(buffer: Buffer) → BufferState = usage := |buffer| / buffer.capacity; rate := compute\\_fill\\_rate(buffer); return BufferState(usage, rate)$",
+      "pre": [
+        "buffer ≠ null"
+      ],
+      "post": [
+        "0 ≤ result.usage ≤ 1"
+      ],
+      "fx": [
+        "Measures buffer usage",
+        "Computes fill rate"
+      ]
+    },
+    {
+      "n": "Apply Backpressure",
+      "sig": "apply(state: BufferState, producer: Producer) → Effect",
+      "def": "$apply(state: BufferState, producer: Producer) → Effect = if state.usage > high\\_threshold: signal\\_stop(producer) elif state.usage > low\\_threshold: signal\\_slow(producer) else: signal\\_resume(producer)$",
+      "pre": [
+        "state ≠ null"
+      ],
+      "post": [
+        "producer\\_rate\\_adjusted()"
+      ],
+      "fx": [
+        "Signals producer to adjust rate",
+        "Prevents buffer overflow"
+      ]
+    },
+    {
+      "n": "Drain Buffer",
+      "sig": "drain(buffer: Buffer, consumer: Consumer) → Effect",
+      "def": "$drain(buffer: Buffer, consumer: Consumer) → Effect = while buffer.not\\_empty() ∧ consumer.ready(): item := buffer.dequeue(); consumer.process(item)$",
+      "pre": [
+        "consumer.ready()"
+      ],
+      "post": [
+        "|buffer| ≤ original\\_size"
+      ],
+      "fx": [
+        "Removes items from buffer",
+        "Processes items with consumer"
+      ]
+    },
+    {
+      "n": "Enqueue with Backpressure",
+      "sig": "enqueue: Event × Buffer → (Buffer, Signal)",
+      "def": "$\\text{enqueue}(e, b) = (b', s)$where$(b',\n        s) = \\begin{cases} (b \\oplus [e],\n        \\text{ok}) & \\text{if } |b| < \\text{capacity} \\\\ (\\text{drop}(b,\n        Drop_{strategy}) \\oplus [e],\n        \\text{backpressure}) & \\text{otherwise} \\end{cases}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Apply Drop Strategy",
+      "sig": "drop: Buffer × Strategy → Buffer",
+      "def": "$\\text{drop}(b, s) = b'$where$b' = \\begin{cases} \\text{tail}(b) & \\text{if } s = \\text{drop-oldest} \\\\ \\text{init}(b) & \\text{if } s = \\text{drop-newest} \\\\ b \\setminus \\{\\text{random}(b)\\} & \\text{if } s = \\text{drop-random} \\end{cases}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Throttle Stream",
+      "sig": "throttle: Stream⟨Event⟩ × Rate → Stream⟨Event⟩",
+      "def": "$\\text{throttle}(S, r) = S'$where$S'(t) = \\begin{cases} S(t) & \\text{if } \\text{rate}(t) \\leq r \\\\ \\text{None} & \\text{otherwise} \\end{cases}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Reactive Streams backpressure",
+      "d": "RxJS, Project Reactor throttling"
+    },
+    {
+      "n": "Kafka consumer backpressure",
+      "d": "consumer group lag management"
+    },
+    {
+      "n": "TCP flow control",
+      "d": "sliding window protocol for backpressure"
+    },
+    {
+      "n": "AG-UI event throttling",
+      "d": "managing high-frequency agent events in UI"
+    }
+  ]
+}

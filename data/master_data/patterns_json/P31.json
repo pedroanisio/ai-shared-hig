@@ -1,0 +1,172 @@
+{
+  "id": "P31",
+  "v": "1.1",
+  "name": "Observer Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$O = (subject, observers, notify)$",
+  "desc": "Observer pattern enables objects to notify subscribers of state changes automatically.",
+  "comps": [
+    {
+      "n": "subject",
+      "t": "Subject",
+      "d": "observed object",
+      "nota": "subject"
+    },
+    {
+      "n": "observers",
+      "t": "Set⟨Observer⟩",
+      "d": "listeners",
+      "nota": "observers"
+    },
+    {
+      "n": "notify",
+      "t": "() → Effect",
+      "d": "notifies all observers",
+      "nota": "notify"
+    }
+  ],
+  "types": [
+    {
+      "n": "Observer",
+      "def": "(update: Subject → Effect)",
+      "d": "Observer with update method"
+    },
+    {
+      "n": "Subject",
+      "def": "(state: State, attach: Observer → Effect, detach: Observer → Effect)",
+      "d": "Observable subject with attach/detach"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P31.1",
+      "n": "Loose Coupling",
+      "spec": "subject ⊥ observers",
+      "d": "Subject and observers are loosely coupled",
+      "inv": [
+        "decoupled\\_components"
+      ]
+    },
+    {
+      "id": "P.P31.2",
+      "n": "Automatic Updates",
+      "spec": "state\\_change ⇒ notify()",
+      "d": "State changes trigger notifications",
+      "inv": [
+        "automatic\\_notification"
+      ]
+    },
+    {
+      "id": "P.P31.3",
+      "n": "Multiple Observers",
+      "spec": "supports\\_many\\_observers",
+      "d": "Multiple observers can subscribe",
+      "inv": [
+        "many\\_to\\_one"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Attach",
+      "sig": "attach(observer: Observer) → Effect",
+      "def": "$attach(observer: Observer) → Effect = observers := observers ∪ {observer}$",
+      "pre": [
+        "observer ≠ null"
+      ],
+      "post": [
+        "observer ∈ observers"
+      ],
+      "fx": [
+        "Adds observer to list"
+      ]
+    },
+    {
+      "n": "Detach",
+      "sig": "detach(observer: Observer) → Effect",
+      "def": "$detach(observer: Observer) → Effect = observers := observers \\ {observer}$",
+      "pre": [
+        "observer ∈ observers"
+      ],
+      "post": [
+        "observer ∉ observers"
+      ],
+      "fx": [
+        "Removes observer from list"
+      ]
+    },
+    {
+      "n": "Notify",
+      "sig": "notify() → Effect",
+      "def": "$notify() → Effect = for observer in observers: observer.update(self)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "∀o ∈ observers: notified(o)"
+      ],
+      "fx": [
+        "Notifies all observers"
+      ]
+    },
+    {
+      "n": "Attach Observer",
+      "sig": "attach(observer: Observer) → Effect",
+      "def": "$attach(observer: Observer) → Effect = observers := observers ∪ {observer}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Detach Observer",
+      "sig": "detach(observer: Observer) → Effect",
+      "def": "$detach(observer: Observer) → Effect = observers := observers ∖ {observer}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Data binding",
+      "d": "observes model changes to update the UI"
+    },
+    {
+      "n": "Event listeners",
+      "d": "callbacks subscribed to events"
+    },
+    {
+      "n": "Reactive subscriptions",
+      "d": "streams notify subscribers on change"
+    },
+    {
+      "n": "Pub/sub systems",
+      "d": "publishers notify multiple subscribers"
+    }
+  ]
+}

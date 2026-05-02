@@ -1,0 +1,149 @@
+{
+  "id": "P77",
+  "v": "1.1",
+  "name": "Intelligent Interruption",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Interruption",
+    "Attention"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{int} = (S_{load}, D_{boundary}, score_{urgency}, Sched) : (Task, Interrupt) \\to Time_{optimal}$",
+  "desc": "Anti-corruption layer pattern translates between bounded contexts to maintain domain integrity.",
+  "comps": [
+    {
+      "n": "S_{load}",
+      "t": "Component",
+      "d": "Component implementing Intelligent Interruption functionality",
+      "nota": "S_{load}"
+    },
+    {
+      "n": "D_{boundary}",
+      "t": "Component",
+      "d": "Component implementing Intelligent Interruption functionality",
+      "nota": "D_{boundary}"
+    },
+    {
+      "n": "score_{urgency}",
+      "t": "Component",
+      "d": "Generator producing dynamic Intelligent Interruption output",
+      "nota": "score_{urgency}"
+    },
+    {
+      "n": "Sched",
+      "t": "Component",
+      "d": "Component implementing Intelligent Interruption functionality",
+      "nota": "Sched"
+    }
+  ],
+  "types": [
+    {
+      "n": "InternalModel",
+      "def": "Domain model in internal bounded context",
+      "d": "Internal domain model"
+    },
+    {
+      "n": "ExternalModel",
+      "def": "Model from external bounded context",
+      "d": "External system model"
+    },
+    {
+      "n": "Transformer",
+      "def": "Value → Value",
+      "d": "Field transformation function"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P77.1",
+      "n": "Domain Isolation",
+      "spec": "internal\\_domain isolated\\_from external",
+      "d": "Internal domain isolated from external",
+      "inv": [
+        "protected\\_domain"
+      ]
+    },
+    {
+      "id": "P.P77.2",
+      "n": "Bidirectional Translation",
+      "spec": "translates\\_both\\_directions",
+      "d": "Translates in both directions",
+      "inv": [
+        "bidirectional\\_mapping"
+      ]
+    },
+    {
+      "id": "P.P77.3",
+      "n": "Invariant Preservation",
+      "spec": "∀translation: invariants\\_preserved",
+      "d": "Domain invariants preserved",
+      "inv": [
+        "invariant\\_safety"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Translate Request",
+      "sig": "translate_in(external_request: ExternalModel) → InternalModel",
+      "def": "$translate\\_in(external\\_request: ExternalModel) → InternalModel = mapped := map\\_fields(external\\_request, field\\_mappings); validated := validate\\_internal\\_invariants(mapped); enriched := enrich\\_with\\_internal\\_context(validated); return InternalModel(enriched)$",
+      "pre": [
+        "valid\\_external\\_model(external\\_request)"
+      ],
+      "post": [
+        "valid\\_internal\\_model(result)"
+      ],
+      "fx": [
+        "Maps fields",
+        "Validates invariants",
+        "Enriches with context"
+      ]
+    },
+    {
+      "n": "Translate Response",
+      "sig": "translate_out(internal_model: InternalModel) → ExternalModel",
+      "def": "$translate\\_out(internal\\_model: InternalModel) → ExternalModel = simplified := remove\\_internal\\_details(internal\\_model); mapped := map\\_to\\_external\\_schema(simplified); return ExternalModel(mapped)$",
+      "pre": [
+        "valid\\_internal\\_model(internal\\_model)"
+      ],
+      "post": [
+        "valid\\_external\\_model(result)"
+      ],
+      "fx": [
+        "Removes internal details",
+        "Maps to external schema"
+      ]
+    },
+    {
+      "n": "Register Mapping",
+      "sig": "register(external_field: Field, internal_field: Field, transformer: Transformer) → Effect",
+      "def": "$register(external\\_field: Field, internal\\_field: Field, transformer: Transformer) → Effect = field\\_mappings[external\\_field] := (internal\\_field, transformer)$",
+      "pre": [
+        "external\\_field ≠ null ∧ internal\\_field ≠ null"
+      ],
+      "post": [
+        "external\\_field ∈ field\\_mappings"
+      ],
+      "fx": [
+        "Registers field mapping"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Interruption implementation",
+      "d": "Applied in ai, interruption systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

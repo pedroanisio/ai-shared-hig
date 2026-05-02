@@ -1,0 +1,219 @@
+{
+  "id": "P13",
+  "v": "1.1",
+  "name": "Indexer/Query Engine",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$ie = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Indexers build searchable indexes and query engines retrieve relevant information efficiently.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to indexer/query engine",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from indexer/query engine",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "InvertedIndex",
+      "def": "Map⟨Term, Set⟨DocumentID⟩⟩",
+      "d": "Term to document mapping"
+    },
+    {
+      "n": "Query",
+      "def": "Search query string",
+      "d": "User search query"
+    },
+    {
+      "n": "ResultSet",
+      "def": "Ranked list of documents",
+      "d": "Search results"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Documents to index or user queries"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Indexes or ranked query results"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Index data and caching metadata"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P13.1",
+      "n": "Completeness",
+      "spec": "∀doc: indexed(doc) ⇒ findable(doc)",
+      "d": "All indexed documents are findable",
+      "inv": [
+        "complete\\_index"
+      ]
+    },
+    {
+      "id": "P.P13.2",
+      "n": "Query Performance",
+      "spec": "search\\_time = O(|query\\_terms| + |results|)",
+      "d": "Searches execute efficiently",
+      "inv": [
+        "fast\\_retrieval"
+      ]
+    },
+    {
+      "id": "P.P13.3",
+      "n": "Ranking Quality",
+      "spec": "∀query: most\\_relevant\\_first(results)",
+      "d": "Results are ranked by relevance",
+      "inv": [
+        "quality\\_ranking"
+      ]
+    },
+    {
+      "id": "P.P13.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Search results are understandable and easy to refine",
+      "inv": [
+        "iterable\\_search"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(input: Input) → Output",
+      "def": "$process(input: Input) → Output = parsed := parse(input) indexed := index(parsed) return indexed$",
+      "pre": [
+        "input \\neq null"
+      ],
+      "post": [
+        "searchable(result)"
+      ],
+      "fx": [
+        "Processes and indexes data",
+        "Enables fast searching"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := format(data) render(formatted)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "displayed(data)"
+      ],
+      "fx": [
+        "Displays query results",
+        "Formats for presentation"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(changes: Set⟨Change⟩) → Effect",
+      "def": "$update(changes: Set⟨Change⟩) → Effect = for c in changes: update\\_index(c) refresh\\_cache()$",
+      "pre": [
+        "changes \\neq \\emptyset"
+      ],
+      "post": [
+        "index\\_updated = true"
+      ],
+      "fx": [
+        "Updates search index",
+        "Refreshes cache"
+      ]
+    },
+    {
+      "n": "Index Document",
+      "sig": "index(doc: Document) → Effect",
+      "def": "$index(doc: Document) → Effect = terms := extract\\_terms(doc); for term in terms: inverted\\_index[term] := inverted\\_index[term] ∪ {doc.id}; store\\_metadata(doc)$",
+      "pre": [
+        "doc ≠ null"
+      ],
+      "post": [
+        "searchable(doc)"
+      ],
+      "fx": [
+        "Extracts terms from document",
+        "Updates inverted index",
+        "Stores metadata"
+      ]
+    },
+    {
+      "n": "Search",
+      "sig": "search(query: Query) → ResultSet",
+      "def": "$search(query: Query) → ResultSet = terms := parse(query); doc\\_ids := intersect({inverted\\_index[t] : t ∈ terms}); docs := fetch(doc\\_ids); ranked := rank(docs, query); return ResultSet(ranked)$",
+      "pre": [
+        "valid\\_query(query)"
+      ],
+      "post": [
+        "relevant(result, query)"
+      ],
+      "fx": [
+        "Parses query",
+        "Retrieves matching documents",
+        "Ranks by relevance"
+      ]
+    },
+    {
+      "n": "Rebuild Index",
+      "sig": "rebuild() → Effect",
+      "def": "$rebuild() → Effect = clear\\_index(); for doc in all\\_documents: index(doc)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "∀doc: indexed(doc)"
+      ],
+      "fx": [
+        "Clears existing index",
+        "Re-indexes all documents"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Indexer/Query Engine in modern applications",
+      "d": "implements indexer/query engine pattern"
+    },
+    {
+      "n": "Web-based indexer/query engine",
+      "d": "browser implementation of indexer/query engine"
+    },
+    {
+      "n": "Mobile indexer/query engine",
+      "d": "mobile app implementation"
+    }
+  ]
+}

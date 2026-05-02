@@ -1,0 +1,195 @@
+{
+  "id": "P4",
+  "v": "1.1",
+  "name": "Property Inspector",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I = (selection, fields, validators, commit)$",
+  "desc": "Property inspectors display and enable editing of object properties in structured panels.",
+  "comps": [
+    {
+      "n": "selection",
+      "t": "Element | null",
+      "d": "currently selected single element",
+      "nota": "selection"
+    },
+    {
+      "n": "fields",
+      "t": "Map⟨String, Field⟩",
+      "d": "editable properties",
+      "nota": "fields"
+    },
+    {
+      "n": "validators",
+      "t": "Map⟨String, Validator⟩",
+      "d": "validate changes",
+      "nota": "validators"
+    },
+    {
+      "n": "commit",
+      "t": "(String, Value) → Effect",
+      "d": "applies changes",
+      "nota": "commit"
+    }
+  ],
+  "types": [
+    {
+      "n": "PropertyView",
+      "def": "Structured view of object properties",
+      "d": "Property display"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P4.1",
+      "n": "Live Updates",
+      "spec": "object\\_change ⇒ view\\_update",
+      "d": "View updates when object changes",
+      "inv": [
+        "synchronized\\_view"
+      ]
+    },
+    {
+      "id": "P.P4.2",
+      "n": "Type Safety",
+      "spec": "∀edit: type(value) = type(property)",
+      "d": "Edits maintain type safety",
+      "inv": [
+        "type\\_safe\\_edits"
+      ]
+    },
+    {
+      "id": "P.P4.3",
+      "n": "Searchable",
+      "spec": "can\\_search\\_properties",
+      "d": "Properties are searchable",
+      "inv": [
+        "searchable\\_properties"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Inspect",
+      "sig": "inspect(object: Object) → PropertyView",
+      "def": "$inspect(object: Object) → PropertyView = properties := extract\\_properties(object); grouped := group\\_by\\_category(properties); view := PropertyView(grouped); return view$",
+      "pre": [
+        "object ≠ null"
+      ],
+      "post": [
+        "shows\\_all\\_properties(result, object)"
+      ],
+      "fx": [
+        "Extracts object properties",
+        "Groups by category",
+        "Creates property view"
+      ]
+    },
+    {
+      "n": "Edit Property",
+      "sig": "edit(object: Object, property: String, value: Value) → Effect",
+      "def": "$edit(object: Object, property: String, value: Value) → Effect = validate(value, property.type); object[property] := value; notify\\_observers(object); refresh\\_view()$",
+      "pre": [
+        "editable(object, property)"
+      ],
+      "post": [
+        "object[property] = value"
+      ],
+      "fx": [
+        "Validates value",
+        "Updates property",
+        "Notifies observers",
+        "Refreshes view"
+      ]
+    },
+    {
+      "n": "Filter Properties",
+      "sig": "filter(view: PropertyView, query: String) → PropertyView",
+      "def": "$filter(view: PropertyView, query: String) → PropertyView = filtered := {p : p ∈ view.properties, matches(p.name, query)}; return PropertyView(filtered)$",
+      "pre": [
+        "view ≠ null"
+      ],
+      "post": [
+        "∀p ∈ result: matches(p.name, query)"
+      ],
+      "fx": [
+        "Filters properties by query"
+      ]
+    },
+    {
+      "n": "Load Properties",
+      "sig": "load(element: Element) → Map⟨String, Value⟩",
+      "def": "$load(element: Element) → Map⟨String, Value⟩ = {(k, v) : k ∈ properties(element), v = element[k]}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Validate Field",
+      "sig": "validate(field: String, value: Value) → ValidationResult",
+      "def": "$validate(field: String, value: Value) → ValidationResult = validators[field](value)$",
+      "pre": [
+        "schema_loaded()",
+        "data ≠ null"
+      ],
+      "post": [
+        "validation_complete()",
+        "errors_collected()"
+      ],
+      "fx": [
+        "Checks constraints",
+        "Reports violations"
+      ]
+    },
+    {
+      "n": "Commit Change",
+      "sig": "commit(field: String, value: Value) → Effect",
+      "def": "$commit(field: String, value: Value) → Effect = if validate(field, value) = valid: selection[field] := value update_dependents(field) notify_observers(selection)$",
+      "pre": [
+        "field_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing field",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Properties panel",
+      "d": "design tools"
+    },
+    {
+      "n": "Inspector",
+      "d": "browser DevTools"
+    },
+    {
+      "n": "Settings panel",
+      "d": "applications"
+    },
+    {
+      "n": "Attributes editor",
+      "d": "HTML editors"
+    }
+  ]
+}

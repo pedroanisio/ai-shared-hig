@@ -1,0 +1,237 @@
+{
+  "id": "P69",
+  "v": "1.1",
+  "name": "Agent Activity Timeline",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{activity} = (Events, Timeline, Agents, Actions) : Agent \times Time \to Activity_{log}$",
+  "desc": "Saga pattern manages distributed transactions across services through coordinated workflows.",
+  "comps": [
+    {
+      "n": "Events",
+      "t": "Seq⟨Event⟩",
+      "d": "chronological sequence of agent events",
+      "nota": "Events"
+    },
+    {
+      "n": "Timeline",
+      "t": "Time → Set⟨Event⟩",
+      "d": "temporal mapping of events",
+      "nota": "Timeline"
+    },
+    {
+      "n": "Agents",
+      "t": "Set⟨Agent⟩",
+      "d": "set of agents being tracked",
+      "nota": "Agents"
+    },
+    {
+      "n": "Actions",
+      "t": "Event → ActionType",
+      "d": "classification of event types",
+      "nota": "Actions"
+    }
+  ],
+  "types": [
+    {
+      "n": "SagaDefinition",
+      "def": "(steps: Sequence⟨SagaStep⟩)",
+      "d": "Saga definition"
+    },
+    {
+      "n": "SagaStep",
+      "def": "(action: Data → Data, compensation: Data → Effect)",
+      "d": "Single saga step with compensation"
+    },
+    {
+      "n": "SagaInstance",
+      "def": "(id: SagaID, saga: SagaDefinition, data: Data, step: ℕ, status: SagaStatus)",
+      "d": "Running saga instance"
+    },
+    {
+      "n": "Event",
+      "def": "$\\text{Event} = (\\text{agent}, \\text{action}, \\text{timestamp}, \\text{data}, \\text{outcome})$",
+      "d": "Single activity record with timestamp and outcome"
+    },
+    {
+      "n": "ActionType",
+      "def": "$\\text{ActionType} = \\{\\text{start}, \\text{think}, \\text{tool\\_call}, \\text{decision}, \\text{complete}, \\text{handoff}\\}$",
+      "d": "Classification of activity events"
+    },
+    {
+      "n": "ActivityLog",
+      "def": "$\\text{Activity}_{log} = \\text{Seq}\\langle \\text{Event} \\rangle$ (ordered by timestamp)",
+      "d": "Chronological log of agent activities"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P69.1",
+      "n": "Atomicity",
+      "spec": "completes\\_fully ∨ compensates\\_fully",
+      "d": "Either completes or compensates fully",
+      "inv": [
+        "atomic\\_saga"
+      ]
+    },
+    {
+      "id": "P.P69.2",
+      "n": "Idempotency",
+      "spec": "∀step: idempotent",
+      "d": "Steps are idempotent",
+      "inv": [
+        "safe\\_retry"
+      ]
+    },
+    {
+      "id": "P.P69.3",
+      "n": "Compensation Order",
+      "spec": "compensations reverse\\_order",
+      "d": "Compensations execute in reverse order",
+      "inv": [
+        "ordered\\_compensation"
+      ]
+    },
+    {
+      "id": "P.P69.4",
+      "n": "Real-Time Updates",
+      "spec": "$\\forall e \\in Events : \\Delta t_{display} = t_{show}(e) - e.timestamp < 50ms$",
+      "d": "Events appear in the timeline with minimal latency",
+      "inv": [
+        "near\\_real\\_time"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Start Saga",
+      "sig": "start(saga: SagaDefinition, data: Data) → SagaInstance",
+      "def": "$start(saga: SagaDefinition, data: Data) → SagaInstance = instance := SagaInstance(id=generate\\_id(), saga, data, step=0, status=Running); execute\\_next\\_step(instance); return instance$",
+      "pre": [
+        "valid\\_saga(saga)"
+      ],
+      "post": [
+        "instance.status = Running"
+      ],
+      "fx": [
+        "Creates saga instance",
+        "Executes first step"
+      ]
+    },
+    {
+      "n": "Execute Step",
+      "sig": "step(instance: SagaInstance) → Effect",
+      "def": "$step(instance: SagaInstance) → Effect = current\\_step := instance.saga.steps[instance.step]; try: result := current\\_step.action(instance.data); instance.data := merge(instance.data, result); instance.step := instance.step + 1; if instance.step ≥ |instance.saga.steps|: complete(instance) else: execute\\_next\\_step(instance) catch error: compensate(instance)$",
+      "pre": [
+        "instance.status = Running"
+      ],
+      "post": [
+        "step\\_completed ∨ compensating"
+      ],
+      "fx": [
+        "Executes step",
+        "Updates data",
+        "Advances or compensates"
+      ]
+    },
+    {
+      "n": "Compensate",
+      "sig": "compensate(instance: SagaInstance) → Effect",
+      "def": "$compensate(instance: SagaInstance) → Effect = instance.status := Compensating; for i from instance.step - 1 down to 0: compensation := instance.saga.steps[i].compensation; compensation(instance.data); instance.status := Failed$",
+      "pre": [
+        "instance.step > 0"
+      ],
+      "post": [
+        "instance.status = Failed"
+      ],
+      "fx": [
+        "Executes compensations in reverse",
+        "Marks as failed"
+      ]
+    },
+    {
+      "n": "Log Event",
+      "sig": "log: Event → Events",
+      "def": "$\\text{log}(e) = Events'$where$Events' = Events \\oplus [e]$$\\text{sort}(Events', \\lambda e. e.timestamp)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Filter by Agent",
+      "sig": "filter: Agent → Seq⟨Event⟩",
+      "def": "$\\text{filter}(a) = \\{e \\in Events \\mid e.agent = a\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Render Timeline",
+      "sig": "render: Seq⟨Event⟩ → Visualization",
+      "def": "$\\text{render}(E) = v$where$v.lanes = \\{(a, \\text{filter}(a)) \\mid a \\in Agents\\}$$v.markers = \\{(e.timestamp, e.action) \\mid e \\in E\\}$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22"
+    ],
+    "use": [
+      "P112",
+      "P124"
+    ]
+  },
+  "manif": [
+    {
+      "n": "LangSmith trace timeline",
+      "d": "chronological view of agent execution"
+    },
+    {
+      "n": "CrewAI execution log",
+      "d": "agent activity timeline with actions"
+    },
+    {
+      "n": "AutoGPT activity tracker",
+      "d": "real-time agent action timeline"
+    },
+    {
+      "n": "Datadog APM for AI agents",
+      "d": "distributed agent tracing timeline"
+    }
+  ]
+}

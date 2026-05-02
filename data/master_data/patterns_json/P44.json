@@ -1,0 +1,200 @@
+{
+  "id": "P44",
+  "v": "1.1",
+  "name": "Keyboard Shortcut System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$K = (B, M, H, C, P)$",
+  "desc": "Keyboard shortcut systems enable efficient command execution through key combinations.",
+  "comps": [
+    {
+      "n": "B",
+      "t": "KeyCombo → Action",
+      "d": "**binding map**",
+      "nota": "B"
+    },
+    {
+      "n": "H",
+      "t": "Action → String",
+      "d": "**hint display function**",
+      "nota": "H"
+    },
+    {
+      "n": "C",
+      "t": "KeyCombo \\times KeyCombo → \\mathbb{B}",
+      "d": "**conflict detector**",
+      "nota": "C"
+    },
+    {
+      "n": "P",
+      "t": "Platform → KeyMapping",
+      "d": "**platform mapping**",
+      "nota": "P"
+    }
+  ],
+  "types": [
+    {
+      "n": "KeyCombo",
+      "def": "Set⟨Key⟩ pressed simultaneously",
+      "d": "Key combination"
+    },
+    {
+      "n": "Shortcut",
+      "def": "(keys: KeyCombo, action: Action, context: Context)",
+      "d": "Keyboard shortcut binding"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P44.1",
+      "n": "Context Awareness",
+      "spec": "shortcuts respect\\_context",
+      "d": "Shortcuts respect current context",
+      "inv": [
+        "context\\_sensitive"
+      ]
+    },
+    {
+      "id": "P.P44.2",
+      "n": "Discoverability",
+      "spec": "shortcuts documented\\_and\\_searchable",
+      "d": "Shortcuts are discoverable",
+      "inv": [
+        "documented\\_shortcuts"
+      ]
+    },
+    {
+      "id": "P.P44.3",
+      "n": "Customizable",
+      "spec": "user\\_can\\_rebind",
+      "d": "Users can customize shortcuts",
+      "inv": [
+        "customizable\\_bindings"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Shortcut",
+      "sig": "register(keys: KeyCombo, action: Action, context: Context) → ShortcutID",
+      "def": "$register(keys: KeyCombo, action: Action, context: Context) → ShortcutID = id := generate\\_id(); validate\\_no\\_conflict(keys, context); shortcuts[id] := Shortcut(keys, action, context); return id$",
+      "pre": [
+        "valid\\_key\\_combo(keys)"
+      ],
+      "post": [
+        "id ∈ shortcuts"
+      ],
+      "fx": [
+        "Validates no conflicts",
+        "Registers shortcut",
+        "Returns ID"
+      ]
+    },
+    {
+      "n": "Handle Key Event",
+      "sig": "handle(event: KeyEvent) → Effect",
+      "def": "$handle(event: KeyEvent) → Effect = combo := normalize\\_keys(event); matching := find\\_matching\\_shortcuts(combo, current\\_context); if |matching| > 0: execute(matching[0].action); prevent\\_default()$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "executed ∨ passed\\_through"
+      ],
+      "fx": [
+        "Normalizes key combo",
+        "Finds matching shortcuts",
+        "Executes if found"
+      ]
+    },
+    {
+      "n": "Show Shortcuts",
+      "sig": "show_help(context: Context) → ShortcutList",
+      "def": "$show\\_help(context: Context) → ShortcutList = applicable := {s : s ∈ shortcuts, s.context = context ∨ s.context = global}; return format\\_shortcut\\_list(applicable)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "shows\\_all\\_applicable"
+      ],
+      "fx": [
+        "Filters by context",
+        "Formats list"
+      ]
+    },
+    {
+      "n": "Register Binding",
+      "sig": "register(combo: KeyCombo, action: Action, scope: Scope) → Effect",
+      "def": "$register(combo: KeyCombo, action: Action, scope: Scope) → Effect = if ¬∃k: C(combo, k): B[combo] := (action, scope)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Handle Keypress",
+      "sig": "handle(event: KeyEvent) → Effect",
+      "def": "$handle(event: KeyEvent) → Effect = combo := extract_combo(event) if combo ∈ dom(B): preventDefault(event) B[combo].action()$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display Hint",
+      "sig": "H(action: Action) → String",
+      "def": "$H(action: Action) → String = format(P(current_platform), key_combo(action))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Ctrl+S",
+      "d": "save"
+    },
+    {
+      "n": "Ctrl+Z/Y",
+      "d": "undo/redo"
+    },
+    {
+      "n": "Ctrl+F",
+      "d": "search"
+    },
+    {
+      "n": "Esc",
+      "d": "close dialog"
+    }
+  ]
+}

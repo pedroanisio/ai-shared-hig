@@ -1,0 +1,232 @@
+{
+  "id": "P12",
+  "v": "1.1",
+  "name": "Solver/Optimizer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$sol = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Solvers and optimizers find optimal solutions to constrained problems using algorithms.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to solver/optimizer",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from solver/optimizer",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Problem",
+      "def": "(variables: Set⟨Variable⟩, objective: Objective)",
+      "d": "Optimization problem definition"
+    },
+    {
+      "n": "Constraint",
+      "def": "Restriction on solution space",
+      "d": "Constraint limiting solutions"
+    },
+    {
+      "n": "Solution",
+      "def": "Assignment of values to variables",
+      "d": "Concrete solution"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Problem definition and constraints"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Computed solution or optimization result"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Solver configuration and intermediate progress"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P12.1",
+      "n": "Correctness",
+      "spec": "solution\\_found ⇒ satisfies\\_all\\_constraints",
+      "d": "Solutions satisfy all constraints",
+      "inv": [
+        "valid\\_solutions"
+      ]
+    },
+    {
+      "id": "P.P12.2",
+      "n": "Optimality",
+      "spec": "¬∃better\\_solution in feasible\\_space",
+      "d": "Solution is optimal within constraints",
+      "inv": [
+        "optimal\\_result"
+      ]
+    },
+    {
+      "id": "P.P12.3",
+      "n": "Termination",
+      "spec": "∀problem: terminates(solve(problem))",
+      "d": "Solver always terminates",
+      "inv": [
+        "guaranteed\\_termination"
+      ]
+    },
+    {
+      "id": "P.P12.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Inputs, constraints, and outputs are clear to users",
+      "inv": [
+        "interpretable\\_results"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(input: Input) → Output",
+      "def": "$process(input: Input) → Output = validated := validate(input) transformed := transform(validated) result := compute(transformed) return result$",
+      "pre": [
+        "input \\neq null"
+      ],
+      "post": [
+        "valid(result)"
+      ],
+      "fx": [
+        "Processes input data",
+        "Produces computed output"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := format(data) rendered := render(formatted) show(rendered)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "visible(data)"
+      ],
+      "fx": [
+        "Renders data for display",
+        "Updates visualization"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(changes: Set⟨Change⟩) → Effect",
+      "def": "$update(changes: Set⟨Change⟩) → Effect = for c in changes: apply(c) invalidate\\_cache() notify(c)$",
+      "pre": [
+        "changes \\neq \\emptyset"
+      ],
+      "post": [
+        "\\forall c \\in changes: applied(c)"
+      ],
+      "fx": [
+        "Applies state changes",
+        "Notifies observers"
+      ]
+    },
+    {
+      "n": "Solve",
+      "sig": "solve(problem: Problem) → Solution",
+      "def": "$solve(problem: Problem) → Solution = constraints := extract_constraints(problem) initial := initialize_solution() optimized := optimize(initial, constraints) return optimized$",
+      "pre": [
+        "problem \\neq null \\wedge well\\_formed(problem)"
+      ],
+      "post": [
+        "satisfies(result, problem.constraints)"
+      ],
+      "fx": [
+        "Finds solution to problem",
+        "Satisfies all constraints"
+      ]
+    },
+    {
+      "n": "Optimize",
+      "sig": "optimize(solution: Solution, objective: Objective) → Solution",
+      "def": "$optimize(solution: Solution, objective: Objective) → Solution = improved := solution while can_improve(improved, objective): improved := improve_step(improved, objective) return improved$",
+      "pre": [
+        "solution \\neq null \\wedge objective \\neq null"
+      ],
+      "post": [
+        "objective(result) \\geq objective(solution)"
+      ],
+      "fx": [
+        "Improves solution quality",
+        "Maximizes objective function"
+      ]
+    },
+    {
+      "n": "Verify",
+      "sig": "verify(solution: Solution, problem: Problem) → 𝔹",
+      "def": "$verify(solution: Solution, problem: Problem) → 𝔹 = ∀c ∈ problem.constraints: satisfies(solution, c)$",
+      "pre": [
+        "solution \\neq null \\wedge problem \\neq null"
+      ],
+      "post": [
+        "result = true \\iff valid\\_solution(solution, problem)"
+      ],
+      "fx": [
+        "Validates solution correctness",
+        "Checks all constraints"
+      ]
+    },
+    {
+      "n": "Verify Solution",
+      "sig": "verify(solution: Solution, constraints: Set⟨Constraint⟩) → 𝔹",
+      "def": "$verify(solution: Solution, constraints: Set⟨Constraint⟩) → 𝔹 = ∀c ∈ constraints: c.check(solution)$",
+      "pre": [
+        "solution ≠ null"
+      ],
+      "post": [
+        "result ⇔ satisfies(solution, constraints)"
+      ],
+      "fx": [
+        "Checks all constraints",
+        "Returns validity"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Solver/Optimizer in modern applications",
+      "d": "implements solver/optimizer pattern"
+    },
+    {
+      "n": "Web-based solver/optimizer",
+      "d": "browser implementation of solver/optimizer"
+    },
+    {
+      "n": "Mobile solver/optimizer",
+      "d": "mobile app implementation"
+    }
+  ]
+}

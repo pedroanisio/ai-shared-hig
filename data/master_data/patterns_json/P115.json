@@ -1,0 +1,232 @@
+{
+  "id": "P115",
+  "v": "1.1",
+  "name": "Event-Driven State Updates",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$U_{event} = (State, Event_{stream}, Reducer, UI_{sync}) : (\\text{State}, \\text{Events}) \\to \\text{State}'$",
+  "desc": "Event-driven state updates propagate changes automatically when events trigger state transitions.",
+  "comps": [
+    {
+      "n": "State",
+      "t": "ApplicationState",
+      "d": "current application state",
+      "nota": "State"
+    },
+    {
+      "n": "Event_{stream}",
+      "t": "Stream⟨Event⟩",
+      "d": "incoming event stream triggering updates",
+      "nota": "Event_{stream}"
+    },
+    {
+      "n": "Reducer",
+      "t": "State × Event → State",
+      "d": "pure function computing state transitions",
+      "nota": "Reducer"
+    },
+    {
+      "n": "UI_{sync}",
+      "t": "State → Effect",
+      "d": "synchronizes UI with state changes",
+      "nota": "UI_{sync}"
+    }
+  ],
+  "types": [
+    {
+      "n": "State",
+      "def": "Application state",
+      "d": "Current application state"
+    },
+    {
+      "n": "EventType",
+      "def": "String identifier for event category",
+      "d": "Type of event triggering update"
+    },
+    {
+      "n": "ApplicationState",
+      "def": "$\\text{State} = \\text{Map}(\\text{Key}, \\text{Value})$ (immutable state tree)",
+      "d": "Immutable application state tree"
+    },
+    {
+      "n": "Reducer",
+      "def": "$\\text{Reducer}: (S, E) \\to S$ (pure, deterministic function)",
+      "d": "Pure function mapping state and event to new state"
+    },
+    {
+      "n": "Effect",
+      "def": "$\\text{Effect} = \\text{IO}()$ (side-effectful operation)",
+      "d": "Side-effect operation triggered by state changes"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P115.1",
+      "n": "Atomicity",
+      "spec": "∀event: state\\_update(event) is atomic",
+      "d": "State updates are atomic per event",
+      "inv": [
+        "atomic\\_updates"
+      ]
+    },
+    {
+      "id": "P.P115.2",
+      "n": "Ordering",
+      "spec": "events\\_processed\\_in\\_order",
+      "d": "Events are processed in order",
+      "inv": [
+        "ordered\\_processing"
+      ]
+    },
+    {
+      "id": "P.P115.3",
+      "n": "Consistency",
+      "spec": "∀state: valid\\_state(state)",
+      "d": "State remains valid after all updates",
+      "inv": [
+        "state\\_consistency"
+      ]
+    },
+    {
+      "id": "P.P115.4",
+      "n": "UI Consistency",
+      "spec": "$\\forall s : UI_{sync}(s) \\implies \\text{rendered\\_state} = s$ (eventual consistency)",
+      "d": "UI reflects the current state after synchronization",
+      "inv": [
+        "ui_matches_state"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Listener",
+      "sig": "register(event_type: EventType, handler: State → Event → State) → Subscription",
+      "def": "$register(event\\_type: EventType, handler: State → Event → State) → Subscription = listeners[event\\_type] := listeners[event\\_type] ∪ {handler}; return Subscription(id, unsubscribe)$",
+      "pre": [
+        "valid\\_handler(handler)"
+      ],
+      "post": [
+        "handler ∈ listeners[event\\_type]"
+      ],
+      "fx": [
+        "Registers state update handler"
+      ]
+    },
+    {
+      "n": "Dispatch Event",
+      "sig": "dispatch(event: Event) → State",
+      "def": "$dispatch(event: Event) → State = handlers := listeners[event.type]; new\\_state := current\\_state; for handler in handlers: new\\_state := handler(new\\_state, event); persist(new\\_state); return new\\_state$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "state\\_updated"
+      ],
+      "fx": [
+        "Invokes all handlers",
+        "Updates state",
+        "Persists changes"
+      ]
+    },
+    {
+      "n": "Batch Update",
+      "sig": "batch(events: Sequence⟨Event⟩) → State",
+      "def": "$batch(events: Sequence⟨Event⟩) → State = new\\_state := current\\_state; for event in events: new\\_state := dispatch\\_internal(event, new\\_state); persist(new\\_state); return new\\_state$",
+      "pre": [
+        "|events| > 0"
+      ],
+      "post": [
+        "all\\_events\\_processed"
+      ],
+      "fx": [
+        "Processes events in batch",
+        "Single persistence operation"
+      ]
+    },
+    {
+      "n": "Process Event",
+      "sig": "processEvent: State × Event → State",
+      "def": "$\\text{processEvent}(s, e) = s'$where$s' = Reducer(s, e)$$UI_{sync}(s')$(side-effect)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Subscribe to Events",
+      "sig": "subscribe: Stream⟨Event⟩ → Subscription",
+      "def": "$\\text{subscribe}(stream) = sub$where$\\forall e \\in stream : \\text{processEvent}(State_{current}, e)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Compute State Delta",
+      "sig": "delta: State × State → Diff",
+      "def": "$\\text{delta}(s_1, s_2) = \\{(k, v_2) \\mid k \\in \\text{keys}(s_2) \\land s_1[k] \\neq s_2[k]\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22",
+      "P29"
+    ],
+    "use": [
+      "P30",
+      "P31"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Redux state management",
+      "d": "action → reducer → state updates"
+    },
+    {
+      "n": "AG-UI STATE_DELTA events",
+      "d": "agent state changes streaming to UI"
+    },
+    {
+      "n": "Elm architecture",
+      "d": "event-driven functional state updates"
+    },
+    {
+      "n": "React state updates from events",
+      "d": "event handlers trigger state changes"
+    }
+  ]
+}

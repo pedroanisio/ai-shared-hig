@@ -1,0 +1,213 @@
+{
+  "id": "P28",
+  "v": "1.1",
+  "name": "Progress Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P = (current, total, label, eta, state)$",
+  "desc": "Progress indicators show completion status of long-running operations.",
+  "comps": [
+    {
+      "n": "current",
+      "t": "ℕ",
+      "d": "completed work",
+      "nota": "current"
+    },
+    {
+      "n": "total",
+      "t": "ℕ",
+      "d": "total work",
+      "nota": "total"
+    },
+    {
+      "n": "label",
+      "t": "String",
+      "d": "describes the task",
+      "nota": "label"
+    },
+    {
+      "n": "eta",
+      "t": "Time",
+      "d": "estimated completion time",
+      "nota": "eta"
+    },
+    {
+      "n": "state",
+      "t": "\\{\\text{running}, \\text{paused}, \\text{complete}, \\text{error}\\}",
+      "d": "status",
+      "nota": "state"
+    }
+  ],
+  "types": [
+    {
+      "n": "ProgressBar",
+      "def": "(task: Task, total: ℕ, current: ℕ)",
+      "d": "Progress indicator state"
+    },
+    {
+      "n": "Time",
+      "def": "$\\text{Time} = \\mathbb{R}_{\\geq 0}$ (non-negative real)",
+      "d": "Elapsed or estimated time value"
+    },
+    {
+      "n": "ProgressState",
+      "def": "$\\text{State} = \\{\\text{running}, \\text{paused}, \\text{complete}, \\text{error}\\}$",
+      "d": "Lifecycle state of the progress indicator"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P28.1",
+      "n": "Accurate Representation",
+      "spec": "displayed\\_progress = actual\\_progress",
+      "d": "Progress accurately represents completion",
+      "inv": [
+        "truthful\\_progress"
+      ]
+    },
+    {
+      "id": "P.P28.2",
+      "n": "Smooth Updates",
+      "spec": "¬jerky\\_movement",
+      "d": "Progress updates smoothly",
+      "inv": [
+        "smooth\\_animation"
+      ]
+    },
+    {
+      "id": "P.P28.3",
+      "n": "Cancellable",
+      "spec": "∀progress: user\\_can\\_cancel",
+      "d": "Users can cancel operations",
+      "inv": [
+        "cancellable\\_operations"
+      ]
+    },
+    {
+      "id": "P.P28.4",
+      "n": "Valid Percentage",
+      "spec": "$\\text{percentage} = \\frac{\\text{current}}{\\text{total}} \\times 100 \\in [0, 100]$",
+      "d": "Percentage stays within bounds for valid totals",
+      "inv": [
+        "percentage\\_in\\_range"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Start Progress",
+      "sig": "start(task: Task, total: ℕ) → ProgressBar",
+      "def": "$start(task: Task, total: ℕ) → ProgressBar = progress := ProgressBar(task, total, current=0); display(progress); return progress$",
+      "pre": [
+        "total > 0"
+      ],
+      "post": [
+        "visible(progress)"
+      ],
+      "fx": [
+        "Creates progress bar",
+        "Displays it"
+      ]
+    },
+    {
+      "n": "Update Progress",
+      "sig": "update(progress: ProgressBar, current: ℕ) → Effect",
+      "def": "$update(progress: ProgressBar, current: ℕ) → Effect = progress.current := current; percentage := current / progress.total; refresh\\_display(progress, percentage)$",
+      "pre": [
+        "0 ≤ current ≤ progress.total"
+      ],
+      "post": [
+        "progress.current = current"
+      ],
+      "fx": [
+        "Updates current value",
+        "Computes percentage",
+        "Refreshes display"
+      ]
+    },
+    {
+      "n": "Complete",
+      "sig": "complete(progress: ProgressBar) → Effect",
+      "def": "$complete(progress: ProgressBar) → Effect = update(progress, progress.total); animate\\_completion(); schedule\\_hide(progress, delay)$",
+      "pre": [
+        "progress ≠ null"
+      ],
+      "post": [
+        "progress.current = progress.total"
+      ],
+      "fx": [
+        "Sets to 100%",
+        "Animates completion",
+        "Schedules hide"
+      ]
+    },
+    {
+      "n": "Reset",
+      "sig": "reset: P → P",
+      "def": "$\\text{reset}(P) = P'$where$P'.current = 0$,$P'.state = \\text{running}$,$P'.eta = \\text{estimate}()$",
+      "pre": [
+        "reset_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing reset",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Estimate ETA",
+      "sig": "estimateETA: P → Time",
+      "def": "$\\text{estimateETA}(P) = \\begin{cases} 0 & \\text{if } state = \\text{complete} \\\\ \\frac{total - current}{rate} & \\text{if } rate > 0 \\\\ \\infty & \\text{otherwise} \\end{cases}$where$rate = \\frac{current}{elapsed}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P26",
+      "P27"
+    ]
+  },
+  "manif": [
+    {
+      "n": "File upload/download",
+      "d": "Shows upload or download progress over time"
+    },
+    {
+      "n": "Build progress",
+      "d": "Visualizes build pipeline completion"
+    },
+    {
+      "n": "Test execution",
+      "d": "Displays test suite run progress"
+    },
+    {
+      "n": "Verification progress",
+      "d": "Tracks verification steps to completion"
+    },
+    {
+      "n": "Installation progress",
+      "d": "Shows install steps and time remaining"
+    }
+  ]
+}

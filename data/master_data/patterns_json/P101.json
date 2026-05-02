@@ -1,0 +1,239 @@
+{
+  "id": "P101",
+  "v": "1.1",
+  "name": "Retrieval Path Visualization",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{path} = (Query, Path_{retrieval}, Nodes_{visited}, Score_{relevance}) : \\text{Retrieval} \\to \\text{Path}_{visual}$",
+  "desc": "Retrieval path visualization shows how information was retrieved and combined from sources.",
+  "comps": [
+    {
+      "n": "Query",
+      "t": "String × Embedding",
+      "d": "user query with vector embedding",
+      "nota": "Query"
+    },
+    {
+      "n": "Path_{retrieval}",
+      "t": "Seq⟨Node × Edge⟩",
+      "d": "sequence of nodes and edges traversed in graph",
+      "nota": "Path_{retrieval}"
+    },
+    {
+      "n": "Nodes_{visited}",
+      "t": "Set⟨Node⟩",
+      "d": "all nodes explored during retrieval",
+      "nota": "Nodes_{visited}"
+    },
+    {
+      "n": "Score_{relevance}",
+      "t": "Node → [0,1]",
+      "d": "relevance score for each node",
+      "nota": "Score_{relevance}"
+    }
+  ],
+  "types": [
+    {
+      "n": "RetrievalPath",
+      "def": "Graph of retrieval steps and sources",
+      "d": "Graph showing how data was retrieved"
+    },
+    {
+      "n": "Step",
+      "def": "(operation: Operation, inputs: Set⟨Source⟩, output: Data)",
+      "d": "Single retrieval/transformation step"
+    },
+    {
+      "n": "Visualization",
+      "def": "Visual representation of path",
+      "d": "Interactive graph visualization"
+    },
+    {
+      "n": "Node",
+      "def": "$\\text{Node} = (\\text{id}, \\text{content}, \\text{embedding}, \\text{type})$ (knowledge graph vertex)",
+      "d": "Knowledge graph vertex with content and embedding"
+    },
+    {
+      "n": "Edge",
+      "def": "$\\text{Edge} = (\\text{source}, \\text{target}, \\text{relation}, \\text{weight})$ (knowledge graph edge)",
+      "d": "Knowledge graph edge representing a relation"
+    },
+    {
+      "n": "Embedding",
+      "def": "$\\text{Embedding} = \\mathbb{R}^d$ (dense vector representation)",
+      "d": "Dense vector used for similarity search"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P101.1",
+      "n": "Completeness",
+      "spec": "∀result: path shows all sources and transformations",
+      "d": "Visualization shows complete retrieval path",
+      "inv": [
+        "complete\\_visualization"
+      ]
+    },
+    {
+      "id": "P.P101.2",
+      "n": "Clarity",
+      "spec": "understandable(visualization)",
+      "d": "Path visualization is easy to understand",
+      "inv": [
+        "user\\_comprehensible"
+      ]
+    },
+    {
+      "id": "P.P101.3",
+      "n": "Interactivity",
+      "spec": "∀node: expandable(node) ∨ leaf(node)",
+      "d": "Users can drill down into details",
+      "inv": [
+        "explorable\\_paths"
+      ]
+    },
+    {
+      "id": "P.P101.4",
+      "n": "Multi-Hop Reasoning",
+      "spec": "$|Path_{retrieval}| \\geq 1$ enables reasoning beyond direct neighbors",
+      "d": "Retrieval paths support multi-hop reasoning across nodes",
+      "inv": [
+        "multi_hop_paths"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Trace Path",
+      "sig": "trace(result: Result) → RetrievalPath",
+      "def": "$trace(result: Result) → RetrievalPath = steps := collect\\_retrieval\\_steps(result); sources := identify\\_sources(steps); build\\_path\\_graph(steps, sources)$",
+      "pre": [
+        "has\\_provenance(result)"
+      ],
+      "post": [
+        "complete\\_path(result)"
+      ],
+      "fx": [
+        "Collects retrieval steps",
+        "Identifies all sources",
+        "Builds path graph"
+      ]
+    },
+    {
+      "n": "Visualize",
+      "sig": "visualize(path: RetrievalPath) → Visualization",
+      "def": "$visualize(path: RetrievalPath) → Visualization = layout := compute\\_layout(path); render\\_nodes(path.sources); render\\_edges(path.steps); highlight\\_critical\\_path()$",
+      "pre": [
+        "valid\\_path(path)"
+      ],
+      "post": [
+        "readable(result)"
+      ],
+      "fx": [
+        "Computes layout",
+        "Renders graph",
+        "Highlights key paths"
+      ]
+    },
+    {
+      "n": "Explain Step",
+      "sig": "explain(step: Step) → Explanation",
+      "def": "$explain(step: Step) → Explanation = describe\\_operation(step); show\\_inputs(step); show\\_outputs(step); provide\\_rationale()$",
+      "pre": [
+        "step ∈ path"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Describes operation",
+        "Shows data flow",
+        "Provides rationale"
+      ]
+    },
+    {
+      "n": "Trace Retrieval",
+      "sig": "traceRetrieval: Query × Graph → Path_retrieval",
+      "def": "$\\text{traceRetrieval}(q, G) = \\text{path}$where$n_0 = \\arg\\max_{n \\in G} \\text{sim}(q.embedding, n.embedding)$$path = [n_0] \\oplus \\text{expand}(n_0, q, k)$(k-hop expansion)",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "Visualize Path",
+      "sig": "visualizePath: Path_retrieval → Rendering",
+      "def": "$\\text{visualizePath}(path) = \\text{render}$where$\\text{render}.nodes = \\{n \\mid (n, e) \\in path\\}$$\\text{render}.edges = \\{e \\mid (n, e) \\in path\\}$$\\text{render}.highlights = \\text{relevance-based colors}$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Score Path",
+      "sig": "scorePath: Path_retrieval → ℝ",
+      "def": "$\\text{scorePath}(path) = \\sum_{i=1}^{|path|} \\frac{Score_{relevance}(n_i)}{i^\\alpha}$(decaying sum,$\\alpha > 0$)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P19",
+      "P99"
+    ],
+    "use": [
+      "P104"
+    ]
+  },
+  "manif": [
+    {
+      "n": "GraphRAG retrieval visualization",
+      "d": "Microsoft GraphRAG path display"
+    },
+    {
+      "n": "Neo4j Bloom path exploration",
+      "d": "interactive graph path highlighting"
+    },
+    {
+      "n": "Knowledge graph explainability",
+      "d": "shows reasoning chain from query to answer"
+    },
+    {
+      "n": "RAG citation paths",
+      "d": "visualizes document retrieval reasoning"
+    }
+  ]
+}

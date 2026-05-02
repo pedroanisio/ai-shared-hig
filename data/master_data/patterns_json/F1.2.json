@@ -1,0 +1,162 @@
+{
+  "id": "F1.2",
+  "v": "1.1",
+  "name": "Data Import Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I = (source, parser, transformer, integrator)$",
+  "desc": "Data import parses external formats and transforms them to internal schema.",
+  "comps": [
+    {
+      "n": "source",
+      "t": "ExternalFormat",
+      "d": "external data source",
+      "nota": "source"
+    },
+    {
+      "n": "parser",
+      "t": "ExternalFormat → ParsedData",
+      "d": "parses external format",
+      "nota": "parser"
+    },
+    {
+      "n": "transformer",
+      "t": "ParsedData → InternalData",
+      "d": "transforms to internal schema",
+      "nota": "transformer"
+    },
+    {
+      "n": "integrator",
+      "t": "InternalData → Effect",
+      "d": "integrates into system",
+      "nota": "integrator"
+    }
+  ],
+  "types": [
+    {
+      "n": "ExternalFormat",
+      "def": "File | Stream | API Response",
+      "d": "External data sources in various formats"
+    },
+    {
+      "n": "ParsedData",
+      "def": "Structured representation of external data",
+      "d": "Intermediate parsed form before transformation"
+    },
+    {
+      "n": "InternalData",
+      "def": "Data conforming to internal schema",
+      "d": "Final transformed data matching internal schema"
+    },
+    {
+      "n": "MergeStrategy",
+      "def": "Replace | Merge | Append",
+      "d": "Strategy for handling conflicts during import"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F1.2.1",
+      "n": "Format Support",
+      "spec": "∀f ∈ ExternalFormat: parser(f) defined ⇒ supported_format(f)",
+      "d": "Parser handles all supported external formats",
+      "inv": [
+        "complete\\_format\\_coverage"
+      ]
+    },
+    {
+      "id": "P.F1.2.2",
+      "n": "Schema Transformation",
+      "spec": "∀p ∈ ParsedData: transformer(p) conforms to internal schema",
+      "d": "All transformed data conforms to internal schema",
+      "inv": [
+        "schema\\_compliant(transformed)"
+      ]
+    },
+    {
+      "id": "P.F1.2.3",
+      "n": "Conflict Resolution",
+      "spec": "∀d ∈ InternalData: integrator(d) applies merge strategy consistently",
+      "d": "Merge conflicts are resolved according to strategy",
+      "inv": [
+        "consistent\\_merging"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Import",
+      "sig": "import(source: ExternalFormat, strategy: MergeStrategy) → Effect",
+      "def": "$import(source: ExternalFormat, strategy: MergeStrategy) → Effect = parsed := parser(source) internal := transformer(parsed) integrator(internal, strategy)$",
+      "pre": [
+        "supported\\_format(source)"
+      ],
+      "post": [
+        "integrated(internal)"
+      ],
+      "fx": [
+        "Parses external data",
+        "Transforms to internal schema",
+        "Merges with existing data"
+      ]
+    },
+    {
+      "n": "Parse",
+      "sig": "parse(source: ExternalFormat) → ParsedData",
+      "def": "$parse(source: ExternalFormat) → ParsedData = case format_of(source) of JSON → parse_json(source) CSV → parse_csv(source) XML → parse_xml(source) _ → error(\"Unsupported format\")$",
+      "pre": [
+        "valid\\_format(source)"
+      ],
+      "post": [
+        "structured(result)"
+      ],
+      "fx": [
+        "Detects format",
+        "Parses into structured data"
+      ]
+    },
+    {
+      "n": "Transform",
+      "sig": "transform(parsed: ParsedData) → InternalData",
+      "def": "$transform(parsed: ParsedData) → InternalData = map_fields(parsed, field_mapping); validate_schema(result)$",
+      "pre": [
+        "well\\_formed(parsed)"
+      ],
+      "post": [
+        "conforms\\_to\\_schema(result)"
+      ],
+      "fx": [
+        "Maps fields to internal schema",
+        "Validates transformed data"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File importers",
+      "d": "CSV, JSON, XML"
+    },
+    {
+      "n": "Database migration tools",
+      "d": "Schema-aware import pipelines for migration"
+    },
+    {
+      "n": "API integrations",
+      "d": "External API responses mapped into internal schema"
+    },
+    {
+      "n": "Bulk data imports",
+      "d": "Large batch ingestion with transformation and merge"
+    },
+    {
+      "n": "Document converters",
+      "d": "Format conversion into system-compatible structures"
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "id": "P138",
+  "v": "1.1",
+  "name": "Personalized Agent Configuration",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{personal} = (User, Agents, Config, Optimize) : User \\to Agents_{configured}$",
+  "desc": "Personalized agent configuration customizes AI agent behavior based on individual user preferences.",
+  "comps": [
+    {
+      "n": "User",
+      "t": "UserProfile",
+      "d": "User profile and characteristics",
+      "nota": "User"
+    },
+    {
+      "n": "Agents",
+      "t": "Set⟨Agent⟩",
+      "d": "Available AI agents",
+      "nota": "Agents"
+    },
+    {
+      "n": "Config",
+      "t": "Agent → Configuration",
+      "d": "Configuration parameters for each agent",
+      "nota": "Config"
+    },
+    {
+      "n": "Optimize",
+      "t": "User → Map⟨Agent, Config⟩",
+      "d": "Function to compute optimal configurations",
+      "nota": "Optimize"
+    }
+  ],
+  "types": [
+    {
+      "n": "Settings",
+      "def": "Map⟨SettingName, Value⟩",
+      "d": "Agent configuration settings"
+    },
+    {
+      "n": "ConfiguredAgent",
+      "def": "Agent with applied settings",
+      "d": "Personalized agent instance"
+    },
+    {
+      "n": "Feedback",
+      "def": "(quality: ℝ, comments: String)",
+      "d": "User feedback on agent"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P138.1",
+      "n": "Personalization Effectiveness",
+      "spec": "performance(personalized\\_agent) ≥ performance(default\\_agent)",
+      "d": "Personalized agents perform better",
+      "inv": [
+        "beneficial\\_personalization"
+      ]
+    },
+    {
+      "id": "P.P138.2",
+      "n": "User Control",
+      "spec": "∀setting: user\\_can\\_modify(setting)",
+      "d": "Users can modify all settings",
+      "inv": [
+        "full\\_control"
+      ]
+    },
+    {
+      "id": "P.P138.3",
+      "n": "Configuration Persistence",
+      "spec": "configure(u,a,s); restart() ⇒ settings(a) = s",
+      "d": "Configurations persist across sessions",
+      "inv": [
+        "persistent\\_config"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Configure Agent",
+      "sig": "configure(user: User, agent: Agent, settings: Settings) → ConfiguredAgent",
+      "def": "$configure(user: User, agent: Agent, settings: Settings) → ConfiguredAgent = personalized\\_settings := merge(default\\_settings, settings, user.preferences); tuned\\_agent := apply\\_settings(agent, personalized\\_settings); store\\_configuration(user, agent.id, personalized\\_settings); return tuned\\_agent$",
+      "pre": [
+        "user ≠ null ∧ agent ≠ null"
+      ],
+      "post": [
+        "personalized(result, user)"
+      ],
+      "fx": [
+        "Merges settings with preferences",
+        "Applies to agent",
+        "Stores configuration"
+      ]
+    },
+    {
+      "n": "Learn From Feedback",
+      "sig": "learn(user: User, agent: Agent, feedback: Feedback) → Effect",
+      "def": "$learn(user: User, agent: Agent, feedback: Feedback) → Effect = adjustment := compute\\_adjustment(feedback); new\\_settings := adjust(agent.settings, adjustment); configure(user, agent, new\\_settings)$",
+      "pre": [
+        "valid\\_feedback(feedback)"
+      ],
+      "post": [
+        "improved(agent.settings)"
+      ],
+      "fx": [
+        "Computes adjustment from feedback",
+        "Updates settings",
+        "Reconfigures agent"
+      ]
+    },
+    {
+      "n": "Reset To Default",
+      "sig": "reset(user: User, agent: Agent) → Effect",
+      "def": "$reset(user: User, agent: Agent) → Effect = configure(user, agent, default\\_settings); clear\\_personalization(user, agent.id)$",
+      "pre": [
+        "agent ≠ null"
+      ],
+      "post": [
+        "agent.settings = default\\_settings"
+      ],
+      "fx": [
+        "Resets to default settings",
+        "Clears personalization"
+      ]
+    },
+    {
+      "n": "ConfigureAgent",
+      "sig": "configure(a: Agent, c: Config) → Effect",
+      "def": "configure(a, c) applies configuration to agent",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "OptimizeAll",
+      "sig": "optimize() → Map⟨Agent, Config⟩",
+      "def": "optimize() computes personalized configs for all agents",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ResetToDefaults",
+      "sig": "reset(a: Agent) → Effect",
+      "def": "reset(a) restores agent to default configuration",
+      "pre": [
+        "a_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing a",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

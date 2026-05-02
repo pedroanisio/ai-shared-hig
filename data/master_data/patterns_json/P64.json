@@ -1,0 +1,235 @@
+{
+  "id": "P64",
+  "v": "1.1",
+  "name": "Generative UI",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "UI",
+    "Generative"
+  ],
+  "updated": "2025-11-23",
+  "def": "$G = (T_{lib}, ctx, gen, render, stream) : \\text{ctx} \\times T_{lib} \\to \\text{UI}_{dynamic}$",
+  "desc": "Content delivery strategy pattern optimizes asset delivery through caching and CDNs.",
+  "comps": [
+    {
+      "n": "T_{lib}",
+      "t": "Set⟨ComponentTemplate⟩",
+      "d": "library of UI component templates",
+      "nota": "T_{lib}"
+    },
+    {
+      "n": "ctx",
+      "t": "Context",
+      "d": "current application context and state",
+      "nota": "ctx"
+    },
+    {
+      "n": "gen",
+      "t": "Context → ComponentSpec",
+      "d": "AI generator function that selects/configures components",
+      "nota": "gen"
+    },
+    {
+      "n": "render",
+      "t": "ComponentSpec → UIElement",
+      "d": "rendering function that creates UI from spec",
+      "nota": "render"
+    },
+    {
+      "n": "stream",
+      "t": "Stream⟨Token⟩",
+      "d": "token stream from LLM for progressive generation",
+      "nota": "stream"
+    }
+  ],
+  "types": [
+    {
+      "n": "Asset",
+      "def": "(path: String, url: URL, version: String, type: AssetType)",
+      "d": "Deliverable asset"
+    },
+    {
+      "n": "ComponentTemplate",
+      "def": "$\\text{ComponentTemplate} = (\\text{name}, \\text{props\\_schema}, \\text{render\\_fn})$",
+      "d": "Template definition with props schema and renderer"
+    },
+    {
+      "n": "ComponentSpec",
+      "def": "$\\text{ComponentSpec} = (\\text{template}, \\text{props}, \\text{data}, \\text{children})$",
+      "d": "Concrete component configuration produced by generation"
+    },
+    {
+      "n": "Context",
+      "def": "$\\text{Context} = \\text{Map}(\\text{Key}, \\text{Value})$ (application state)",
+      "d": "Runtime state and signals used for generation"
+    },
+    {
+      "n": "Token",
+      "def": "$\\text{Token} = \\text{String}$ (LLM output token)",
+      "d": "Atomic output chunk used for streaming UI updates"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P64.1",
+      "n": "Low Latency",
+      "spec": "delivery\\_latency < threshold",
+      "d": "Assets delivered with low latency",
+      "inv": [
+        "fast\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P64.2",
+      "n": "Geographic Distribution",
+      "spec": "assets\\_replicated\\_globally",
+      "d": "Assets distributed globally",
+      "inv": [
+        "global\\_availability"
+      ]
+    },
+    {
+      "id": "P.P64.3",
+      "n": "Cache Efficiency",
+      "spec": "cache\\_hit\\_rate > threshold",
+      "d": "High cache hit rate",
+      "inv": [
+        "effective\\_caching"
+      ]
+    },
+    {
+      "id": "P.P64.4",
+      "n": "Real-Time Morphing",
+      "spec": "$\\Delta t_{morph} = t_{render}(\\text{token}_i) - t_{receive}(\\text{token}_i) < 16ms$ (60fps responsiveness)",
+      "d": "Streaming updates render within a frame budget",
+      "inv": [
+        "frame\\_budget\\_met"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Resolve Asset URL",
+      "sig": "resolve(asset: Asset, client: ClientInfo) → URL",
+      "def": "$resolve(asset: Asset, client: ClientInfo) → URL = cdn := select\\_nearest\\_cdn(client.location); versioned\\_url := add\\_version\\_hash(asset.url); cdn\\_url := cdn.base\\_url + versioned\\_url; return cdn\\_url$",
+      "pre": [
+        "asset ≠ null"
+      ],
+      "post": [
+        "valid\\_url(result)"
+      ],
+      "fx": [
+        "Selects nearest CDN",
+        "Adds version hash",
+        "Constructs CDN URL"
+      ]
+    },
+    {
+      "n": "Invalidate Cache",
+      "sig": "invalidate(asset: Asset) → Effect",
+      "def": "$invalidate(asset: Asset) → Effect = for cdn in cdns: cdn.purge(asset.path); increment\\_version(asset)$",
+      "pre": [
+        "asset ≠ null"
+      ],
+      "post": [
+        "∀cdn: ¬cached(cdn, asset)"
+      ],
+      "fx": [
+        "Purges from all CDNs",
+        "Increments version"
+      ]
+    },
+    {
+      "n": "Preload Assets",
+      "sig": "preload(assets: Set⟨Asset⟩, regions: Set⟨Region⟩) → Effect",
+      "def": "$preload(assets: Set⟨Asset⟩, regions: Set⟨Region⟩) → Effect = for region in regions: cdn := get\\_cdn(region); for asset in assets: cdn.warm\\_cache(asset)$",
+      "pre": [
+        "|assets| > 0"
+      ],
+      "post": [
+        "∀region, asset: cached(region, asset)"
+      ],
+      "fx": [
+        "Warms CDN caches in regions"
+      ]
+    },
+    {
+      "n": "Generate Component",
+      "sig": "generate: Context → ComponentSpec",
+      "def": "$\\text{generate}(ctx) = spec$where$spec.template = \\text{LLM}_{selector}(ctx, T_{lib})$$spec.props = \\text{LLM}_{props}(ctx)$$spec.data = \\text{extract}(ctx)$$spec.children = \\text{LLM}_{children}(ctx)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Stream Render",
+      "sig": "streamRender: Stream⟨Token⟩ → Stream⟨UIElement⟩",
+      "def": "$\\text{streamRender}(S) = \\{render(\\text{accumulate}(S[0:i])) \\mid i \\in [1..|S|]\\}$(progressive rendering as tokens arrive)",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Morph UI",
+      "sig": "morph: UIElement × ComponentSpec → UIElement",
+      "def": "$\\text{morph}(ui, spec) = ui'$where$\\text{diff} = \\text{compute\\_diff}(ui, spec)$$ui' = \\text{apply}(\\text{diff}, ui)$(minimal DOM updates)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P112",
+      "P115"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Vercel AI SDK streamUI",
+      "d": "dynamic component generation from LLM"
+    },
+    {
+      "n": "ChatGPT UI morphing",
+      "d": "interface adapts to conversation context"
+    },
+    {
+      "n": "Claude Artifacts",
+      "d": "generated interactive UI components"
+    },
+    {
+      "n": "v0.dev generated interfaces",
+      "d": "AI-designed complete UIs from natural language"
+    }
+  ]
+}

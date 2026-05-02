@@ -1,0 +1,146 @@
+{
+  "id": "P78",
+  "v": "1.1",
+  "name": "Background Task Management",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Background Tasks",
+    "Management"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B_{task} = (Q_{tasks}, I_{progress}, N_{complete}, S_{results}) : Tasks_{async} \\to UI_{status}$",
+  "desc": "Microservices architecture pattern decomposes applications into independently deployable services.",
+  "comps": [
+    {
+      "n": "Q_{tasks}",
+      "t": "Component",
+      "d": "Component implementing Background Task Management functionality",
+      "nota": "Q_{tasks}"
+    },
+    {
+      "n": "I_{progress}",
+      "t": "Component",
+      "d": "Component implementing Background Task Management functionality",
+      "nota": "I_{progress}"
+    },
+    {
+      "n": "N_{complete}",
+      "t": "Component",
+      "d": "Component implementing Background Task Management functionality",
+      "nota": "N_{complete}"
+    },
+    {
+      "n": "S_{results}",
+      "t": "Component",
+      "d": "Component implementing Background Task Management functionality",
+      "nota": "S_{results}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Service",
+      "def": "(id: ServiceID, name: String, endpoints: Set⟨Endpoint⟩, dependencies: Set⟨ServiceID⟩)",
+      "d": "Microservice"
+    },
+    {
+      "n": "Deployment",
+      "def": "(service: Service, container: Container, status: DeploymentStatus)",
+      "d": "Service deployment"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P78.1",
+      "n": "Service Independence",
+      "spec": "services deploy\\_independently",
+      "d": "Services deploy independently",
+      "inv": [
+        "independent\\_deployment"
+      ]
+    },
+    {
+      "id": "P.P78.2",
+      "n": "Bounded Context",
+      "spec": "∀service: has\\_bounded\\_context",
+      "d": "Each service has bounded context",
+      "inv": [
+        "domain\\_boundaries"
+      ]
+    },
+    {
+      "id": "P.P78.3",
+      "n": "Decentralized Data",
+      "spec": "∀service: owns\\_data",
+      "d": "Each service owns its data",
+      "inv": [
+        "data\\_ownership"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Deploy Service",
+      "sig": "deploy(service: Service, config: Config) → Deployment",
+      "def": "$deploy(service: Service, config: Config) → Deployment = validate\\_service(service); container := build\\_container(service); deploy\\_to\\_cluster(container, config); register\\_service(service); deployment := Deployment(service, container, status=Running); return deployment$",
+      "pre": [
+        "valid\\_service(service) ∧ valid\\_config(config)"
+      ],
+      "post": [
+        "deployment.status = Running ∧ registered(service)"
+      ],
+      "fx": [
+        "Validates service",
+        "Builds container",
+        "Deploys",
+        "Registers service"
+      ]
+    },
+    {
+      "n": "Scale Service",
+      "sig": "scale(service: ServiceID, replicas: ℕ) → Effect",
+      "def": "$scale(service: ServiceID, replicas: ℕ) → Effect = current := get\\_replica\\_count(service); if replicas > current: add\\_replicas(service, replicas - current) else if replicas < current: remove\\_replicas(service, current - replicas); update\\_load\\_balancer(service)$",
+      "pre": [
+        "replicas > 0"
+      ],
+      "post": [
+        "replica\\_count(service) = replicas"
+      ],
+      "fx": [
+        "Adjusts replica count",
+        "Updates load balancer"
+      ]
+    },
+    {
+      "n": "Health Check",
+      "sig": "health_check(service: ServiceID) → HealthStatus",
+      "def": "$health\\_check(service: ServiceID) → HealthStatus = try: response := service.ping(); if response.success ∧ response.time < threshold: return Healthy else: return Degraded catch error: return Unhealthy$",
+      "pre": [
+        "service ≠ null"
+      ],
+      "post": [
+        "result ∈ {Healthy, Degraded, Unhealthy}"
+      ],
+      "fx": [
+        "Pings service",
+        "Evaluates health"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Background Tasks implementation",
+      "d": "Applied in ai, background tasks systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

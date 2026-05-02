@@ -1,0 +1,201 @@
+{
+  "id": "P125",
+  "v": "1.1",
+  "name": "Decision Explanation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E_{decision} = (Decision, Reasoning, Factors, Alternatives) : Decision \\to Explanation_{detailed}$",
+  "desc": "Decision explanation provides human-readable rationale for AI decisions and recommendations.",
+  "comps": [
+    {
+      "n": "Decision",
+      "t": "Choice",
+      "d": "The decision made by the agent",
+      "nota": "Decision"
+    },
+    {
+      "n": "Reasoning",
+      "t": "Sequence⟨Step⟩",
+      "d": "Step-by-step reasoning process leading to decision",
+      "nota": "Reasoning"
+    },
+    {
+      "n": "Factors",
+      "t": "Map⟨Factor, Weight⟩",
+      "d": "Contributing factors with their influence weights",
+      "nota": "Factors"
+    },
+    {
+      "n": "Alternatives",
+      "t": "Set⟨(Choice, Score, Reason)⟩",
+      "d": "Alternative choices considered with scores and rejection reasons",
+      "nota": "Alternatives"
+    }
+  ],
+  "types": [
+    {
+      "n": "Decision",
+      "def": "(action: Action, confidence: ℝ, factors: Set⟨Factor⟩)",
+      "d": "AI decision with metadata"
+    },
+    {
+      "n": "Explanation",
+      "def": "(rationale: String, factors: Set⟨Factor⟩, alternatives: Set⟨Decision⟩)",
+      "d": "Human-readable explanation"
+    },
+    {
+      "n": "Factor",
+      "def": "(feature: String, weight: ℝ, contribution: ℝ)",
+      "d": "Contributing factor with importance"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P125.1",
+      "n": "Comprehensibility",
+      "spec": "∀user: understandable(explanation, user)",
+      "d": "Explanations are comprehensible to users",
+      "inv": [
+        "user\\_friendly"
+      ]
+    },
+    {
+      "id": "P.P125.2",
+      "n": "Faithfulness",
+      "spec": "explanation reflects actual decision process",
+      "d": "Explanations accurately represent decision process",
+      "inv": [
+        "truthful\\_explanation"
+      ]
+    },
+    {
+      "id": "P.P125.3",
+      "n": "Actionability",
+      "spec": "∀explanation: enables\\_informed\\_decision(user, explanation)",
+      "d": "Explanations enable informed user decisions",
+      "inv": [
+        "actionable\\_insights"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Explain Decision",
+      "sig": "explain(decision: Decision) → Explanation",
+      "def": "$explain(decision: Decision) → Explanation = factors := extract\\_decision\\_factors(decision); rationale := generate\\_rationale(factors); alternatives := consider\\_alternatives(decision); return Explanation(rationale, factors, alternatives)$",
+      "pre": [
+        "decision ≠ null"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Extracts decision factors",
+        "Generates rationale",
+        "Considers alternatives"
+      ]
+    },
+    {
+      "n": "Show Contributing Factors",
+      "sig": "factors(decision: Decision) → Set⟨Factor⟩",
+      "def": "$factors(decision: Decision) → Set⟨Factor⟩ = {(feature, weight) : feature contributed to decision}$",
+      "pre": [
+        "traceable(decision)"
+      ],
+      "post": [
+        "∀f ∈ result: influenced(f, decision)"
+      ],
+      "fx": [
+        "Identifies contributing factors",
+        "Computes feature importance"
+      ]
+    },
+    {
+      "n": "Compare Alternatives",
+      "sig": "compare(chosen: Decision, alternatives: Set⟨Decision⟩) → Comparison",
+      "def": "$compare(chosen: Decision, alternatives: Set⟨Decision⟩) → Comparison = scores := {(alt, score(alt)) : alt ∈ alternatives ∪ {chosen}}; rankings := rank(scores); differences := highlight\\_differences(chosen, alternatives); return Comparison(rankings, differences)$",
+      "pre": [
+        "|alternatives| > 0"
+      ],
+      "post": [
+        "clear(result.differences)"
+      ],
+      "fx": [
+        "Scores all options",
+        "Ranks alternatives",
+        "Highlights differences"
+      ]
+    },
+    {
+      "n": "Explain",
+      "sig": "explain(d: Decision) → Explanation",
+      "def": "explain(d) = (Reasoning, Factors, Alternatives)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetFactors",
+      "sig": "get_factors() → Map⟨Factor, Weight⟩",
+      "def": "get_factors() = Factors",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "CompareAlternatives",
+      "sig": "compare() → Ranking⟨Choice⟩",
+      "def": "compare() = sort_by_score([Decision",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

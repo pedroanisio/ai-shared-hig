@@ -1,0 +1,231 @@
+{
+  "id": "P75",
+  "v": "1.1",
+  "name": "Proactive Intervention",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Proactive",
+    "Intervention"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{proact} = (P_{predict}, T_{timing}, A_{action}, U_{user}) : \\text{Context} \\to \\text{Intervention}$",
+  "desc": "Backend for Frontend pattern creates specialized backend services for specific client types.",
+  "comps": [
+    {
+      "n": "P_{predict}",
+      "t": "Context → Prediction",
+      "d": "prediction function for user needs",
+      "nota": "P_{predict}"
+    },
+    {
+      "n": "T_{timing}",
+      "t": "Prediction → Time",
+      "d": "optimal timing function for intervention",
+      "nota": "T_{timing}"
+    },
+    {
+      "n": "A_{action}",
+      "t": "Prediction → Action",
+      "d": "action selection function",
+      "nota": "A_{action}"
+    },
+    {
+      "n": "U_{user}",
+      "t": "UserState",
+      "d": "current user state and cognitive load",
+      "nota": "U_{user}"
+    }
+  ],
+  "types": [
+    {
+      "n": "ClientType",
+      "def": "Web | Mobile | Desktop | IoT",
+      "d": "Client platform type"
+    },
+    {
+      "n": "BFF",
+      "def": "(client_type: ClientType, backends: Set⟨Backend⟩, transformers: Transformers)",
+      "d": "Backend for Frontend service"
+    },
+    {
+      "n": "Prediction",
+      "def": "$\\text{Prediction} = (\\text{need}, \\text{confidence}, \\text{urgency}, \\text{impact})$",
+      "d": "Estimated user need with confidence and impact"
+    },
+    {
+      "n": "Intervention",
+      "def": "$\\text{Intervention} = (\\text{action}, \\text{timing}, \\text{modality}, \\text{priority})$",
+      "d": "Proactive action delivered to the user"
+    },
+    {
+      "n": "UserState",
+      "def": "$\\text{UserState} = (\\text{attention}, \\text{load}, \\text{task}, \\text{mood})$",
+      "d": "User context for deciding interventions"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P75.1",
+      "n": "Client Optimization",
+      "spec": "∀client: data optimized\\_for\\_client",
+      "d": "Data optimized for each client type",
+      "inv": [
+        "client\\_specific\\_optimization"
+      ]
+    },
+    {
+      "id": "P.P75.2",
+      "n": "Backend Abstraction",
+      "spec": "clients unaware\\_of backend\\_complexity",
+      "d": "Backend complexity abstracted from clients",
+      "inv": [
+        "simplified\\_client\\_interface"
+      ]
+    },
+    {
+      "id": "P.P75.3",
+      "n": "Independent Evolution",
+      "spec": "bffs evolve\\_independently",
+      "d": "BFFs can evolve independently",
+      "inv": [
+        "independent\\_bffs"
+      ]
+    },
+    {
+      "id": "P.P75.4",
+      "n": "User Acceptance Rate",
+      "spec": "$\\frac{|\\text{accepted\\_interventions}|}{|\\text{all\\_interventions}|} > 0.8$ (high acceptance, per PDF)",
+      "d": "Interventions achieve a high acceptance ratio",
+      "inv": [
+        "high\\_acceptance"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Handle Client Request",
+      "sig": "handle(client_type: ClientType, request: Request) → Response",
+      "def": "$handle(client\\_type: ClientType, request: Request) → Response = bff := get\\_bff(client\\_type); aggregated\\_data := bff.aggregate\\_backend\\_calls(request); transformed := bff.transform\\_for\\_client(aggregated\\_data); return Response(transformed)$",
+      "pre": [
+        "valid\\_client\\_type(client\\_type)"
+      ],
+      "post": [
+        "response optimized\\_for client\\_type"
+      ],
+      "fx": [
+        "Gets appropriate BFF",
+        "Aggregates backend data",
+        "Transforms for client"
+      ]
+    },
+    {
+      "n": "Aggregate Backend Calls",
+      "sig": "aggregate(backends: Set⟨Backend⟩, request: Request) → AggregatedData",
+      "def": "$aggregate(backends: Set⟨Backend⟩, request: Request) → AggregatedData = results := parallel\\_for backend in backends: backend.call(request); combined := merge(results); return combined$",
+      "pre": [
+        "|backends| > 0"
+      ],
+      "post": [
+        "∀backend: data\\_included"
+      ],
+      "fx": [
+        "Calls backends in parallel",
+        "Merges results"
+      ]
+    },
+    {
+      "n": "Transform For Client",
+      "sig": "transform(data: Data, client_type: ClientType) → TransformedData",
+      "def": "$transform(data: Data, client\\_type: ClientType) → TransformedData = schema := get\\_client\\_schema(client\\_type); transformed := map\\_to\\_schema(data, schema); optimized := optimize\\_for\\_client(transformed, client\\_type); return optimized$",
+      "pre": [
+        "data ≠ null"
+      ],
+      "post": [
+        "result conforms\\_to client\\_schema"
+      ],
+      "fx": [
+        "Maps to client schema",
+        "Optimizes for client"
+      ]
+    },
+    {
+      "n": "Predict Need",
+      "sig": "predict: Context → Prediction",
+      "def": "$\\text{predict}(ctx) = p$where$p.\\text{need} = \\text{LLM}_{predictor}(ctx.\\text{history}, ctx.\\text{current})$$p.\\text{confidence} = P(\\text{need",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Determine Timing",
+      "sig": "timing: Prediction × UserState → Time",
+      "def": "$\\text{timing}(p, u) = t$where$t = \\begin{cases} \\text{now} & \\text{if } u.\\text{load} < \\theta_{low} \\land p.\\text{urgency} = \\text{high} \\\\ \\text{next\\_break} & \\text{if } u.\\text{load} \\geq \\theta_{low} \\\\ \\text{defer} & \\text{if } p.\\text{confidence} < \\theta_{conf} \\end{cases}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Execute Intervention",
+      "sig": "intervene: Prediction → Effect",
+      "def": "$\\text{intervene}(p) =$effect where$\\text{action} = A_{action}(p)$$\\text{timing} = T_{timing}(p)$$\\text{execute}(\\text{action}, \\text{timing})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P76",
+      "P77",
+      "P79"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Gmail Smart Reply",
+      "d": "proactively suggests responses"
+    },
+    {
+      "n": "GitHub Copilot proactive suggestions",
+      "d": "suggests code before explicitly asked"
+    },
+    {
+      "n": "Notion AI writing assistance",
+      "d": "proactive content improvement suggestions"
+    },
+    {
+      "n": "Calendar smart scheduling",
+      "d": "proactively suggests meeting times"
+    }
+  ]
+}

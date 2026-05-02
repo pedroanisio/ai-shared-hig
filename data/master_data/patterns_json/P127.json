@@ -1,0 +1,145 @@
+{
+  "id": "P127",
+  "v": "1.1",
+  "name": "Error Debug Interface",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{debug} = (Error, Stack_{trace}, Context, Solutions) : Error \\to Debug_{info}$",
+  "desc": "Error debug interface provides detailed diagnostics and debugging tools for failures.",
+  "comps": [
+    {
+      "n": "Error",
+      "t": "Exception",
+      "d": "The error or exception that occurred",
+      "nota": "Error"
+    },
+    {
+      "n": "Stack_{trace}",
+      "t": "Sequence⟨StackFrame⟩",
+      "d": "Call stack at point of error",
+      "nota": "Stack_{trace}"
+    },
+    {
+      "n": "Context",
+      "t": "Map⟨String, Value⟩",
+      "d": "Execution context including variables and state",
+      "nota": "Context"
+    },
+    {
+      "n": "Solutions",
+      "t": "Sequence⟨(Fix, Confidence)⟩",
+      "d": "Suggested fixes ranked by confidence",
+      "nota": "Solutions"
+    }
+  ],
+  "types": [
+    {
+      "n": "ErrorReport",
+      "def": "(error: Error, stack_trace: StackTrace, variables: Map⟨String,Value⟩, metadata: Metadata)",
+      "d": "Complete error diagnostic report"
+    },
+    {
+      "n": "StackTrace",
+      "def": "Sequence⟨StackFrame⟩",
+      "d": "Execution stack trace"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P127.1",
+      "n": "Complete Information",
+      "spec": "∀error: report contains all debugging info",
+      "d": "Error reports contain complete debugging information",
+      "inv": [
+        "comprehensive\\_reports"
+      ]
+    },
+    {
+      "id": "P.P127.2",
+      "n": "Actionable Suggestions",
+      "spec": "∀suggestion: likely\\_to\\_fix(suggestion, error)",
+      "d": "Fix suggestions are likely to resolve errors",
+      "inv": [
+        "helpful\\_suggestions"
+      ]
+    },
+    {
+      "id": "P.P127.3",
+      "n": "Privacy Protection",
+      "spec": "¬leaks\\_sensitive\\_data(error\\_report)",
+      "d": "Error reports don't leak sensitive data",
+      "inv": [
+        "secure\\_debugging"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Capture Error",
+      "sig": "capture(error: Error, context: Context) → ErrorReport",
+      "def": "$capture(error: Error, context: Context) → ErrorReport = stack\\_trace := extract\\_stack\\_trace(error); variables := capture\\_local\\_variables(context); metadata := collect\\_metadata(error, context); return ErrorReport(error, stack\\_trace, variables, metadata)$",
+      "pre": [
+        "error ≠ null"
+      ],
+      "post": [
+        "complete(result)"
+      ],
+      "fx": [
+        "Extracts stack trace",
+        "Captures variable state",
+        "Collects metadata"
+      ]
+    },
+    {
+      "n": "Display Error",
+      "sig": "display(report: ErrorReport) → UI",
+      "def": "$display(report: ErrorReport) → UI = formatted\\_error := format\\_error(report.error); stack\\_view := render\\_stack\\_trace(report.stack\\_trace); var\\_view := render\\_variables(report.variables); suggestions := generate\\_fix\\_suggestions(report); return UI(formatted\\_error, stack\\_view, var\\_view, suggestions)$",
+      "pre": [
+        "report ≠ null"
+      ],
+      "post": [
+        "debuggable(result)"
+      ],
+      "fx": [
+        "Formats error display",
+        "Renders stack and variables",
+        "Generates fix suggestions"
+      ]
+    },
+    {
+      "n": "Replay Error",
+      "sig": "replay(report: ErrorReport) → Effect",
+      "def": "$replay(report: ErrorReport) → Effect = restore\\_context(report.metadata); restore\\_variables(report.variables); re\\_execute\\_from(report.stack\\_trace[0])$",
+      "pre": [
+        "replayable(report)"
+      ],
+      "post": [
+        "context\\_restored"
+      ],
+      "fx": [
+        "Restores execution context",
+        "Re-executes from error point"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

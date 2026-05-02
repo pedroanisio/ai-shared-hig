@@ -1,0 +1,216 @@
+{
+  "id": "F2.2",
+  "v": "1.1",
+  "name": "Transformation Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (agents, coordinator, tasks, results)$",
+  "desc": "Transformation flows convert data from one representation to another through mappings.",
+  "comps": [
+    {
+      "n": "agents",
+      "t": "Set⟨Agent⟩",
+      "d": "available agents",
+      "nota": "agents"
+    },
+    {
+      "n": "coordinator",
+      "t": "Task → Agent",
+      "d": "assigns tasks to agents",
+      "nota": "coordinator"
+    },
+    {
+      "n": "tasks",
+      "t": "Queue⟨Task⟩",
+      "d": "pending tasks",
+      "nota": "tasks"
+    },
+    {
+      "n": "results",
+      "t": "Map⟨Task, Result⟩",
+      "d": "store task results",
+      "nota": "results"
+    }
+  ],
+  "types": [
+    {
+      "n": "InputFormat",
+      "def": "Structured data in source format",
+      "d": "Source data format before transformation"
+    },
+    {
+      "n": "OutputFormat",
+      "def": "Structured data in target format",
+      "d": "Target data format after transformation"
+    },
+    {
+      "n": "Mapping",
+      "def": "Map⟨InputField, OutputField⟩",
+      "d": "Field-to-field transformation mappings"
+    },
+    {
+      "n": "Agent",
+      "def": "(id: String, capabilities: Set⟨Capability⟩)",
+      "d": "Type representing Agent"
+    },
+    {
+      "n": "Task",
+      "def": "(id: String, requirements: Set⟨Capability⟩)",
+      "d": "Type representing Task"
+    },
+    {
+      "n": "Result",
+      "def": "Success(value: Value) | Failure(error: Error)",
+      "d": "Type representing Result"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F2.2.1",
+      "n": "Mapping Completeness",
+      "spec": "∀field ∈ input: ∃mapping[field] ∨ field ∈ optional",
+      "d": "All required input fields have mappings",
+      "inv": [
+        "complete\\_mapping"
+      ]
+    },
+    {
+      "id": "P.F2.2.2",
+      "n": "Type Preservation",
+      "spec": "∀field: type(output[field]) = expected\\_type(field)",
+      "d": "Output fields have correct types",
+      "inv": [
+        "type\\_safe\\_transformation"
+      ]
+    },
+    {
+      "id": "P.F2.2.3",
+      "n": "Reversibility",
+      "spec": "bijective(mapping) ⇒ transform(reverse(transform(x))) = x",
+      "d": "Bijective transformations are reversible",
+      "inv": [
+        "reversible\\_when\\_bijective"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Transform",
+      "sig": "transform(input: InputFormat, mapping: Mapping) → OutputFormat",
+      "def": "$transform(input: InputFormat, mapping: Mapping) → OutputFormat = apply\\_mapping(input, mapping); validate\\_output(result)$",
+      "pre": [
+        "compatible(input, mapping)"
+      ],
+      "post": [
+        "valid\\_format(result)"
+      ],
+      "fx": [
+        "Applies field mappings",
+        "Validates output format"
+      ]
+    },
+    {
+      "n": "Compose Transforms",
+      "sig": "compose(t1: Transform, t2: Transform) → Transform",
+      "def": "$compose(t1: Transform, t2: Transform) → Transform = λ input: t2(t1(input))$",
+      "pre": [
+        "output\\_type(t1) = input\\_type(t2)"
+      ],
+      "post": [
+        "valid\\_transform(result)"
+      ],
+      "fx": [
+        "Composes transformations",
+        "Validates type compatibility"
+      ]
+    },
+    {
+      "n": "Reverse",
+      "sig": "reverse(t: Transform) → Transform | Error",
+      "def": "$reverse(t: Transform) → Transform | Error = if invertible(t): return inverse(t) else: return Error(\"Not invertible\")$",
+      "pre": [
+        "well\\_defined(t)"
+      ],
+      "post": [
+        "invertible(t) ⇒ reverse(reverse(t)) = t"
+      ],
+      "fx": [
+        "Computes inverse transformation if possible"
+      ]
+    },
+    {
+      "n": "Orchestrate",
+      "sig": "orchestrate(tasks: Queue⟨Task⟩) → Effect",
+      "def": "$orchestrate(tasks: Queue⟨Task⟩) → Effect = while ¬empty(tasks): task := dequeue_by_priority(tasks) agent := coordinator(task) if agent.busy: re_enqueue(task) else: assign(task, agent)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "state updated successfully"
+      ],
+      "fx": [
+        "Performs operation-specific state change"
+      ]
+    },
+    {
+      "n": "Assign Task",
+      "sig": "assign(task: Task, agent: Agent) → Effect",
+      "def": "$assign(task: Task, agent: Agent) → Effect = agent.busy := true result := agent.execute(task) results[task] := result agent.busy := false notify_completion(task, result)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "state updated successfully"
+      ],
+      "fx": [
+        "Performs operation-specific state change"
+      ]
+    },
+    {
+      "n": "Select Agent",
+      "sig": "select_agent(task: Task) → Agent",
+      "def": "$select_agent(task: Task) → Agent = available := {a ∈ agents : ¬a.busy ∧ task.requirements ⊆ a.capabilities} if empty(available): return null return argmin(a ∈ available, load(a))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Performs operation-specific state change"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Multi-agent AI systems",
+      "d": "Agent/task coordination with shared goals"
+    },
+    {
+      "n": "Task distribution in distributed systems",
+      "d": "Schedulers assigning work to workers"
+    },
+    {
+      "n": "Worker pool management",
+      "d": "Pooling agents with capability-based assignment"
+    },
+    {
+      "n": "Microservice orchestration",
+      "d": "Routing tasks to services based on capabilities"
+    },
+    {
+      "n": "Parallel computation frameworks",
+      "d": "Coordinated task execution across compute nodes"
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "id": "P154",
+  "v": "1.1",
+  "name": "Secure Credential Management",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M_{cred} = (Credentials, Encryption, Access_{control}, Rotation) : Secrets \\to Secured$",
+  "desc": "Secure credential management stores and retrieves sensitive credentials safely using encryption.",
+  "comps": [
+    {
+      "n": "Credentials",
+      "t": "Map⟨Service, Secret⟩",
+      "d": "Encrypted credentials for services",
+      "nota": "Credentials"
+    },
+    {
+      "n": "Vault",
+      "t": "SecureStorage",
+      "d": "Secure storage mechanism",
+      "nota": "Vault"
+    },
+    {
+      "n": "Rotation",
+      "t": "Credential → Effect",
+      "d": "Credential rotation function",
+      "nota": "Rotation"
+    },
+    {
+      "n": "Access",
+      "t": "(Service, Auth) → Credential",
+      "d": "Secure access function with authentication",
+      "nota": "Access"
+    }
+  ],
+  "types": [
+    {
+      "n": "Credential",
+      "def": "Sensitive authentication data",
+      "d": "Secret credential value"
+    },
+    {
+      "n": "Vault",
+      "def": "Map⟨String, EncryptedCredential⟩",
+      "d": "Secure credential storage"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P154.1",
+      "n": "Encryption at Rest",
+      "spec": "∀cred ∈ vault: encrypted(cred)",
+      "d": "All credentials are encrypted at rest",
+      "inv": [
+        "always\\_encrypted"
+      ]
+    },
+    {
+      "id": "P.P154.2",
+      "n": "Access Control",
+      "spec": "retrieve(name) requires authorization(current\\_user, name)",
+      "d": "Credential access requires authorization",
+      "inv": [
+        "controlled\\_access"
+      ]
+    },
+    {
+      "id": "P.P154.3",
+      "n": "Audit Trail",
+      "spec": "∀operation: logged(operation)",
+      "d": "All credential operations are audited",
+      "inv": [
+        "complete\\_audit"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Store Credential",
+      "sig": "store(name: String, credential: Credential) → Effect",
+      "def": "$store(name: String, credential: Credential) → Effect = encrypted := encrypt(credential, master\\_key); vault[name] := encrypted; audit\\_log(\"credential\\_stored\", name)$",
+      "pre": [
+        "authorized(current\\_user)"
+      ],
+      "post": [
+        "encrypted(vault[name])"
+      ],
+      "fx": [
+        "Encrypts credential",
+        "Stores in vault",
+        "Logs action"
+      ]
+    },
+    {
+      "n": "Retrieve Credential",
+      "sig": "retrieve(name: String) → Credential | Error",
+      "def": "$retrieve(name: String) → Credential | Error = if name ∈ vault: encrypted := vault[name]; credential := decrypt(encrypted, master\\_key); audit\\_log(\"credential\\_retrieved\", name); return credential else: throw NotFoundError(name)$",
+      "pre": [
+        "authorized(current\\_user, name)"
+      ],
+      "post": [
+        "logged(\"credential\\_retrieved\", name)"
+      ],
+      "fx": [
+        "Retrieves encrypted credential",
+        "Decrypts",
+        "Logs access",
+        "Returns credential"
+      ]
+    },
+    {
+      "n": "Rotate Credential",
+      "sig": "rotate(name: String, new_credential: Credential) → Effect",
+      "def": "$rotate(name: String, new\\_credential: Credential) → Effect = old := retrieve(name); store(name, new\\_credential); archive(name, old); notify\\_dependent\\_systems(name)$",
+      "pre": [
+        "name ∈ vault"
+      ],
+      "post": [
+        "vault[name] ≠ old\\_value"
+      ],
+      "fx": [
+        "Retrieves old credential",
+        "Stores new credential",
+        "Archives old",
+        "Notifies systems"
+      ]
+    },
+    {
+      "n": "Store",
+      "sig": "store(service: Service, cred: Credential) → Effect",
+      "def": "store(service, cred) encrypts and stores credential",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Retrieve",
+      "sig": "retrieve(service: Service, auth: Auth) → Credential",
+      "def": "retrieve(service, auth) returns credential if authorized",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "Rotate",
+      "sig": "rotate(service: Service) → Effect",
+      "def": "rotate(service) generates and stores new credential",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

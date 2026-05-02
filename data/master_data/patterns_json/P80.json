@@ -1,0 +1,236 @@
+{
+  "id": "P80",
+  "v": "1.1",
+  "name": "Voice Conversation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Voice",
+    "Multimodal"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{conv} = (I_{speech}, R_{intent}, M_{dialog}, O_{speech}, H_{int}) : \\text{Speech} \\leftrightarrow \\text{Response}$",
+  "desc": "Layered architecture pattern organizes code into horizontal layers with defined dependencies.",
+  "comps": [
+    {
+      "n": "I_{speech}",
+      "t": "AudioStream",
+      "d": "continuous audio input stream from user",
+      "nota": "I_{speech}"
+    },
+    {
+      "n": "R_{intent}",
+      "t": "Intent \\times Confidence",
+      "d": "recognized intent with confidence score",
+      "nota": "R_{intent}"
+    },
+    {
+      "n": "M_{dialog}",
+      "t": "List⟨Turn⟩",
+      "d": "conversation history and dialog state",
+      "nota": "M_{dialog}"
+    },
+    {
+      "n": "O_{speech}",
+      "t": "AudioStream",
+      "d": "synthesized speech output to user",
+      "nota": "O_{speech}"
+    },
+    {
+      "n": "H_{int}",
+      "t": "\\{\\text{listening}, \\text{processing}, \\text{speaking}, \\text{idle}\\}",
+      "d": "current interaction state",
+      "nota": "H_{int}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Layer",
+      "def": "(name: String, handlers: Set⟨Handler⟩, dependencies: Set⟨Layer⟩)",
+      "d": "Architecture layer"
+    },
+    {
+      "n": "AudioStream",
+      "def": "$\\text{AudioStream} = \\text{Time} \\to \\mathbb{R}^n$ (time-series audio signal)",
+      "d": "Continuous audio signal from or to the user"
+    },
+    {
+      "n": "Intent",
+      "def": "$\\text{Intent} = \\text{String} \\times \\text{Parameters}$ (action with params)",
+      "d": "Recognized user intent with parameters"
+    },
+    {
+      "n": "Confidence",
+      "def": "$\\text{Confidence} = [0, 1] \\subset \\mathbb{R}$ (probability score)",
+      "d": "Probability estimate for intent recognition"
+    },
+    {
+      "n": "Turn",
+      "def": "$\\text{Turn} = \\{\\text{user}, \\text{agent}\\} \\times \\text{String} \\times \\text{Timestamp}$",
+      "d": "Single exchange in the conversation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P80.1",
+      "n": "Unidirectional Dependencies",
+      "spec": "∀layers: dependencies\\_downward\\_only",
+      "d": "Dependencies only go downward",
+      "inv": [
+        "acyclic\\_dependencies"
+      ]
+    },
+    {
+      "id": "P.P80.2",
+      "n": "Layer Isolation",
+      "spec": "layers isolated\\_by\\_interface",
+      "d": "Layers isolated by interfaces",
+      "inv": [
+        "interface\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P80.3",
+      "n": "Testability",
+      "spec": "∀layer: independently\\_testable",
+      "d": "Layers independently testable",
+      "inv": [
+        "test\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P80.4",
+      "n": "Confidence Threshold",
+      "spec": "$\\exists \\theta \\in (0,1) : \\text{Confidence}(R_{intent}) \\geq \\theta \\implies \\text{execute}(R_{intent})$",
+      "d": "Intents execute only above a confidence threshold",
+      "inv": [
+        "thresholded\\_execution"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Call Layer",
+      "sig": "call(from: Layer, to: Layer, request: Request) → Response",
+      "def": "$call(from: Layer, to: Layer, request: Request) → Response = if valid\\_dependency(from, to): response := to.handle(request); return response else: raise DependencyViolation$",
+      "pre": [
+        "valid\\_layer(from) ∧ valid\\_layer(to)"
+      ],
+      "post": [
+        "response\\_returned ∨ exception\\_raised"
+      ],
+      "fx": [
+        "Validates dependency",
+        "Calls layer",
+        "Returns response or raises exception"
+      ]
+    },
+    {
+      "n": "Register Handler",
+      "sig": "register(layer: Layer, handler: Handler) → Effect",
+      "def": "$register(layer: Layer, handler: Handler) → Effect = layer.handlers := layer.handlers ∪ {handler}$",
+      "pre": [
+        "layer ≠ null ∧ handler ≠ null"
+      ],
+      "post": [
+        "handler ∈ layer.handlers"
+      ],
+      "fx": [
+        "Adds handler to layer"
+      ]
+    },
+    {
+      "n": "Validate Dependencies",
+      "sig": "validate(architecture: Architecture) → ValidationResult",
+      "def": "$validate(architecture: Architecture) → ValidationResult = violations := ∅; for layer in architecture.layers: for dep in layer.dependencies: if ¬allowed\\_dependency(layer, dep): violations := violations ∪ {(layer, dep)}; return ValidationResult(|violations| = 0, violations)$",
+      "pre": [
+        "architecture ≠ null"
+      ],
+      "post": [
+        "result.valid ⇔ |result.violations| = 0"
+      ],
+      "fx": [
+        "Checks all dependencies",
+        "Collects violations"
+      ]
+    },
+    {
+      "n": "Process Speech",
+      "sig": "processSpeech: AudioStream → Intent × Confidence",
+      "def": "$\\text{processSpeech}(I_{speech}) = (intent, conf)$where$\\text{audio} \\xrightarrow{\\text{STT}} \\text{text}$$\\text{text} \\xrightarrow{\\text{NLU}} (intent,\n        conf)$$conf = P(\\text{intent} | \\text{text})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Generate Response",
+      "sig": "generateResponse: Intent × M_dialog → AudioStream",
+      "def": "$\\text{generateResponse}(intent, M_{dialog}) = O_{speech}$where$\\text{response} = \\text{LLM}(intent,\n        M_{dialog})$$O_{speech} = \\text{TTS}(\\text{response})$$M_{dialog}' = M_{dialog} \\oplus [\\text{agent},\n        \\text{response},\n        t]$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update Dialog State",
+      "sig": "updateDialog: Turn → M_dialog",
+      "def": "$\\text{updateDialog}(turn) = M_{dialog}'$where$M_{dialog}' = M_{dialog} \\oplus [turn]$$|M_{dialog}'| \\leq \\text{max\\_context}$(sliding window)",
+      "pre": [
+        "updateDialog_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing updateDialog",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P2",
+      "P82",
+      "P85"
+    ]
+  },
+  "manif": [
+    {
+      "n": "OpenAI Advanced Voice Mode",
+      "d": "full-duplex voice interaction with GPT-4"
+    },
+    {
+      "n": "Google Assistant",
+      "d": "real-time streaming voice commands"
+    },
+    {
+      "n": "Alexa Conversations",
+      "d": "multi-turn voice dialog system"
+    },
+    {
+      "n": "Siri voice interaction",
+      "d": "natural language voice commands"
+    }
+  ]
+}

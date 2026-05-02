@@ -1,0 +1,191 @@
+{
+  "id": "P36",
+  "v": "1.1",
+  "name": "Selection-Driven Panel",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (selection, content, \\phi_{36}, observers)$",
+  "desc": "Selection-driven panels update content automatically based on current selection state.",
+  "comps": [
+    {
+      "n": "selection",
+      "t": "Element | null",
+      "d": "currently selected element or null",
+      "nota": "selection"
+    },
+    {
+      "n": "content",
+      "t": "Component",
+      "d": "displayed content",
+      "nota": "content"
+    },
+    {
+      "n": "\\phi_{36}",
+      "t": "Element → Component",
+      "d": "maps selection to content",
+      "nota": "\\phi_{36}"
+    },
+    {
+      "n": "observers",
+      "t": "Set⟨Observer⟩",
+      "d": "watch selection changes",
+      "nota": "observers"
+    }
+  ],
+  "types": [
+    {
+      "n": "Panel",
+      "def": "(update: Item → Effect, clear: () → Effect)",
+      "d": "Selection-driven panel"
+    },
+    {
+      "n": "Element",
+      "def": "Any selectable entity",
+      "d": "Selectable entity in the UI"
+    },
+    {
+      "n": "Component",
+      "def": "Rendered UI content",
+      "d": "Rendered panel content"
+    },
+    {
+      "n": "SelectionEvent",
+      "def": "(previous: Element | null, current: Element | null)",
+      "d": "Selection change event"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P36.1",
+      "n": "Automatic Updates",
+      "spec": "selection\\_change ⇒ panel\\_update",
+      "d": "Panels update automatically on selection change",
+      "inv": [
+        "synchronized\\_panels"
+      ]
+    },
+    {
+      "id": "P.P36.2",
+      "n": "Consistency",
+      "spec": "∀panel: panel.showing = current\\_selection",
+      "d": "All panels show current selection",
+      "inv": [
+        "consistent\\_state"
+      ]
+    },
+    {
+      "id": "P.P36.3",
+      "n": "Contextual Content",
+      "spec": "panel\\_content relevant\\_to selection",
+      "d": "Panel content is contextually relevant",
+      "inv": [
+        "relevant\\_content"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update Selection",
+      "sig": "select(item: Item) → Effect",
+      "def": "$select(item: Item) → Effect = current\\_selection := item; for panel in selection\\_driven\\_panels: panel.update(item)$",
+      "pre": [
+        "item ≠ null"
+      ],
+      "post": [
+        "current\\_selection = item ∧ ∀panel: panel.showing(item)"
+      ],
+      "fx": [
+        "Sets current selection",
+        "Updates all panels"
+      ]
+    },
+    {
+      "n": "Register Panel",
+      "sig": "register(panel: Panel) → Effect",
+      "def": "$register(panel: Panel) → Effect = selection\\_driven\\_panels := selection\\_driven\\_panels ∪ {panel}; if current\\_selection ≠ null: panel.update(current\\_selection)$",
+      "pre": [
+        "panel ≠ null"
+      ],
+      "post": [
+        "panel ∈ selection\\_driven\\_panels"
+      ],
+      "fx": [
+        "Adds panel to registry",
+        "Updates with current selection if any"
+      ]
+    },
+    {
+      "n": "Clear Selection",
+      "sig": "clear() → Effect",
+      "def": "$clear() → Effect = current\\_selection := null; for panel in selection\\_driven\\_panels: panel.clear()$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "current\\_selection = null"
+      ],
+      "fx": [
+        "Clears selection",
+        "Clears all panels"
+      ]
+    },
+    {
+      "n": "Render Content",
+      "sig": "render() → Component",
+      "def": "$render() → Component = if selection = null: return render_empty_state() else: return φ₃₆(selection)$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Subscribe to Selection",
+      "sig": "subscribe(observer: Observer) → Effect",
+      "def": "$subscribe(observer: Observer) → Effect = observers := observers ∪ {observer} observer.update(selection) // Initial notification$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Inspector Panel",
+      "d": "CAD, IDEs"
+    },
+    {
+      "n": "Property Panel",
+      "d": "Design tools"
+    },
+    {
+      "n": "Details Pane",
+      "d": "File managers"
+    },
+    {
+      "n": "Preview Panel",
+      "d": "Email clients"
+    }
+  ]
+}

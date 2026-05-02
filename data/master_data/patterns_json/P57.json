@@ -1,0 +1,266 @@
+{
+  "id": "P57",
+  "v": "1.1",
+  "name": "Data Migration Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M = (versions, migrations, current, rollback)$",
+  "desc": "Data migration pattern transforms and moves data between schema versions or systems.",
+  "comps": [
+    {
+      "n": "versions",
+      "t": "Sequence⟨Version⟩",
+      "d": "schema versions",
+      "nota": "versions"
+    },
+    {
+      "n": "migrations",
+      "t": "Map⟨(Version, Version), Migration⟩",
+      "d": "define transitions",
+      "nota": "migrations"
+    },
+    {
+      "n": "current",
+      "t": "Version",
+      "d": "active version",
+      "nota": "current"
+    },
+    {
+      "n": "rollback",
+      "t": "Migration → Migration",
+      "d": "reverses migrations",
+      "nota": "rollback"
+    }
+  ],
+  "types": [
+    {
+      "n": "MigrationPlan",
+      "def": "(steps: Sequence⟨MigrationStep⟩, estimated_duration: Time)",
+      "d": "Migration execution plan"
+    },
+    {
+      "n": "MigrationStep",
+      "def": "(action: Action, data: Data, validation: Validator)",
+      "d": "Single migration step"
+    },
+    {
+      "n": "Version",
+      "def": "(number: ℕ, schema: Schema)",
+      "d": "Schema version identifier with definition"
+    },
+    {
+      "n": "Migration",
+      "def": "(up: Data → Data, down: Data → Data)",
+      "d": "Forward and rollback transformations"
+    },
+    {
+      "n": "Schema",
+      "def": "description of data structure",
+      "d": "Schema specification for stored data"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P57.1",
+      "n": "Data Integrity",
+      "spec": "∀data: integrity\\_preserved",
+      "d": "Data integrity preserved during migration",
+      "inv": [
+        "safe\\_migration"
+      ]
+    },
+    {
+      "id": "P.P57.2",
+      "n": "Rollback Safety",
+      "spec": "failure ⇒ safe\\_rollback",
+      "d": "Failures can be rolled back safely",
+      "inv": [
+        "reversible\\_migration"
+      ]
+    },
+    {
+      "id": "P.P57.3",
+      "n": "Progress Tracking",
+      "spec": "progress visible\\_throughout",
+      "d": "Migration progress is visible",
+      "inv": [
+        "observable\\_progress"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Additive (Safe)",
+      "sig": "add(state: State, item: Item) → State",
+      "def": "$add(state: State, item: Item) → State = state' where state'.items = state.items ∪ {item}$",
+      "pre": [
+        "state \\neq null \\wedge item \\neq null",
+        "\\neg exists(state, item)"
+      ],
+      "post": [
+        "result = state \\cup \\{item\\}",
+        "preserves\\_existing(state, result)"
+      ],
+      "fx": [
+        "Adds new item without modifying existing data",
+        "Safe, reversible operation"
+      ]
+    },
+    {
+      "n": "Transformative",
+      "sig": "transform(state: State, f: State → State) → State",
+      "def": "$transform(state: State, f: State → State) → State = f(state)$",
+      "pre": [
+        "state \\neq null \\wedge f \\neq null",
+        "has\\_inverse(f)"
+      ],
+      "post": [
+        "result = f(state)",
+        "reversible(f)"
+      ],
+      "fx": [
+        "Applies transformation to state",
+        "Requires inverse function for rollback"
+      ]
+    },
+    {
+      "n": "Destructive (Dangerous)",
+      "sig": "reset() → State",
+      "def": "$reset() → State = initial\\_state; // Warning: loses all data$",
+      "pre": [
+        "backup\\_exists() \\vee confirmed\\_by\\_user()"
+      ],
+      "post": [
+        "result = initial\\_state",
+        "all\\_data\\_removed = true"
+      ],
+      "fx": [
+        "Deletes all data",
+        "Irreversible without backup"
+      ]
+    },
+    {
+      "n": "Migrate Up",
+      "sig": "migrate_up(target: Version) → Effect",
+      "def": "$migrate_up(target: Version) → Effect = while current < target: migration := migrations[(current, next(current))] data := migration.up(data) current := next(current)$",
+      "pre": [
+        "current\\_version < target",
+        "migration\\_path\\_exists(current, target)"
+      ],
+      "post": [
+        "db\\_version' = target",
+        "schema\\_updated = true"
+      ],
+      "fx": [
+        "Applies migrations sequentially to target version",
+        "Updates schema and data"
+      ]
+    },
+    {
+      "n": "Migrate Down",
+      "sig": "migrate_down(target: Version) → Effect",
+      "def": "$migrate_down(target: Version) → Effect = while current > target: migration := migrations[(prev(current), current)] data := migration.down(data) current := prev(current)$",
+      "pre": [
+        "current\\_version > target",
+        "down\\_migrations\\_available(current, target)"
+      ],
+      "post": [
+        "db\\_version' = target",
+        "changes\\_reverted = true"
+      ],
+      "fx": [
+        "Rolls back migrations to target version",
+        "Reverses schema changes"
+      ]
+    },
+    {
+      "n": "Create Migration",
+      "sig": "create_migration(from: Version, to: Version, up: Transform, down: Transform) → Migration",
+      "def": "$create_migration(from: Version, to: Version, up: Transform, down: Transform) → Migration = Migration(up, down)$",
+      "pre": [
+        "from < to",
+        "up \\neq null \\wedge down \\neq null",
+        "down \\circ up = identity"
+      ],
+      "post": [
+        "result.from = from \\wedge result.to = to",
+        "result.reversible = true"
+      ],
+      "fx": [
+        "Creates reversible migration",
+        "Registers in migration chain"
+      ]
+    },
+    {
+      "n": "Plan Migration",
+      "sig": "plan(from: Schema, to: Schema) → MigrationPlan",
+      "def": "$plan(from: Schema, to: Schema) → MigrationPlan = diff := compute\\_schema\\_diff(from, to); steps := generate\\_migration\\_steps(diff); validate\\_plan(steps); return MigrationPlan(steps)$",
+      "pre": [
+        "valid\\_schema(from) ∧ valid\\_schema(to)"
+      ],
+      "post": [
+        "executable(result)"
+      ],
+      "fx": [
+        "Computes schema diff",
+        "Generates steps",
+        "Validates plan"
+      ]
+    },
+    {
+      "n": "Execute Migration",
+      "sig": "execute(plan: MigrationPlan) → MigrationResult",
+      "def": "$execute(plan: MigrationPlan) → MigrationResult = backup := create\\_backup(); for step in plan.steps: try: execute\\_step(step); log\\_success(step) catch error: rollback(backup); return Failure(error); return Success(migrated\\_count)$",
+      "pre": [
+        "validated(plan)"
+      ],
+      "post": [
+        "migrated ∨ rolled\\_back"
+      ],
+      "fx": [
+        "Creates backup",
+        "Executes steps",
+        "Rolls back on error"
+      ]
+    },
+    {
+      "n": "Rollback",
+      "sig": "rollback(backup: Backup) → Effect",
+      "def": "$rollback(backup: Backup) → Effect = restore\\_from\\_backup(backup); log\\_rollback()$",
+      "pre": [
+        "backup ≠ null"
+      ],
+      "post": [
+        "state = backup\\_state"
+      ],
+      "fx": [
+        "Restores from backup",
+        "Logs rollback"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Database schema migrations",
+      "d": "Versioned schema changes with up/down steps"
+    },
+    {
+      "n": "API version upgrades",
+      "d": "Coordinated data changes for new API versions"
+    },
+    {
+      "n": "File format conversions",
+      "d": "Transforms stored files to new formats"
+    },
+    {
+      "n": "Configuration updates",
+      "d": "Data migration for config changes"
+    }
+  ]
+}

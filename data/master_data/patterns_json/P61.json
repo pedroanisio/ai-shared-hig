@@ -1,0 +1,275 @@
+{
+  "id": "P61",
+  "v": "1.1",
+  "name": "Unit Test Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$U = (sut, arrange, act, assert, cleanup)$",
+  "desc": "Circuit breaker pattern prevents cascading failures by stopping requests to failing services.",
+  "comps": [
+    {
+      "n": "sut",
+      "t": "System",
+      "d": "**system under test** (unit being tested)",
+      "nota": "sut"
+    },
+    {
+      "n": "arrange",
+      "t": "() → Context",
+      "d": "sets up test preconditions",
+      "nota": "arrange"
+    },
+    {
+      "n": "act",
+      "t": "Context → Result",
+      "d": "exercises the unit",
+      "nota": "act"
+    },
+    {
+      "n": "assert",
+      "t": "Result → \\mathbb{B}",
+      "d": "verifies expectations",
+      "nota": "assert"
+    },
+    {
+      "n": "cleanup",
+      "t": "Context → Effect",
+      "d": "tears down test state",
+      "nota": "cleanup"
+    }
+  ],
+  "types": [
+    {
+      "n": "BreakerState",
+      "def": "Closed | Open | HalfOpen",
+      "d": "Circuit breaker state"
+    },
+    {
+      "n": "System",
+      "def": "Function | Class | Module",
+      "d": "Unit under test"
+    },
+    {
+      "n": "Context",
+      "def": "(mocks: Set⟨Mock⟩, fixtures: Set⟨Fixture⟩, state: State)",
+      "d": "Test context with fixtures and mocks"
+    },
+    {
+      "n": "Mock",
+      "def": "(target: Dependency, behavior: Specification)",
+      "d": "Test double with configured behavior"
+    },
+    {
+      "n": "Fixture",
+      "def": "(data: Data, setup: () → Effect, teardown: () → Effect)",
+      "d": "Reusable test data and lifecycle hooks"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P61.1",
+      "n": "Fail Fast",
+      "spec": "open ⇒ immediate\\_rejection",
+      "d": "Open circuit rejects immediately",
+      "inv": [
+        "fast\\_failure"
+      ]
+    },
+    {
+      "id": "P.P61.2",
+      "n": "Auto Recovery",
+      "spec": "timeout\\_elapsed ⇒ recovery\\_attempt",
+      "d": "Automatically attempts recovery",
+      "inv": [
+        "self\\_healing"
+      ]
+    },
+    {
+      "id": "P.P61.3",
+      "n": "State Visibility",
+      "spec": "state observable",
+      "d": "Breaker state is observable",
+      "inv": [
+        "transparent\\_state"
+      ]
+    },
+    {
+      "id": "P.P61.4",
+      "n": "Single Assertion Focus",
+      "spec": "Each test verifies one behavior Clear failure messages",
+      "d": "Tests focus on one behavior with clear failures",
+      "inv": [
+        "focused\\_assertions"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Given-When-Then (BDD style)",
+      "sig": "bdd_test(given: Setup, when: Action, then: Assertion) → TestResult",
+      "def": "$bdd\\_test(given: Setup, when: Action, then: Assertion) → TestResult = state := given(); result := when(state); then(result)$",
+      "pre": [
+        "given \\neq null \\wedge when \\neq null \\wedge then \\neq null"
+      ],
+      "post": [
+        "result.passed \\iff then(when(given()))",
+        "result.readable = true"
+      ],
+      "fx": [
+        "Structures test in readable BDD format",
+        "Separates setup, action, verification"
+      ]
+    },
+    {
+      "n": "Table-Driven Tests",
+      "sig": "table_test(cases: Array⟨TestCase⟩, test_fn: TestCase → TestResult) → Array⟨TestResult⟩",
+      "def": "$table\\_test(cases: Array⟨TestCase⟩, test\\_fn: TestCase → TestResult) → Array⟨TestResult⟩ = map(test\\_fn, cases)$",
+      "pre": [
+        "|cases| > 0 \\wedge test\\_fn \\neq null"
+      ],
+      "post": [
+        "|result| = |cases|",
+        "\\forall i: result[i] = test\\_fn(cases[i])"
+      ],
+      "fx": [
+        "Runs same test with multiple inputs",
+        "Reduces test code duplication"
+      ]
+    },
+    {
+      "n": "Parameterized Tests",
+      "sig": "param_test(params: Array⟨Param⟩, test: Param → TestResult) → Array⟨TestResult⟩",
+      "def": "$param\\_test(params: Array⟨Param⟩, test: Param → TestResult) → Array⟨TestResult⟩ = map(test, params)$",
+      "pre": [
+        "|params| > 0 \\wedge test \\neq null"
+      ],
+      "post": [
+        "|result| = |params|",
+        "\\forall p \\in params: executed(test(p))"
+      ],
+      "fx": [
+        "Executes test for each parameter",
+        "Reports individual results"
+      ]
+    },
+    {
+      "n": "Execute Test",
+      "sig": "execute_test(test: Test) → TestResult",
+      "def": "$execute_test(test: Test) → TestResult = context := test.arrange() result := test.act(context) passed := test.assert(result) test.cleanup(context) return TestResult(passed, result, context)$",
+      "pre": [
+        "test \\neq null \\wedge test.runnable = true"
+      ],
+      "post": [
+        "result.executed = true",
+        "result.status \\in \\{pass, fail, skip, error\\}"
+      ],
+      "fx": [
+        "Runs test and captures result",
+        "Records timing and status"
+      ]
+    },
+    {
+      "n": "Run Test Suite",
+      "sig": "run_suite(tests: Set⟨Test⟩) → SuiteResult",
+      "def": "$run_suite(tests: Set⟨Test⟩) → SuiteResult = results := [] for test in tests: result := execute_test(test) results := results ∪ {result} return SuiteResult(results, summary(results))$",
+      "pre": [
+        "|tests| > 0"
+      ],
+      "post": [
+        "\\forall t \\in tests: executed(t)",
+        "result.total = |tests|"
+      ],
+      "fx": [
+        "Executes all tests in suite",
+        "Aggregates results"
+      ]
+    },
+    {
+      "n": "Mock Dependency",
+      "sig": "mock(dependency: Dependency, behavior: Specification) → Mock",
+      "def": "$mock(dependency: Dependency, behavior: Specification) → Mock = mock := Mock(dependency) configure(mock, behavior) return mock test_addition() → 𝔹 // Arrange: Set up test data = calculator := Calculator() a := 2 b := 3 expected := 5 // Act: Exercise the unit result := calculator.add(a, b) // Assert: Verify expectations assert(result = expected, \"2 + 3 should equal 5\") // Cleanup (if needed) cleanup() Mock dependency behavior: mock_database := Mock(Database) mock_database.when(get_user(1)).then_return(User(1, \"Alice\")) service := UserService(mock_database) user := service.get_user(1) assert(user.name = \"Alice\") verify(mock_database.get_user).called_once_with(1)$",
+      "pre": [
+        "dependency \\neq null",
+        "behavior.complete = true"
+      ],
+      "post": [
+        "result.implements(dependency.interface)",
+        "result.behavior = behavior"
+      ],
+      "fx": [
+        "Creates test double for dependency",
+        "Isolates unit under test"
+      ]
+    },
+    {
+      "n": "Call Through Breaker",
+      "sig": "call(operation: Operation) → Result",
+      "def": "$call(operation: Operation) → Result = match state with | Closed → try: result := operation(); record\\_success(); return Success(result) catch error: record\\_failure(); if failure\\_threshold\\_exceeded(): open(); return Failure(error) | Open → if timeout\\_elapsed(): transition\\_half\\_open(); return CircuitOpen | HalfOpen → try: result := operation(); close(); return Success(result) catch error: open(); return Failure(error)$",
+      "pre": [
+        "operation ≠ null"
+      ],
+      "post": [
+        "result = Success(v) ∨ result = Failure(e) ∨ result = CircuitOpen"
+      ],
+      "fx": [
+        "Checks breaker state",
+        "Executes or rejects",
+        "Updates state"
+      ]
+    },
+    {
+      "n": "Open Breaker",
+      "sig": "open() → Effect",
+      "def": "$open() → Effect = state := Open; open\\_timestamp := now()$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "state = Open"
+      ],
+      "fx": [
+        "Opens circuit",
+        "Records timestamp"
+      ]
+    },
+    {
+      "n": "Reset Breaker",
+      "sig": "reset() → Effect",
+      "def": "$reset() → Effect = state := Closed; failure\\_count := 0$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "state = Closed ∧ failure\\_count = 0"
+      ],
+      "fx": [
+        "Closes circuit",
+        "Resets counters"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Unit tests",
+      "d": "pytest, Jest, JUnit"
+    },
+    {
+      "n": "TDD",
+      "d": "Test-Driven Development"
+    },
+    {
+      "n": "Component tests",
+      "d": "Test components in isolation with mocks"
+    },
+    {
+      "n": "Function tests",
+      "d": "Test individual functions and edge cases"
+    }
+  ]
+}

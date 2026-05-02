@@ -1,0 +1,194 @@
+{
+  "id": "P130",
+  "v": "1.1",
+  "name": "AI Agent Presence Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P_{agent} = (Agents_{active}, Status, Location_{virtual}, Activity) : Agents \\to Presence$",
+  "desc": "AI agent presence indicator shows when AI agents are actively working or available.",
+  "comps": [
+    {
+      "n": "Agents_{active}",
+      "t": "Set⟨Agent⟩",
+      "d": "Set of currently active AI agents",
+      "nota": "Agents_{active}"
+    },
+    {
+      "n": "Status",
+      "t": "Agent → AgentStatus",
+      "d": "Function mapping each agent to its current status",
+      "nota": "Status"
+    },
+    {
+      "n": "Location_{virtual}",
+      "t": "Agent → Context",
+      "d": "Virtual location or context where agent is working",
+      "nota": "Location_{virtual}"
+    },
+    {
+      "n": "Activity",
+      "t": "Agent → Action",
+      "d": "Current activity or task being performed by agent",
+      "nota": "Activity"
+    }
+  ],
+  "types": [
+    {
+      "n": "PresenceStatus",
+      "def": "Active | Idle | Offline | Busy",
+      "d": "Agent availability status"
+    },
+    {
+      "n": "PresenceIndicator",
+      "def": "(agent: Agent, icon: Icon, color: Color)",
+      "d": "Visual presence indicator"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P130.1",
+      "n": "Real-Time Updates",
+      "spec": "status\\_change ⇒ indicator\\_update immediately",
+      "d": "Indicators update in real-time",
+      "inv": [
+        "live\\_presence"
+      ]
+    },
+    {
+      "id": "P.P130.2",
+      "n": "Visual Clarity",
+      "spec": "∀status: easily\\_distinguishable(indicator(status))",
+      "d": "Different statuses are visually distinct",
+      "inv": [
+        "clear\\_indicators"
+      ]
+    },
+    {
+      "id": "P.P130.3",
+      "n": "Timeout Handling",
+      "spec": "idle\\_for(agent, timeout) ⇒ status\\_becomes\\_idle",
+      "d": "Agents automatically marked idle after timeout",
+      "inv": [
+        "automatic\\_idle"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update Presence",
+      "sig": "update(agent: Agent, status: PresenceStatus) → Effect",
+      "def": "$update(agent: Agent, status: PresenceStatus) → Effect = presence[agent.id] := (status, timestamp=now()); broadcast\\_presence\\_change(agent, status)$",
+      "pre": [
+        "agent ≠ null"
+      ],
+      "post": [
+        "presence[agent.id].status = status"
+      ],
+      "fx": [
+        "Updates agent presence",
+        "Broadcasts change to subscribers"
+      ]
+    },
+    {
+      "n": "Display Indicator",
+      "sig": "display(agent: Agent) → PresenceIndicator",
+      "def": "$display(agent: Agent) → PresenceIndicator = status := presence[agent.id].status; icon := get\\_status\\_icon(status); color := get\\_status\\_color(status); return PresenceIndicator(agent, icon, color)$",
+      "pre": [
+        "agent ∈ presence"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Gets status icon and color",
+        "Creates visual indicator"
+      ]
+    },
+    {
+      "n": "Track Activity",
+      "sig": "track(agent: Agent, activity: Activity) → Effect",
+      "def": "$track(agent: Agent, activity: Activity) → Effect = update(agent, Active); schedule\\_timeout(λ: if idle(agent, timeout): update(agent, Idle), timeout)$",
+      "pre": [
+        "activity ≠ null"
+      ],
+      "post": [
+        "presence[agent.id].status = Active"
+      ],
+      "fx": [
+        "Marks agent as active",
+        "Schedules idle timeout"
+      ]
+    },
+    {
+      "n": "RegisterAgent",
+      "sig": "register(a: Agent) → Effect",
+      "def": "register(a) adds agent to active set with initial status",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "UpdateStatus",
+      "sig": "update(a: Agent, s: Status) → Effect",
+      "def": "update(a, s) sets Status(a) to s",
+      "pre": [
+        "a_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing a",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetPresence",
+      "sig": "get_presence() → Map⟨Agent, PresenceInfo⟩",
+      "def": "get_presence() returns status, location, and activity for all active agents",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

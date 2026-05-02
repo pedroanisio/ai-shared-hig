@@ -1,0 +1,236 @@
+{
+  "id": "P116",
+  "v": "1.1",
+  "name": "Multi-Stream Coordination UI",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{streams} = (Streams, Sync, Merge, Display) : \\text{Set}\\langle \\text{Stream} \\rangle \\to \\text{Unified}_{view}$",
+  "desc": "Multi-stream coordination UI manages and visualizes multiple concurrent event streams.",
+  "comps": [
+    {
+      "n": "Streams",
+      "t": "Set⟨Stream⟨Event⟩⟩",
+      "d": "multiple independent event streams",
+      "nota": "Streams"
+    },
+    {
+      "n": "Sync",
+      "t": "SyncStrategy",
+      "d": "time synchronization strategy for streams",
+      "nota": "Sync"
+    },
+    {
+      "n": "Merge",
+      "t": "Set⟨Stream⟩ → Stream",
+      "d": "combines multiple streams into unified stream",
+      "nota": "Merge"
+    },
+    {
+      "n": "Display",
+      "t": "Stream → Visualization",
+      "d": "visualization of merged stream",
+      "nota": "Display"
+    }
+  ],
+  "types": [
+    {
+      "n": "StreamView",
+      "def": "Visual representation of event stream",
+      "d": "UI component displaying stream"
+    },
+    {
+      "n": "StreamConfig",
+      "def": "(color: Color, filters: Set⟨Predicate⟩, layout: LayoutMode)",
+      "d": "Configuration for stream visualization"
+    },
+    {
+      "n": "Correlation",
+      "def": "(events: Set⟨Event⟩, type: CorrelationType, confidence: ℝ)",
+      "d": "Correlated events across streams"
+    },
+    {
+      "n": "SyncStrategy",
+      "def": "$\\text{SyncStrategy} = \\{\\text{wall-clock}, \\text{logical-clock}, \\text{causal}, \\text{vector-clock}\\}$",
+      "d": "Clock synchronization strategy for streams"
+    },
+    {
+      "n": "MergeOperation",
+      "def": "$\\text{MergeOp} = \\{\\text{union}, \\text{interleave}, \\text{zip}, \\text{priority}\\}$",
+      "d": "Method for merging streams into one"
+    },
+    {
+      "n": "Timestamp",
+      "def": "$\\text{Timestamp} = \\mathbb{N}$ (logical) or $\\mathbb{R}_{\\geq 0}$ (wall-clock)",
+      "d": "Logical or wall-clock timestamp value"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P116.1",
+      "n": "Time Alignment",
+      "spec": "∀streams: synchronized ⇒ aligned\\_time\\_axis",
+      "d": "Synchronized streams share aligned time axis",
+      "inv": [
+        "temporal\\_alignment"
+      ]
+    },
+    {
+      "id": "P.P116.2",
+      "n": "Independent Control",
+      "spec": "∀stream: individually\\_controllable(stream)",
+      "d": "Each stream can be controlled independently",
+      "inv": [
+        "independent\\_streams"
+      ]
+    },
+    {
+      "id": "P.P116.3",
+      "n": "Correlation Highlighting",
+      "spec": "∀correlation: visually\\_highlighted(correlation)",
+      "d": "Correlations are visually highlighted",
+      "inv": [
+        "visible\\_correlations"
+      ]
+    },
+    {
+      "id": "P.P116.4",
+      "n": "Real-Time Coordination",
+      "spec": "$\\forall s \\in Streams : \\Delta t_{merge}(s) < \\epsilon$ (low latency merging)",
+      "d": "Merged stream updates with low latency",
+      "inv": [
+        "low_latency_merge"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Stream",
+      "sig": "add_stream(stream: EventStream, config: StreamConfig) → StreamView",
+      "def": "$add\\_stream(stream: EventStream, config: StreamConfig) → StreamView = view := create\\_view(stream, config); register\\_handlers(view, stream); layout.add(view); return view$",
+      "pre": [
+        "valid\\_stream(stream)"
+      ],
+      "post": [
+        "visible(view)"
+      ],
+      "fx": [
+        "Creates view for stream",
+        "Registers event handlers",
+        "Adds to layout"
+      ]
+    },
+    {
+      "n": "Synchronize Streams",
+      "sig": "sync(streams: Set⟨EventStream⟩, timestamp: Time) → Effect",
+      "def": "$sync(streams: Set⟨EventStream⟩, timestamp: Time) → Effect = for stream in streams: seek(stream, timestamp); align\\_views()$",
+      "pre": [
+        "|streams| > 0"
+      ],
+      "post": [
+        "∀s ∈ streams: at\\_time(s, timestamp)"
+      ],
+      "fx": [
+        "Seeks all streams to timestamp",
+        "Aligns visualizations"
+      ]
+    },
+    {
+      "n": "Correlate Events",
+      "sig": "correlate(streams: Set⟨EventStream⟩, window: TimeWindow) → Set⟨Correlation⟩",
+      "def": "$correlate(streams: Set⟨EventStream⟩, window: TimeWindow) → Set⟨Correlation⟩ = events := collect\\_events(streams, window); find\\_temporal\\_correlations(events)$",
+      "pre": [
+        "valid\\_window(window)"
+      ],
+      "post": [
+        "∀c ∈ result: related(c.events)"
+      ],
+      "fx": [
+        "Collects events from all streams",
+        "Finds temporal correlations"
+      ]
+    },
+    {
+      "n": "Merge Streams",
+      "sig": "mergeStreams: Set⟨Stream⟩ × SyncStrategy → Stream",
+      "def": "$\\text{mergeStreams}(S, sync) = s'$where$s' = \\text{sortBy}(\\bigcup_{s \\in S} \\text{events}(s), sync.\\text{compare})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Synchronize Clocks",
+      "sig": "syncClocks: Set⟨Stream⟩ → Map⟨Stream, Offset⟩",
+      "def": "$\\text{syncClocks}(S) = \\{(s, \\delta_s) \\mid s \\in S \\land \\delta_s = \\text{clockOffset}(s)\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Interleave Streams",
+      "sig": "interleave: Seq⟨Stream⟩ → Stream",
+      "def": "$\\text{interleave}([s_1, ..., s_n]) = s$where$s = [s_1[0], s_2[0], ..., s_n[0], s_1[1], s_2[1], ...]$(round-robin)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22"
+    ],
+    "use": [
+      "P117"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Multi-agent activity dashboard",
+      "d": "coordinated display of multiple agent streams"
+    },
+    {
+      "n": "Distributed tracing (Jaeger, Zipkin)",
+      "d": "merging traces from multiple services"
+    },
+    {
+      "n": "Real-time collaboration (Figma, Miro)",
+      "d": "merging action streams from multiple users"
+    },
+    {
+      "n": "Apache Flink stream joining",
+      "d": "combining multiple Kafka streams"
+    }
+  ]
+}

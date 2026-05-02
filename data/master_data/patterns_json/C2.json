@@ -1,0 +1,157 @@
+{
+  "id": "C2",
+  "v": "1.1",
+  "name": "Document/Artifact",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Data Structures",
+    "Formal Methods"
+  ],
+  "updated": "2025-11-23",
+  "def": "$doc = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Documents and artifacts process input to produce output, encapsulating computational transformation patterns.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to document/artifact",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from document/artifact",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Input data provided to the document/artifact"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Result produced by processing input"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Internal state with data and temporal information"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.C2.1",
+      "n": "Correctness",
+      "spec": "$\\forall i : \\text{valid}(i) \\implies \\text{correct}(\\text{output}(i))$",
+      "d": "Valid inputs always produce correct outputs",
+      "inv": [
+        "\\text{deterministic}(process)"
+      ]
+    },
+    {
+      "id": "P.C2.2",
+      "n": "Performance",
+      "spec": "$\\Delta t_{process} < \\text{threshold}$",
+      "d": "Processing completes within acceptable time bounds",
+      "inv": [
+        "\\text{bounded\\_time}(process)"
+      ]
+    },
+    {
+      "id": "P.C2.3",
+      "n": "Consistency",
+      "spec": "$\\forall i_1, i_2 : i_1 = i_2 \\implies \\text{output}(i_1) = \\text{output}(i_2)$",
+      "d": "Identical inputs produce identical outputs",
+      "inv": [
+        "\\text{pure}(process)"
+      ]
+    },
+    {
+      "id": "P.C2.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Interface is usable by all intended users",
+      "inv": [
+        "\\text{accessible}(interface)"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "\\text{valid}(i)"
+      ],
+      "post": [
+        "\\text{correct}(o)"
+      ],
+      "fx": [
+        "Transforms input to output",
+        "May update internal state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "o ≠ null"
+      ],
+      "post": [
+        "\\text{visible}(o)"
+      ],
+      "fx": [
+        "Renders output visually",
+        "Updates display state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "s.timestamp > last\\_update"
+      ],
+      "post": [
+        "display\\_current = s"
+      ],
+      "fx": [
+        "Refreshes visual representation",
+        "Updates timestamp"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Document/Artifact in modern applications",
+      "d": "implements document/artifact pattern"
+    },
+    {
+      "n": "Web-based document/artifact",
+      "d": "browser implementation of document/artifact"
+    },
+    {
+      "n": "Mobile document/artifact",
+      "d": "mobile app implementation"
+    }
+  ]
+}

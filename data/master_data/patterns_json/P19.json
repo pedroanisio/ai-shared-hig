@@ -1,0 +1,193 @@
+{
+  "id": "P19",
+  "v": "1.1",
+  "name": "Graph Database",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$G = (nodes, edges, props, traversal)$",
+  "desc": "Graph databases store data as nodes and edges optimized for traversing relationships.",
+  "comps": [
+    {
+      "n": "nodes",
+      "t": "Set⟨Node⟩",
+      "d": "entities",
+      "nota": "nodes"
+    },
+    {
+      "n": "edges",
+      "t": "Set⟨Edge⟩",
+      "d": "relationships",
+      "nota": "edges"
+    },
+    {
+      "n": "props",
+      "t": "Node → Map⟨String, Value⟩",
+      "d": "node and edge properties",
+      "nota": "props"
+    },
+    {
+      "n": "traversal",
+      "t": "Query → Sequence⟨Path⟩",
+      "d": "executes graph queries",
+      "nota": "traversal"
+    }
+  ],
+  "types": [
+    {
+      "n": "Node",
+      "def": "(id: NodeID, label: Label, properties: Properties)",
+      "d": "Graph node"
+    },
+    {
+      "n": "Edge",
+      "def": "(id: EdgeID, from: Node, to: Node, type: EdgeType, properties: Properties)",
+      "d": "Graph edge"
+    },
+    {
+      "n": "Path",
+      "def": "Sequence of connected nodes and edges",
+      "d": "Path through graph"
+    },
+    {
+      "n": "Query",
+      "def": "pattern matching query (Cypher, SPARQL, etc.)",
+      "d": "Graph query expression"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P19.1",
+      "n": "Efficient Traversal",
+      "spec": "traversal\\_time = O(edges\\_visited)",
+      "d": "Graph traversal is efficient",
+      "inv": [
+        "optimized\\_traversal"
+      ]
+    },
+    {
+      "id": "P.P19.2",
+      "n": "Relationship Queries",
+      "spec": "can\\_express\\_complex\\_patterns",
+      "d": "Supports complex relationship queries",
+      "inv": [
+        "expressive\\_queries"
+      ]
+    },
+    {
+      "id": "P.P19.3",
+      "n": "Graph Integrity",
+      "spec": "∀edge: edge.from ∈ nodes ∧ edge.to ∈ nodes",
+      "d": "Edges reference valid nodes",
+      "inv": [
+        "valid\\_structure"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Node",
+      "sig": "add_node(label: Label, properties: Properties) → Node",
+      "def": "$add\\_node(label: Label, properties: Properties) → Node = node := Node(id=generate\\_id(), label, properties); graph.nodes := graph.nodes ∪ {node}; return node$",
+      "pre": [
+        "valid\\_label(label)"
+      ],
+      "post": [
+        "node ∈ graph.nodes"
+      ],
+      "fx": [
+        "Generates node ID",
+        "Creates node",
+        "Adds to graph"
+      ]
+    },
+    {
+      "n": "Add Edge",
+      "sig": "add_edge(from: Node, to: Node, type: EdgeType, properties: Properties) → Edge",
+      "def": "$add\\_edge(from: Node, to: Node, type: EdgeType, properties: Properties) → Edge = edge := Edge(id=generate\\_id(), from, to, type, properties); graph.edges := graph.edges ∪ {edge}; return edge$",
+      "pre": [
+        "from ∈ graph.nodes ∧ to ∈ graph.nodes"
+      ],
+      "post": [
+        "edge ∈ graph.edges"
+      ],
+      "fx": [
+        "Creates edge",
+        "Adds to graph"
+      ]
+    },
+    {
+      "n": "Traverse",
+      "sig": "traverse(start: Node, pattern: Pattern, depth: ℕ) → Set⟨Path⟩",
+      "def": "$traverse(start: Node, pattern: Pattern, depth: ℕ) → Set⟨Path⟩ = paths := ∅; visited := ∅; explore(start, pattern, depth, [], visited, paths); return paths$",
+      "pre": [
+        "start ∈ graph.nodes ∧ depth ≥ 0"
+      ],
+      "post": [
+        "∀path ∈ result: matches(path, pattern)"
+      ],
+      "fx": [
+        "Explores graph from start",
+        "Matches pattern",
+        "Returns matching paths"
+      ]
+    },
+    {
+      "n": "Match Pattern",
+      "sig": "match(input: String, pattern: Pattern) → Match | null",
+      "def": "$match(input: String, pattern: Pattern) → Match | null = if pattern.test(input): return Match(groups, start, end) else: return null$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Shortest Path",
+      "sig": "shortest_path(start: Node, end: Node) → Path | null",
+      "def": "$shortest\\_path(start: Node, end: Node) → Path | null = dijkstra(graph, start, end)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Knowledge graphs",
+      "d": "entity-relation graphs for semantic data"
+    },
+    {
+      "n": "Dependency graphs",
+      "d": "edges encode dependencies between components"
+    },
+    {
+      "n": "Citation networks",
+      "d": "papers linked by citation edges"
+    },
+    {
+      "n": "Social networks",
+      "d": "users connected by relationship edges"
+    }
+  ]
+}

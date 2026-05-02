@@ -1,0 +1,162 @@
+{
+  "id": "P18",
+  "v": "1.1",
+  "name": "Relational Database",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R = (tables, schemas, constraints, indices)$",
+  "desc": "Relational databases organize data in tables with relationships and support SQL queries.",
+  "comps": [
+    {
+      "n": "tables",
+      "t": "Map⟨String, Table⟩",
+      "d": "data tables",
+      "nota": "tables"
+    },
+    {
+      "n": "schemas",
+      "t": "Map⟨String, Schema⟩",
+      "d": "define table structures",
+      "nota": "schemas"
+    },
+    {
+      "n": "constraints",
+      "t": "Set⟨Constraint⟩",
+      "d": "enforce integrity",
+      "nota": "constraints"
+    },
+    {
+      "n": "indices",
+      "t": "Map⟨(Table, Column), Index⟩",
+      "d": "speed queries",
+      "nota": "indices"
+    }
+  ],
+  "types": [
+    {
+      "n": "Table",
+      "def": "(schema: Schema, rows: Set⟨Row⟩, constraints: Set⟨Constraint⟩)",
+      "d": "Database table"
+    },
+    {
+      "n": "SQL",
+      "def": "Structured Query Language statement",
+      "d": "SQL query string"
+    },
+    {
+      "n": "Row",
+      "def": "Map⟨String, Value⟩  // column → value",
+      "d": "Row data keyed by column name"
+    },
+    {
+      "n": "Schema",
+      "def": "Sequence⟨(name: String, type: Type, constraints: Set⟨Constraint⟩)⟩",
+      "d": "Ordered column definitions with constraints"
+    },
+    {
+      "n": "Constraint",
+      "def": "PrimaryKey | ForeignKey | Unique | NotNull | Check(predicate)",
+      "d": "Data integrity constraint"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P18.1",
+      "n": "ACID Compliance",
+      "spec": "transactions satisfy Atomicity, Consistency, Isolation, Durability",
+      "d": "Database maintains ACID properties",
+      "inv": [
+        "transactional\\_integrity"
+      ]
+    },
+    {
+      "id": "P.P18.2",
+      "n": "Referential Integrity",
+      "spec": "∀foreign\\_key: references\\_valid\\_primary\\_key",
+      "d": "Foreign keys reference valid primary keys",
+      "inv": [
+        "referential\\_consistency"
+      ]
+    },
+    {
+      "id": "P.P18.3",
+      "n": "Query Optimization",
+      "spec": "query\\_plan = optimal(query)",
+      "d": "Queries are optimized",
+      "inv": [
+        "efficient\\_queries"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(query: SQL) → ResultSet",
+      "def": "$process(query: SQL) → ResultSet = parsed := parse(query) plan := optimize(parsed) result := execute(plan) return result$",
+      "pre": [
+        "query \\neq null \\wedge valid\\_sql(query)"
+      ],
+      "post": [
+        "result.schema\\_valid = true"
+      ],
+      "fx": [
+        "Executes SQL query",
+        "Returns result set"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(resultset: ResultSet) → Effect",
+      "def": "$display(resultset: ResultSet) → Effect = formatted := tabulate(resultset) render(formatted)$",
+      "pre": [
+        "resultset \\neq null"
+      ],
+      "post": [
+        "table\\_displayed = true"
+      ],
+      "fx": [
+        "Displays query results",
+        "Formats as table"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(statement: SQL) → Effect",
+      "def": "$update(statement: SQL) → Effect = validated := validate(statement) executed := execute(validated) commit()$",
+      "pre": [
+        "statement.type \\in \\{INSERT, UPDATE, DELETE\\}"
+      ],
+      "post": [
+        "database\\_modified = true"
+      ],
+      "fx": [
+        "Modifies database",
+        "Commits transaction"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Content database",
+      "d": "structured content tables with relations"
+    },
+    {
+      "n": "File metadata",
+      "d": "tables storing file attributes and permissions"
+    },
+    {
+      "n": "User data",
+      "d": "account and profile records"
+    },
+    {
+      "n": "Application state",
+      "d": "transactional state persisted in tables"
+    }
+  ]
+}

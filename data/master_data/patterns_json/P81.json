@@ -1,0 +1,145 @@
+{
+  "id": "P81",
+  "v": "1.1",
+  "name": "Voice Command with Visual Feedback",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Voice",
+    "Feedback"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{visual} = (I_{voice}, D_{trans}, V_{intent}, UI_{confirm}) : Voice \\to (Command, Visualization)$",
+  "desc": "Hexagonal architecture pattern isolates core domain logic from external concerns through ports and adapters.",
+  "comps": [
+    {
+      "n": "I_{voice}",
+      "t": "Component",
+      "d": "Component implementing Voice Command with Visual Feedback functionality",
+      "nota": "I_{voice}"
+    },
+    {
+      "n": "D_{trans}",
+      "t": "Component",
+      "d": "Component implementing Voice Command with Visual Feedback functionality",
+      "nota": "D_{trans}"
+    },
+    {
+      "n": "V_{intent}",
+      "t": "Component",
+      "d": "Component implementing Voice Command with Visual Feedback functionality",
+      "nota": "V_{intent}"
+    },
+    {
+      "n": "UI_{confirm}",
+      "t": "Component",
+      "d": "Component implementing Voice Command with Visual Feedback functionality",
+      "nota": "UI_{confirm}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Port",
+      "def": "(name: String, operations: Set⟨Operation⟩)",
+      "d": "Domain interface"
+    },
+    {
+      "n": "Adapter",
+      "def": "(port: Port, implementation: Implementation)",
+      "d": "Infrastructure adapter"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P81.1",
+      "n": "Domain Isolation",
+      "spec": "domain independent\\_of infrastructure",
+      "d": "Domain isolated from infrastructure",
+      "inv": [
+        "clean\\_domain"
+      ]
+    },
+    {
+      "id": "P.P81.2",
+      "n": "Adapter Swapping",
+      "spec": "adapters interchangeable",
+      "d": "Adapters are interchangeable",
+      "inv": [
+        "pluggable\\_adapters"
+      ]
+    },
+    {
+      "id": "P.P81.3",
+      "n": "Testability",
+      "spec": "domain\\_testable\\_without infrastructure",
+      "d": "Domain testable without infrastructure",
+      "inv": [
+        "isolated\\_testing"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Define Port",
+      "sig": "port(name: String, operations: Set⟨Operation⟩) → Port",
+      "def": "$port(name: String, operations: Set⟨Operation⟩) → Port = port := Port(name, operations); register\\_port(port); return port$",
+      "pre": [
+        "|operations| > 0"
+      ],
+      "post": [
+        "registered(port)"
+      ],
+      "fx": [
+        "Creates port interface",
+        "Registers port"
+      ]
+    },
+    {
+      "n": "Register Adapter",
+      "sig": "adapter(port: Port, implementation: Implementation) → Adapter",
+      "def": "$adapter(port: Port, implementation: Implementation) → Adapter = validate\\_implements(implementation, port.operations); adapter := Adapter(port, implementation); bind\\_adapter(adapter); return adapter$",
+      "pre": [
+        "implements(implementation, port)"
+      ],
+      "post": [
+        "bound(adapter)"
+      ],
+      "fx": [
+        "Validates implementation",
+        "Creates adapter",
+        "Binds to port"
+      ]
+    },
+    {
+      "n": "Call Through Port",
+      "sig": "call(port: Port, operation: Operation, args: Args) → Result",
+      "def": "$call(port: Port, operation: Operation, args: Args) → Result = adapter := get\\_adapter(port); result := adapter.implementation.execute(operation, args); return result$",
+      "pre": [
+        "operation ∈ port.operations ∧ bound(port)"
+      ],
+      "post": [
+        "result\\_returned"
+      ],
+      "fx": [
+        "Gets bound adapter",
+        "Executes through adapter"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Voice implementation",
+      "d": "Applied in ai, voice systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

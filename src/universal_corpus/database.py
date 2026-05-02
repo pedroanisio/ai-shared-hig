@@ -8,8 +8,7 @@ This module provides:
 """
 
 from sqlalchemy import create_engine, Column, String, Text, DateTime
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import sessionmaker, Session, declarative_base
 from datetime import datetime
 from typing import Optional, List
 import json
@@ -317,11 +316,8 @@ class PatternRepository:
         """
         Merge arrays intelligently based on identifying keys.
         
-        REPLACE MODE: If none of the update items match existing items (by merge key),
-        the entire array is replaced. This allows for complete array replacement.
-        
-        MERGE MODE: If any update items match existing items, those items are merged
-        and unmatched base items are preserved.
+        MERGE MODE: Matching items are merged and unmatched base items are preserved.
+        Explicit replacement should use the __replace__ marker at the parent object.
         
         Args:
             key: The field name (to determine merge strategy)
@@ -365,19 +361,7 @@ class PatternRepository:
                 # Item doesn't have the merge key
                 non_mergeable_base_items.append(item)
         
-        # Check if ANY update items match existing items
-        update_identifiers = set()
-        for item in update_array:
-            if isinstance(item, dict) and merge_key in item:
-                update_identifiers.add(item[merge_key])
-        
-        has_overlap = bool(update_identifiers & set(base_dict.keys()))
-        
-        # REPLACE MODE: No overlapping keys means complete replacement
-        if not has_overlap and base_dict:
-            return update_array
-        
-        # MERGE MODE: Has overlaps, merge intelligently
+        # MERGE MODE: Merge intelligently
         result = []
         updated_keys = set()
         
@@ -485,4 +469,3 @@ class PatternRepository:
             "by_status": by_status,
             "by_complexity": by_complexity
         }
-

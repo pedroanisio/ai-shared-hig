@@ -1,0 +1,160 @@
+{
+  "id": "C1",
+  "v": "1.1",
+  "name": "Graph Structure",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Data Structures",
+    "Graph Theory"
+  ],
+  "updated": "2025-11-23",
+  "def": "$G = (N, E, \\lambda_n, \\lambda_e)$",
+  "desc": "A graph structure represents entities (nodes) and their relationships (edges), fundamental to modeling connected data.",
+  "comps": [
+    {
+      "n": "N",
+      "t": "Set⟨Node⟩",
+      "d": "set of nodes",
+      "nota": "N"
+    },
+    {
+      "n": "E",
+      "t": "Set⟨Edge⟩",
+      "d": "set of edges",
+      "nota": "E"
+    },
+    {
+      "n": "\\lambda_n",
+      "t": "N → Label_n",
+      "d": "**node labeling function**",
+      "nota": "\\lambda_n"
+    },
+    {
+      "n": "\\lambda_e",
+      "t": "E → Label_e",
+      "d": "**edge labeling function**",
+      "nota": "\\lambda_e"
+    }
+  ],
+  "types": [
+    {
+      "n": "Node",
+      "def": "Unique vertex identifier",
+      "d": "Entity represented as a graph node"
+    },
+    {
+      "n": "Edge",
+      "def": "(u: Node, v: Node)",
+      "d": "Connection between two nodes (direction implied by context)"
+    },
+    {
+      "n": "Label_n",
+      "def": "Node label value",
+      "d": "Label assigned to a node"
+    },
+    {
+      "n": "Label_e",
+      "def": "Edge label value",
+      "d": "Label assigned to an edge"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.C1.1",
+      "n": "Connectivity",
+      "spec": "connected(G) ⇔ ∀n₁, n₂ ∈ N: ∃ path from n₁ to n₂",
+      "d": "Graph connectivity ensures every node pair has a connecting path",
+      "inv": [
+        "connected(G) ⇒ |components(G)| = 1"
+      ]
+    },
+    {
+      "id": "P.C1.2",
+      "n": "Cycle Detection",
+      "spec": "acyclic(G) ⇔ ¬∃ path: n → ... → n",
+      "d": "Acyclic graphs have no circular paths",
+      "inv": [
+        "acyclic(G) ⇔ |E| < |N|"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Path",
+      "sig": "path(n₁: N, n₂: N) → Sequence⟨N⟩ | null",
+      "def": "$path(n₁: N, n₂: N) → Sequence⟨N⟩ | null = find\\_path(n₁, n₂, visited = ∅)$",
+      "pre": [
+        "n₁ ∈ N ∧ n₂ ∈ N"
+      ],
+      "post": [
+        "result = null ∨ (result[0] = n₁ ∧ result[|result|-1] = n₂)"
+      ],
+      "fx": [
+        "Traverses graph to find path",
+        "May explore multiple nodes"
+      ]
+    },
+    {
+      "n": "Traverse",
+      "sig": "traverse(n: N, depth: ℕ) → Set⟨N⟩",
+      "def": "$traverse(n: N, depth: ℕ) → Set⟨N⟩ = {n' ∈ N : distance(n, n') ≤ depth}$",
+      "pre": [
+        "n ∈ N ∧ depth ≥ 0"
+      ],
+      "post": [
+        "∀n' ∈ result: distance(n, n') ≤ depth",
+        "n ∈ result"
+      ],
+      "fx": [
+        "Visits nodes within specified depth",
+        "Returns reachable node set"
+      ]
+    },
+    {
+      "n": "Neighbors",
+      "sig": "neighbors(n: N) → Set⟨N⟩",
+      "def": "$neighbors(n: N) → Set⟨N⟩ = {n' ∈ N : (n, n') ∈ E ∨ (n', n) ∈ E}$",
+      "pre": [
+        "n ∈ N"
+      ],
+      "post": [
+        "|result| = degree(n)"
+      ],
+      "fx": [
+        "Retrieves directly connected nodes"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Knowledge graphs",
+      "d": "semantic web, ontologies"
+    },
+    {
+      "n": "File trees",
+      "d": "filesystem hierarchies"
+    },
+    {
+      "n": "Feature history",
+      "d": "CAD"
+    },
+    {
+      "n": "Axiom dependencies",
+      "d": "proof assistants"
+    },
+    {
+      "n": "Part hierarchies",
+      "d": "engineering"
+    },
+    {
+      "n": "Social networks",
+      "d": "user relationships, followers"
+    },
+    {
+      "n": "Dependency graphs",
+      "d": "package management, build systems"
+    }
+  ]
+}

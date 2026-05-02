@@ -1,0 +1,189 @@
+{
+  "id": "F2.4",
+  "v": "1.1",
+  "name": "Enrichment Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (base, enrichers, combine, output)$",
+  "desc": "Enrichment flows augment data with additional context from external sources.",
+  "comps": [
+    {
+      "n": "base",
+      "t": "BaseData",
+      "d": "input data to enrich",
+      "nota": "base"
+    },
+    {
+      "n": "enrichers",
+      "t": "Set⟨Enricher⟩",
+      "d": "enrichment sources",
+      "nota": "enrichers"
+    },
+    {
+      "n": "combine",
+      "t": "BaseData × Set⟨Enrichment⟩ → EnrichedData",
+      "d": "merges enrichments",
+      "nota": "combine"
+    },
+    {
+      "n": "output",
+      "t": "EnrichedData",
+      "d": "enriched result",
+      "nota": "output"
+    }
+  ],
+  "types": [
+    {
+      "n": "EnrichmentSource",
+      "def": "External data provider",
+      "d": "External service providing enrichment data"
+    },
+    {
+      "n": "EnrichmentData",
+      "def": "Additional contextual data",
+      "d": "Supplementary data fetched from sources"
+    },
+    {
+      "n": "EnrichedData",
+      "def": "Original + enrichment",
+      "d": "Original data augmented with enrichments"
+    },
+    {
+      "n": "BaseData",
+      "def": "Core data requiring enrichment",
+      "d": "Primary record before enrichment"
+    },
+    {
+      "n": "Enricher",
+      "def": "(source: String, enrich: BaseData → Enrichment)",
+      "d": "Function that fetches enrichment for base data"
+    },
+    {
+      "n": "Enrichment",
+      "def": "Additional data from external source",
+      "d": "Supplemental record merged into base data"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F2.4.1",
+      "n": "Enrichment Completeness",
+      "spec": "∀source ∈ sources: attempted(source)",
+      "d": "All configured enrichment sources are queried",
+      "inv": [
+        "complete\\_source\\_coverage"
+      ]
+    },
+    {
+      "id": "P.F2.4.2",
+      "n": "Fallback on Failure",
+      "spec": "source\\_fails ⇒ continue\\_with\\_partial",
+      "d": "Enrichment continues even if some sources fail",
+      "inv": [
+        "resilient\\_enrichment"
+      ]
+    },
+    {
+      "id": "P.F2.4.3",
+      "n": "Original Preservation",
+      "spec": "∀field ∈ original: enriched[field] = original[field]",
+      "d": "Original data fields are preserved in enriched result",
+      "inv": [
+        "non\\_destructive\\_enrichment"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Enrich",
+      "sig": "enrich(data: Data, sources: Set⟨Source⟩) → EnrichedData",
+      "def": "$enrich(data: Data, sources: Set⟨Source⟩) → EnrichedData = enrichments := fetch\\_enrichments(data, sources); merge(data, enrichments)$",
+      "pre": [
+        "∀s ∈ sources: reachable(s)"
+      ],
+      "post": [
+        "enriched(result, data)"
+      ],
+      "fx": [
+        "Fetches from enrichment sources",
+        "Merges enrichment data",
+        "Updates metadata"
+      ]
+    },
+    {
+      "n": "Fetch Enrichment",
+      "sig": "fetch_enrichment(data: Data, source: EnrichmentSource) → EnrichmentData",
+      "def": "$fetch\\_enrichment(data: Data, source: EnrichmentSource) → EnrichmentData = source.query(extract\\_keys(data))$",
+      "pre": [
+        "available(source)"
+      ],
+      "post": [
+        "related(result, data)"
+      ],
+      "fx": [
+        "Queries enrichment source",
+        "Returns related data"
+      ]
+    },
+    {
+      "n": "Merge",
+      "sig": "merge(base: Data, enrichment: EnrichmentData) → EnrichedData",
+      "def": "$merge(base: Data, enrichment: EnrichmentData) → EnrichedData = base ∪ enrichment with conflict\\_resolution$",
+      "pre": [
+        "compatible(base, enrichment)"
+      ],
+      "post": [
+        "contains(result, base) ∧ contains(result, enrichment)"
+      ],
+      "fx": [
+        "Combines base and enrichment",
+        "Resolves conflicts"
+      ]
+    },
+    {
+      "n": "Combine",
+      "sig": "combine(base: BaseData, enrichments: Set⟨Enrichment⟩) → EnrichedData",
+      "def": "$combine(base: BaseData, enrichments: Set⟨Enrichment⟩) → EnrichedData = result := base for enrichment in enrichments: result := merge(result, enrichment) return result$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Data augmentation",
+      "d": "ML training"
+    },
+    {
+      "n": "Content enrichment",
+      "d": "metadata, tags"
+    },
+    {
+      "n": "Profile enrichment",
+      "d": "user data + social + behavior"
+    },
+    {
+      "n": "Product enrichment",
+      "d": "details + reviews + pricing"
+    },
+    {
+      "n": "Log enrichment",
+      "d": "traces + metrics + context"
+    }
+  ]
+}

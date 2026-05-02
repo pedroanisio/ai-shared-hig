@@ -1,0 +1,304 @@
+{
+  "id": "P59",
+  "v": "1.1",
+  "name": "Authorization Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$Z = (subjects, objects, permissions, policies, check)$",
+  "desc": "Rate limiting pattern controls request frequency to prevent overload.",
+  "comps": [
+    {
+      "n": "subjects",
+      "t": "Set⟨Subject⟩",
+      "d": "actors (users, services)",
+      "nota": "subjects"
+    },
+    {
+      "n": "objects",
+      "t": "Set⟨Object⟩",
+      "d": "resources",
+      "nota": "objects"
+    },
+    {
+      "n": "permissions",
+      "t": "Set⟨Permission⟩",
+      "d": "allowed actions",
+      "nota": "permissions"
+    },
+    {
+      "n": "policies",
+      "t": "Subject \\times Object \\times Action → \\mathbb{B}",
+      "d": "define rules",
+      "nota": "policies"
+    },
+    {
+      "n": "check",
+      "t": "(Subject, Object, Action) → \\mathbb{B}",
+      "d": "evaluates access",
+      "nota": "check"
+    }
+  ],
+  "types": [
+    {
+      "n": "LimitInfo",
+      "def": "(remaining: ℕ, reset_time: Time)",
+      "d": "Rate limit information"
+    },
+    {
+      "n": "Subject",
+      "def": "User | Service | Group",
+      "d": "Actor requesting access"
+    },
+    {
+      "n": "Object",
+      "def": "Resource(id: ID, type: Type, owner: Subject)",
+      "d": "Protected resource being accessed"
+    },
+    {
+      "n": "Permission",
+      "def": "(subject: Subject, object: Object, actions: Set⟨Action⟩)",
+      "d": "Allowed actions for a subject-object pair"
+    },
+    {
+      "n": "Action",
+      "def": "Read | Write | Execute | Delete | Share | Admin",
+      "d": "Operation requested on a resource"
+    },
+    {
+      "n": "Policy",
+      "def": "(condition: Predicate, effect: Allow | Deny)",
+      "d": "Rule that grants or denies access"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P59.1",
+      "n": "Fair Distribution",
+      "spec": "∀clients: equal\\_access\\_opportunity",
+      "d": "Fair access for all clients",
+      "inv": [
+        "fairness"
+      ]
+    },
+    {
+      "id": "P.P59.2",
+      "n": "Precise Enforcement",
+      "spec": "violations prevented",
+      "d": "Limits precisely enforced",
+      "inv": [
+        "strict\\_enforcement"
+      ]
+    },
+    {
+      "id": "P.P59.3",
+      "n": "Clear Feedback",
+      "spec": "rejected\\_requests receive\\_clear\\_info",
+      "d": "Clear feedback on rejection",
+      "inv": [
+        "informative\\_rejection"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Role-Based Access Control (RBAC)",
+      "sig": "rbac_check(user: User, resource: Resource, action: Action) → 𝔹",
+      "def": "$rbac\\_check(user: User, resource: Resource, action: Action) → 𝔹 = roles := get\\_roles(user); permissions := flatten(map(get\\_permissions, roles)); has\\_permission(permissions, resource, action)$",
+      "pre": [
+        "user \\neq null \\wedge resource \\neq null",
+        "user.roles \\neq \\emptyset"
+      ],
+      "post": [
+        "result = true \\iff \\exists r \\in user.roles: permits(r, resource, action)"
+      ],
+      "fx": [
+        "Checks if user role allows action on resource",
+        "Returns permission decision"
+      ]
+    },
+    {
+      "n": "Attribute-Based Access Control (ABAC)",
+      "sig": "abac_check(subject: Subject, resource: Resource, action: Action, env: Environment) → 𝔹",
+      "def": "$abac\\_check(subject: Subject, resource: Resource, action: Action, env: Environment) → 𝔹 = policies := get\\_policies(); any(policies, λp: p.evaluate(subject, resource, action, env))$",
+      "pre": [
+        "subject \\neq null \\wedge resource \\neq null",
+        "policy\\_rules\\_loaded()"
+      ],
+      "post": [
+        "result = evaluate\\_policy(subject.attrs, resource.attrs, env.attrs, action)"
+      ],
+      "fx": [
+        "Evaluates fine-grained attribute-based policies",
+        "Considers context and environment attributes"
+      ]
+    },
+    {
+      "n": "Access Control Lists (ACL)",
+      "sig": "acl_check(user: User, resource: Resource, action: Action) → 𝔹",
+      "def": "$acl\\_check(user: User, resource: Resource, action: Action) → 𝔹 = acl := get\\_acl(resource); entries := filter(acl, λe: e.principal = user); any(entries, λe: action ∈ e.permissions)$",
+      "pre": [
+        "user \\neq null \\wedge resource \\neq null",
+        "resource.acl\\_exists = true"
+      ],
+      "post": [
+        "result = true \\iff (user, action) \\in resource.acl"
+      ],
+      "fx": [
+        "Checks explicit access control list",
+        "Resource-specific permissions"
+      ]
+    },
+    {
+      "n": "Ownership",
+      "sig": "check_owner(user: User, resource: Resource) → 𝔹",
+      "def": "$check\\_owner(user: User, resource: Resource) → 𝔹 = resource.owner = user.id$",
+      "pre": [
+        "user \\neq null \\wedge resource \\neq null",
+        "resource.owner\\_id\\_set = true"
+      ],
+      "post": [
+        "result = (user.id = resource.owner\\_id)"
+      ],
+      "fx": [
+        "Verifies resource ownership",
+        "Grants full control to owner"
+      ]
+    },
+    {
+      "n": "Evaluate Policy",
+      "sig": "evaluate(subject: Subject, resource: Resource, action: Action) → 𝔹",
+      "def": "$evaluate(subject: Subject, resource: Resource, action: Action) → 𝔹 = policies := get\\_policies(resource); any(policies, λp: p.allows(subject, action))$",
+      "pre": [
+        "policy\\_engine\\_available()",
+        "subject \\neq null \\wedge resource \\neq null"
+      ],
+      "post": [
+        "result = allow \\vee result = deny",
+        "decision\\_logged(subject, resource, action, result)"
+      ],
+      "fx": [
+        "Runs authorization policy evaluation",
+        "Logs decision for audit trail"
+      ]
+    },
+    {
+      "n": "Check Permission",
+      "sig": "check(subject: Subject, object: Object, action: Action) → 𝔹",
+      "def": "$check(subject: Subject, object: Object, action: Action) → 𝔹 = policies_applicable := filter(policies, λp: p.applies(subject, object, action)) // Check for explicit deny if ∃p ∈ policies_applicable: p.effect = Deny: return false // Check for explicit allow if ∃p ∈ policies_applicable: p.effect = Allow: return true // Default deny return false$",
+      "pre": [
+        "subject \\neq null \\wedge object \\neq null",
+        "action \\in valid\\_actions"
+      ],
+      "post": [
+        "result = has\\_permission(subject, object, action)"
+      ],
+      "fx": [
+        "General permission check",
+        "Delegates to appropriate authorization strategy"
+      ]
+    },
+    {
+      "n": "Grant Permission",
+      "sig": "grant(subject: Subject, object: Object, actions: Set⟨Action⟩) → Effect",
+      "def": "$grant(subject: Subject, object: Object, actions: Set⟨Action⟩) → Effect = permission := Permission(subject, object, actions) permissions := permissions ∪ {permission}$",
+      "pre": [
+        "authorized\\_to\\_grant(current\\_user, object)",
+        "actions \\subseteq valid\\_actions"
+      ],
+      "post": [
+        "\\forall a \\in actions: has\\_permission(subject, object, a)",
+        "audit\\_logged(grant\\_action)"
+      ],
+      "fx": [
+        "Assigns permissions to subject",
+        "Persists in permission store"
+      ]
+    },
+    {
+      "n": "Revoke Permission",
+      "sig": "revoke(subject: Subject, object: Object) → Effect",
+      "def": "$revoke(subject: Subject, object: Object) → Effect = permissions := permissions ∖ {p : p.subject = subject ∧ p.object = object}$",
+      "pre": [
+        "authorized\\_to\\_revoke(current\\_user, object)",
+        "has\\_any\\_permission(subject, object)"
+      ],
+      "post": [
+        "\\neg has\\_any\\_permission(subject, object)",
+        "audit\\_logged(revoke\\_action)"
+      ],
+      "fx": [
+        "Removes all permissions from subject",
+        "Immediate effect on access control"
+      ]
+    },
+    {
+      "n": "Allow Request",
+      "sig": "allow(client: ClientID, timestamp: Time) → 𝔹",
+      "def": "$allow(client: ClientID, timestamp: Time) → 𝔹 = requests := get\\_recent\\_requests(client, timestamp - window); if |requests| < limit: record\\_request(client, timestamp); return true else: return false$",
+      "pre": [
+        "client ≠ null"
+      ],
+      "post": [
+        "result ⇔ within\\_limits(client)"
+      ],
+      "fx": [
+        "Checks recent requests",
+        "Records if allowed",
+        "Returns decision"
+      ]
+    },
+    {
+      "n": "Reset Limit",
+      "sig": "reset(client: ClientID) → Effect",
+      "def": "$reset(client: ClientID) → Effect = remove\\_requests(client)$",
+      "pre": [
+        "client ≠ null"
+      ],
+      "post": [
+        "request\\_count(client) = 0"
+      ],
+      "fx": [
+        "Clears request history"
+      ]
+    },
+    {
+      "n": "Get Limit Info",
+      "sig": "info(client: ClientID) → LimitInfo",
+      "def": "$info(client: ClientID) → LimitInfo = requests := get\\_recent\\_requests(client, now() - window); remaining := max(0, limit - |requests|); reset\\_time := calculate\\_reset\\_time(requests); return LimitInfo(remaining, reset\\_time)$",
+      "pre": [
+        "client ≠ null"
+      ],
+      "post": [
+        "result.remaining ≥ 0"
+      ],
+      "fx": [
+        "Calculates remaining requests",
+        "Returns limit info"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File permission systems",
+      "d": "Access control for files and directories"
+    },
+    {
+      "n": "API authorization",
+      "d": "Permission checks for API endpoints"
+    },
+    {
+      "n": "Database row-level security",
+      "d": "Per-row access policies in databases"
+    },
+    {
+      "n": "Cloud resource access",
+      "d": "AWS IAM"
+    }
+  ]
+}

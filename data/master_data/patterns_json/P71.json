@@ -1,0 +1,229 @@
+{
+  "id": "P71",
+  "v": "1.1",
+  "name": "Orchestration Dashboard",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Orchestration",
+    "Dashboard"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D_{orch} = (W_{flow}, A_{agents}, M_{metrics}, C_{control}) : \\text{Workflow} \\to \\text{Dashboard}$",
+  "desc": "Pub/Sub pattern enables event broadcasting to multiple subscribers.",
+  "comps": [
+    {
+      "n": "W_{flow}",
+      "t": "WorkflowGraph",
+      "d": "DAG representing orchestration workflow",
+      "nota": "W_{flow}"
+    },
+    {
+      "n": "A_{agents}",
+      "t": "Set⟨Agent⟩",
+      "d": "set of orchestrated agents",
+      "nota": "A_{agents}"
+    },
+    {
+      "n": "M_{metrics}",
+      "t": "Metrics",
+      "d": "real-time performance metrics",
+      "nota": "M_{metrics}"
+    },
+    {
+      "n": "C_{control}",
+      "t": "Set⟨Control⟩",
+      "d": "user controls for orchestration",
+      "nota": "C_{control}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Subscription",
+      "def": "(id: SubscriptionID, topic: Topic, handler: Handler, active: 𝔹)",
+      "d": "Topic subscription"
+    },
+    {
+      "n": "WorkflowGraph",
+      "def": "$\\text{WorkflowGraph} = (V, E, \\lambda)$ where $V$ = nodes (tasks), $E$ = edges (dependencies), $\\lambda$ = labels",
+      "d": "Directed graph representing workflow tasks"
+    },
+    {
+      "n": "Metrics",
+      "def": "$\\text{Metrics} = (\\text{throughput}, \\text{latency}, \\text{cost}, \\text{success\\_rate}, \\text{bottlenecks})$",
+      "d": "Performance metrics for orchestration"
+    },
+    {
+      "n": "Control",
+      "def": "$\\text{Control} = \\{\\text{pause}, \\text{resume}, \\text{cancel}, \\text{retry}, \\text{scale}, \\text{route}\\}$",
+      "d": "User actions to manage workflows"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P71.1",
+      "n": "Decoupling",
+      "spec": "publishers independent\\_of subscribers",
+      "d": "Publishers and subscribers decoupled",
+      "inv": [
+        "loose\\_coupling"
+      ]
+    },
+    {
+      "id": "P.P71.2",
+      "n": "Broadcast",
+      "spec": "∀subscriber: receives\\_event",
+      "d": "All subscribers receive events",
+      "inv": [
+        "broadcast\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P71.3",
+      "n": "Async Delivery",
+      "spec": "publish ¬blocks\\_on delivery",
+      "d": "Publishing doesn't block",
+      "inv": [
+        "non\\_blocking"
+      ]
+    },
+    {
+      "id": "P.P71.4",
+      "n": "Dependency Visualization",
+      "spec": "$\\forall (u, v) \\in W_{flow}.E : \\text{visible}(\\text{edge}(u, v)) \\land \\text{direction}(u, v)$",
+      "d": "Edges and directionality are visible in the dashboard",
+      "inv": [
+        "visible\\_dependencies"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(topic: Topic, handler: Handler) → SubscriptionID",
+      "def": "$subscribe(topic: Topic, handler: Handler) → SubscriptionID = id := generate\\_id(); subscription := Subscription(id, topic, handler, active=true); subscriptions[topic] := subscriptions[topic] ∪ {subscription}; return id$",
+      "pre": [
+        "handler ≠ null"
+      ],
+      "post": [
+        "subscription ∈ subscriptions[topic]"
+      ],
+      "fx": [
+        "Creates subscription",
+        "Adds to topic",
+        "Returns ID"
+      ]
+    },
+    {
+      "n": "Publish",
+      "sig": "publish(topic: Topic, event: Event) → Effect",
+      "def": "$publish(topic: Topic, event: Event) → Effect = subscribers := subscriptions[topic]; for subscription in subscribers: if subscription.active: async: subscription.handler(event)$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "∀subscriber: notified ∨ inactive"
+      ],
+      "fx": [
+        "Gets subscribers",
+        "Notifies each asynchronously"
+      ]
+    },
+    {
+      "n": "Unsubscribe",
+      "sig": "unsubscribe(id: SubscriptionID) → Effect",
+      "def": "$unsubscribe(id: SubscriptionID) → Effect = subscription := find\\_subscription(id); subscriptions[subscription.topic] := subscriptions[subscription.topic] \\ {subscription}$",
+      "pre": [
+        "subscription\\_exists(id)"
+      ],
+      "post": [
+        "¬subscription\\_exists(id)"
+      ],
+      "fx": [
+        "Finds subscription",
+        "Removes from topic"
+      ]
+    },
+    {
+      "n": "Render Workflow",
+      "sig": "render: WorkflowGraph → Visualization",
+      "def": "$\\text{render}(W) = v$where$v.\\text{nodes} = \\{(n.id, n.status, n.agent) \\mid n \\in W.V\\}$$v.\\text{edges} = W.E$$v.\\text{layout} = \\text{topological\\_sort}(W)$",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Update Metrics",
+      "sig": "update: WorkflowGraph → Metrics",
+      "def": "$\\text{update}(W) = M$where$M.\\text{throughput} = \\frac{|\\text{completed}(W)|}{t_{elapsed}}$$M.\\text{latency} = \\text{avg}(\\{t_{complete}(n) - t_{start}(n) \\mid n \\in W.V\\})$$M.\\text{cost} = \\sum_{a \\in A_{agents}} \\text{cost}(a)$",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Execute Control",
+      "sig": "execute: Control × WorkflowGraph → Effect",
+      "def": "$\\text{execute}(c, W) =$effect where$\\text{pause} : \\forall n \\in W.V : n.\\text{status} \\leftarrow \\text{paused}$$\\text{cancel} : W \\leftarrow \\emptyset$$\\text{retry} : \\text{reset}(\\text{failed}(W))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "F2.2",
+      "P14"
+    ],
+    "use": [
+      "P69",
+      "P129"
+    ]
+  },
+  "manif": [
+    {
+      "n": "LangGraph Studio",
+      "d": "visual workflow orchestration dashboard"
+    },
+    {
+      "n": "Temporal workflow UI",
+      "d": "orchestration dashboard with controls"
+    },
+    {
+      "n": "Airflow DAG view",
+      "d": "task orchestration visualization"
+    },
+    {
+      "n": "Prefect dashboard",
+      "d": "workflow orchestration monitoring"
+    }
+  ]
+}

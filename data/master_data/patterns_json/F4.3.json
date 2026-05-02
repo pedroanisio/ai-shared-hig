@@ -1,0 +1,161 @@
+{
+  "id": "F4.3",
+  "v": "1.1",
+  "name": "Export and Publishing Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (source, transform, validate, publish)$",
+  "desc": "Export flows transform internal data to external formats and publish to destinations.",
+  "comps": [
+    {
+      "n": "source",
+      "t": "InternalData",
+      "d": "internal data to export",
+      "nota": "source"
+    },
+    {
+      "n": "transform",
+      "t": "InternalData → ExternalFormat",
+      "d": "converts to external format",
+      "nota": "transform"
+    },
+    {
+      "n": "validate",
+      "t": "ExternalFormat → Valid | Invalid",
+      "d": "validates exported format against specification",
+      "nota": "validate"
+    },
+    {
+      "n": "publish",
+      "t": "Valid → Destination",
+      "d": "delivers to target",
+      "nota": "publish"
+    }
+  ],
+  "types": [
+    {
+      "n": "InternalData",
+      "def": "Data in system's internal representation",
+      "d": "Data in internal system format"
+    },
+    {
+      "n": "ExternalFormat",
+      "def": "JSON | XML | CSV | PDF | HTML | Binary",
+      "d": "Supported external formats"
+    },
+    {
+      "n": "Destination",
+      "def": "File | URL | API | Stream | Storage",
+      "d": "Target destination for published data"
+    },
+    {
+      "n": "PublishResult",
+      "def": "Success(url: URL) | Failure(error: Error)",
+      "d": "Result of publish operation"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F4.3.1",
+      "n": "Format Compliance",
+      "spec": "∀d ∈ InternalData: validate(transform(d)) = Valid ⇒ conforms_to_spec(transform(d))",
+      "d": "Exported data conforms to format specifications",
+      "inv": [
+        "spec\\_compliant"
+      ]
+    },
+    {
+      "id": "P.F4.3.2",
+      "n": "Lossless Export",
+      "spec": "∀d ∈ InternalData: can_round_trip(d) ⇒ import(transform(d)) = d",
+      "d": "Round-trip export/import preserves data",
+      "inv": [
+        "data\\_preserving"
+      ]
+    },
+    {
+      "id": "P.F4.3.3",
+      "n": "Atomic Publish",
+      "spec": "∀d ∈ Data: publish(d) succeeds completely ∨ rolls back completely",
+      "d": "Publishing is atomic - all or nothing",
+      "inv": [
+        "atomic\\_publication"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Export",
+      "sig": "export(data: InternalData, format: ExternalFormat, dest: Destination) → PublishResult",
+      "def": "$export(data: InternalData, format: ExternalFormat, dest: Destination) → PublishResult = transformed := transform(data, format); validated := validate(transformed); if validated: publish(transformed, dest) else: error(\"Invalid format\")$",
+      "pre": [
+        "supported\\_format(format)"
+      ],
+      "post": [
+        "published(transformed) ∨ error"
+      ],
+      "fx": [
+        "Transforms to external format",
+        "Validates output",
+        "Publishes to destination"
+      ]
+    },
+    {
+      "n": "Transform",
+      "sig": "transform(data: InternalData, format: ExternalFormat) → ExternalFormat",
+      "def": "$transform(data: InternalData, format: ExternalFormat) → ExternalFormat = case format of JSON → to_json(data) XML → to_xml(data) CSV → to_csv(data) PDF → to_pdf(data) HTML → to_html(data)$",
+      "pre": [
+        "exportable(data)"
+      ],
+      "post": [
+        "conforms\\_to\\_format(result, format)"
+      ],
+      "fx": [
+        "Converts to target format"
+      ]
+    },
+    {
+      "n": "Publish",
+      "sig": "publish(data: ExternalFormat, dest: Destination) → PublishResult",
+      "def": "$publish(data: ExternalFormat, dest: Destination) → PublishResult = case dest of File(path) → write_file(path, data) return Success(file_url(path)) URL(endpoint) → response := http_post(endpoint, data) return Success(response.location) API(service) → id := service.create(data) return Success(service.url(id)) Storage(bucket) → key := bucket.put(data) return Success(bucket.url(key))$",
+      "pre": [
+        "accessible(dest)"
+      ],
+      "post": [
+        "available(result.url)"
+      ],
+      "fx": [
+        "Delivers to destination",
+        "Returns access URL"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Document export",
+      "d": "PDF, Word"
+    },
+    {
+      "n": "API publishing",
+      "d": "Publishing data to external APIs"
+    },
+    {
+      "n": "Data export",
+      "d": "CSV, JSON"
+    },
+    {
+      "n": "Report generation",
+      "d": "Scheduled export of reports"
+    },
+    {
+      "n": "Static site generation",
+      "d": "Build-time publishing to static assets"
+    }
+  ]
+}

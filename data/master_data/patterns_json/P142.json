@@ -1,0 +1,201 @@
+{
+  "id": "P142",
+  "v": "1.1",
+  "name": "Automation Builder",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B_{auto} = (Components, Canvas_{visual}, Connect, Execute) : Builder \\to Automation$",
+  "desc": "Automation builders enable visual construction of automated workflows through drag-and-drop interfaces.",
+  "comps": [
+    {
+      "n": "Triggers",
+      "t": "Set⟨EventTrigger⟩",
+      "d": "Events that initiate automation",
+      "nota": "Triggers"
+    },
+    {
+      "n": "Actions",
+      "t": "Sequence⟨Action⟩",
+      "d": "Sequence of actions to execute",
+      "nota": "Actions"
+    },
+    {
+      "n": "Conditions",
+      "t": "Set⟨Predicate⟩",
+      "d": "Conditions that must be satisfied",
+      "nota": "Conditions"
+    },
+    {
+      "n": "Execute",
+      "t": "Automation → Effect",
+      "d": "Function to run automation",
+      "nota": "Execute"
+    }
+  ],
+  "types": [
+    {
+      "n": "Step",
+      "def": "(id: String, action: Action, params: Parameters)",
+      "d": "Single workflow step"
+    },
+    {
+      "n": "Connection",
+      "def": "(from: Step, to: Step, condition: Condition)",
+      "d": "Connection between steps"
+    },
+    {
+      "n": "Workflow",
+      "def": "(steps: Set⟨Step⟩, connections: Set⟨Connection⟩)",
+      "d": "Complete workflow definition"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P142.1",
+      "n": "Visual Clarity",
+      "spec": "easily\\_understandable(workflow\\_diagram)",
+      "d": "Workflow diagrams are visually clear",
+      "inv": [
+        "readable\\_workflows"
+      ]
+    },
+    {
+      "id": "P.P142.2",
+      "n": "Validation",
+      "spec": "∀workflow: validate(workflow) before execute",
+      "d": "Workflows are validated before execution",
+      "inv": [
+        "validated\\_execution"
+      ]
+    },
+    {
+      "id": "P.P142.3",
+      "n": "Reusability",
+      "spec": "∀workflow: saveable ∧ reusable",
+      "d": "Workflows can be saved and reused",
+      "inv": [
+        "reusable\\_workflows"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Step",
+      "sig": "add_step(workflow: Workflow, step: Step) → Workflow",
+      "def": "$add\\_step(workflow: Workflow, step: Step) → Workflow = workflow.steps := workflow.steps ∪ {step}; validate\\_dependencies(workflow); return workflow$",
+      "pre": [
+        "valid\\_step(step)"
+      ],
+      "post": [
+        "step ∈ workflow.steps"
+      ],
+      "fx": [
+        "Adds step to workflow",
+        "Validates dependencies"
+      ]
+    },
+    {
+      "n": "Connect Steps",
+      "sig": "connect(from: Step, to: Step, condition: Condition) → Connection",
+      "def": "$connect(from: Step, to: Step, condition: Condition) → Connection = conn := Connection(from, to, condition); validate\\_connection(conn); workflow.connections := workflow.connections ∪ {conn}; return conn$",
+      "pre": [
+        "from ∈ workflow.steps ∧ to ∈ workflow.steps"
+      ],
+      "post": [
+        "conn ∈ workflow.connections"
+      ],
+      "fx": [
+        "Creates connection",
+        "Validates connection",
+        "Adds to workflow"
+      ]
+    },
+    {
+      "n": "Execute Workflow",
+      "sig": "execute(workflow: Workflow, input: Data) → Result",
+      "def": "$execute(workflow: Workflow, input: Data) → Result = current := find\\_start\\_step(workflow); data := input; while current ≠ null: data := current.execute(data); current := next\\_step(workflow, current, data); return data$",
+      "pre": [
+        "valid\\_workflow(workflow)"
+      ],
+      "post": [
+        "completed(result)"
+      ],
+      "fx": [
+        "Executes steps in order",
+        "Propagates data",
+        "Returns final result"
+      ]
+    },
+    {
+      "n": "DefineAutomation",
+      "sig": "define(t: Trigger, a: Actions, c: Conditions) → Automation",
+      "def": "define(t, a, c) creates new automation",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "TestAutomation",
+      "sig": "test(auto: Automation) → Result",
+      "def": "test(auto) validates automation without executing",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "RunAutomation",
+      "sig": "run(auto: Automation) → Effect",
+      "def": "run(auto) executes automation actions",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "id": "P24",
+  "v": "1.1",
+  "name": "Request-Response API",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (endpoints, handlers, middleware, responses)$",
+  "desc": "Request-response APIs provide synchronous communication with clients waiting for responses.",
+  "comps": [
+    {
+      "n": "endpoints",
+      "t": "Set⟨Endpoint⟩",
+      "d": "API routes",
+      "nota": "endpoints"
+    },
+    {
+      "n": "handlers",
+      "t": "Map⟨Endpoint, Handler⟩",
+      "d": "process requests",
+      "nota": "handlers"
+    },
+    {
+      "n": "middleware",
+      "t": "Sequence⟨Middleware⟩",
+      "d": "request interceptors",
+      "nota": "middleware"
+    },
+    {
+      "n": "responses",
+      "t": "Request → Response",
+      "d": "generates responses",
+      "nota": "responses"
+    }
+  ],
+  "types": [
+    {
+      "n": "Request",
+      "def": "(method: HTTP_Method, endpoint: Endpoint, params: Parameters, headers: Headers)",
+      "d": "HTTP request"
+    },
+    {
+      "n": "Response",
+      "def": "(status: HTTP_Status, body: Data, headers: Headers)",
+      "d": "HTTP response"
+    },
+    {
+      "n": "Endpoint",
+      "def": "(method: Method, path: Path)",
+      "d": "Route definition for a request"
+    },
+    {
+      "n": "Method",
+      "def": "GET | POST | PUT | DELETE | PATCH",
+      "d": "HTTP method"
+    },
+    {
+      "n": "Handler",
+      "def": "Request → Response",
+      "d": "Request handler function"
+    },
+    {
+      "n": "Middleware",
+      "def": "(Request, Next) → Response",
+      "d": "Request/response middleware"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P24.1",
+      "n": "Synchronous Communication",
+      "spec": "request blocks until response\\_received",
+      "d": "Client waits for response",
+      "inv": [
+        "blocking\\_request"
+      ]
+    },
+    {
+      "id": "P.P24.2",
+      "n": "Idempotency",
+      "spec": "∀GET,PUT,DELETE: idempotent",
+      "d": "Safe methods are idempotent",
+      "inv": [
+        "safe\\_retries"
+      ]
+    },
+    {
+      "id": "P.P24.3",
+      "n": "Error Handling",
+      "spec": "error ⇒ meaningful\\_status\\_code",
+      "d": "Errors return meaningful status codes",
+      "inv": [
+        "informative\\_errors"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Send Request",
+      "sig": "request(endpoint: Endpoint, params: Parameters) → Response | Error",
+      "def": "$request(endpoint: Endpoint, params: Parameters) → Response | Error = validate\\_params(params); http\\_request := build\\_request(endpoint, params); response := http\\_client.send(http\\_request); return parse\\_response(response)$",
+      "pre": [
+        "reachable(endpoint)"
+      ],
+      "post": [
+        "received(response) ∨ timeout"
+      ],
+      "fx": [
+        "Validates parameters",
+        "Sends HTTP request",
+        "Waits for response",
+        "Parses response"
+      ]
+    },
+    {
+      "n": "Handle Request",
+      "sig": "handle(request: Request) → Response",
+      "def": "$handle(request: Request) → Response = authenticate(request); authorize(request); validate(request.params); result := process(request); format\\_response(result)$",
+      "pre": [
+        "valid\\_request(request)"
+      ],
+      "post": [
+        "valid\\_response(result)"
+      ],
+      "fx": [
+        "Authenticates request",
+        "Authorizes",
+        "Validates",
+        "Processes",
+        "Formats response"
+      ]
+    },
+    {
+      "n": "Cache Response",
+      "sig": "cache(request: Request, response: Response, ttl: Time) → Effect",
+      "def": "$cache(request: Request, response: Response, ttl: Time) → Effect = key := hash(request); cache[key] := (response, expires=now()+ttl)$",
+      "pre": [
+        "cacheable(request, response)"
+      ],
+      "post": [
+        "cached(request, response)"
+      ],
+      "fx": [
+        "Hashes request as key",
+        "Stores response with TTL"
+      ]
+    },
+    {
+      "n": "Register Endpoint",
+      "sig": "register(endpoint: Endpoint, handler: Handler) → Effect",
+      "def": "$register(endpoint: Endpoint, handler: Handler) → Effect = handlers[endpoint] := handler$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Add Middleware",
+      "sig": "add_middleware(mw: Middleware) → Effect",
+      "def": "$add_middleware(mw: Middleware) → Effect = middleware := middleware ++ [mw] - Authentication: Verify credentials - Logging: Log request/response - Rate limiting: Throttle requests - CORS: Handle cross-origin requests - Compression: Gzip responses$",
+      "pre": [
+        "valid_mw(input)",
+        "mw_collection ≠ null"
+      ],
+      "post": [
+        "mw ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new mw to collection",
+        "Updates indexes"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "REST API",
+      "d": "HTTP request response endpoints"
+    },
+    {
+      "n": "RPC",
+      "d": "gRPC"
+    },
+    {
+      "n": "GraphQL",
+      "d": "single endpoint with typed queries"
+    },
+    {
+      "n": "Internal service APIs",
+      "d": "service-to-service request response calls"
+    }
+  ]
+}

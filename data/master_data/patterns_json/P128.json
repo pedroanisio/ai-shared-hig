@@ -1,0 +1,200 @@
+{
+  "id": "P128",
+  "v": "1.1",
+  "name": "A/B Test Results",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{ab} = (Variants, Metrics, Statistical_{sig}, Winner) : Test \\to Results_{comparison}$",
+  "desc": "A/B test results visualize and compare performance metrics across test variants.",
+  "comps": [
+    {
+      "n": "Variants",
+      "t": "Set⟨Variant⟩",
+      "d": "Different versions being tested (A, B, C, ...)",
+      "nota": "Variants"
+    },
+    {
+      "n": "Metrics",
+      "t": "Map⟨Variant, Statistics⟩",
+      "d": "Performance metrics collected for each variant",
+      "nota": "Metrics"
+    },
+    {
+      "n": "Statistical_{sig}",
+      "t": "Map⟨(Variant, Variant), ℝ⟩",
+      "d": "Statistical significance p-values between variant pairs",
+      "nota": "Statistical_{sig}"
+    },
+    {
+      "n": "Winner",
+      "t": "Variant?",
+      "d": "Winning variant if statistically significant",
+      "nota": "Winner"
+    }
+  ],
+  "types": [
+    {
+      "n": "Variant",
+      "def": "(id: String, name: String, config: Config)",
+      "d": "A/B test variant"
+    },
+    {
+      "n": "Comparison",
+      "def": "(p_value: ℝ, effect_size: ℝ, significant: 𝔹)",
+      "d": "Statistical comparison result"
+    },
+    {
+      "n": "Experiment",
+      "def": "(variants: Set⟨Variant⟩, metrics: Set⟨Metric⟩, results: Data)",
+      "d": "Complete A/B test experiment"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P128.1",
+      "n": "Statistical Validity",
+      "spec": "∀comparison: statistically\\_valid(comparison)",
+      "d": "Comparisons are statistically valid",
+      "inv": [
+        "valid\\_statistics"
+      ]
+    },
+    {
+      "id": "P.P128.2",
+      "n": "Sufficient Sample Size",
+      "spec": "conclusion ⇒ sufficient\\_sample\\_size",
+      "d": "Conclusions require sufficient sample size",
+      "inv": [
+        "powered\\_tests"
+      ]
+    },
+    {
+      "id": "P.P128.3",
+      "n": "Clear Presentation",
+      "spec": "easily\\_interpretable(results)",
+      "d": "Results are clearly presented",
+      "inv": [
+        "understandable\\_results"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Record Metric",
+      "sig": "record(variant: Variant, metric: Metric, value: ℝ) → Effect",
+      "def": "$record(variant: Variant, metric: Metric, value: ℝ) → Effect = results[variant][metric].append(value); update\\_statistics(variant, metric)$",
+      "pre": [
+        "valid\\_variant(variant)"
+      ],
+      "post": [
+        "recorded(variant, metric, value)"
+      ],
+      "fx": [
+        "Records metric value",
+        "Updates statistics"
+      ]
+    },
+    {
+      "n": "Compare Variants",
+      "sig": "compare(variantA: Variant, variantB: Variant, metric: Metric) → Comparison",
+      "def": "$compare(variantA: Variant, variantB: Variant, metric: Metric) → Comparison = dataA := results[variantA][metric]; dataB := results[variantB][metric]; stat\\_test := perform\\_statistical\\_test(dataA, dataB); effect\\_size := compute\\_effect\\_size(dataA, dataB); return Comparison(stat\\_test, effect\\_size)$",
+      "pre": [
+        "|results[variantA]| > 0 ∧ |results[variantB]| > 0"
+      ],
+      "post": [
+        "has\\_significance(result)"
+      ],
+      "fx": [
+        "Performs statistical test",
+        "Computes effect size"
+      ]
+    },
+    {
+      "n": "Visualize Results",
+      "sig": "visualize(experiment: Experiment) → Visualization",
+      "def": "$visualize(experiment: Experiment) → Visualization = charts := create\\_comparison\\_charts(experiment); stats := format\\_statistics(experiment); winner := determine\\_winner(experiment); return Visualization(charts, stats, winner)$",
+      "pre": [
+        "sufficient\\_data(experiment)"
+      ],
+      "post": [
+        "interpretable(result)"
+      ],
+      "fx": [
+        "Creates comparison charts",
+        "Formats statistics",
+        "Determines winner"
+      ]
+    },
+    {
+      "n": "RecordMetric",
+      "sig": "record(v: Variant, m: Metric, value: ℝ) → Effect",
+      "def": "record(v, m, val) updates statistical aggregates for variant",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ComputeSignificance",
+      "sig": "test(v1: Variant, v2: Variant) → p-value",
+      "def": "test(v1, v2) performs statistical hypothesis test",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "SelectWinner",
+      "sig": "select_winner(alpha: ℝ) → Variant?",
+      "def": "select_winner(alpha) returns variant significant at alpha level or null",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

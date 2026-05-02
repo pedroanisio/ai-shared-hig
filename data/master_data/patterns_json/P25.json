@@ -1,0 +1,271 @@
+{
+  "id": "P25",
+  "v": "1.1",
+  "name": "Streaming Protocol",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (producer, consumer, buffer, backpressure, state)$",
+  "desc": "Streaming protocols enable continuous data flow between client and server with backpressure.",
+  "comps": [
+    {
+      "n": "producer",
+      "t": "Producer",
+      "d": "generates data",
+      "nota": "producer"
+    },
+    {
+      "n": "consumer",
+      "t": "Consumer",
+      "d": "processes data",
+      "nota": "consumer"
+    },
+    {
+      "n": "buffer",
+      "t": "Queue⟨Chunk⟩",
+      "d": "buffers data",
+      "nota": "buffer"
+    },
+    {
+      "n": "backpressure",
+      "t": "Signal",
+      "d": "controls flow rate",
+      "nota": "backpressure"
+    },
+    {
+      "n": "state",
+      "t": "\\{\\text{flowing}, \\text{paused}, \\text{ended}, \\text{error}\\}",
+      "d": "stream state",
+      "nota": "state"
+    }
+  ],
+  "types": [
+    {
+      "n": "Stream",
+      "def": "(connection: Connection, buffer: Buffer, handlers: Handlers)",
+      "d": "Active stream instance"
+    },
+    {
+      "n": "Producer",
+      "def": "(generate: () → Chunk | EndOfStream, pause: () → Effect, resume: () → Effect)",
+      "d": "Source of stream chunks with flow control"
+    },
+    {
+      "n": "Consumer",
+      "def": "(consume: Chunk → Effect)",
+      "d": "Sink that processes chunks"
+    },
+    {
+      "n": "Chunk",
+      "def": "Sequence⟨Byte⟩ | Value",
+      "d": "Chunk of streamed data"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P25.1",
+      "n": "Bidirectional Flow",
+      "spec": "supports\\_simultaneous\\_read\\_write",
+      "d": "Streams support bidirectional data flow",
+      "inv": [
+        "full\\_duplex"
+      ]
+    },
+    {
+      "id": "P.P25.2",
+      "n": "Backpressure",
+      "spec": "buffer\\_full ⇒ slow\\_producer",
+      "d": "Backpressure prevents buffer overflow",
+      "inv": [
+        "flow\\_control"
+      ]
+    },
+    {
+      "id": "P.P25.3",
+      "n": "Ordered Delivery",
+      "spec": "∀d1,d2: write(d1) before write(d2) ⇒ read(d1) before read(d2)",
+      "d": "Data arrives in order sent",
+      "inv": [
+        "ordered\\_stream"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Open Stream",
+      "sig": "open(endpoint: Endpoint) → Stream",
+      "def": "$open(endpoint: Endpoint) → Stream = connection := establish\\_connection(endpoint); stream := Stream(connection, buffer=create\\_buffer()); register\\_handlers(stream); return stream$",
+      "pre": [
+        "reachable(endpoint)"
+      ],
+      "post": [
+        "active(stream)"
+      ],
+      "fx": [
+        "Establishes connection",
+        "Creates stream buffer",
+        "Registers handlers"
+      ]
+    },
+    {
+      "n": "Write To Stream",
+      "sig": "write(stream: Stream, data: Data) → Effect",
+      "def": "$write(stream: Stream, data: Data) → Effect = if stream.buffer.full(): apply\\_backpressure(); stream.buffer.enqueue(data); flush\\_when\\_ready()$",
+      "pre": [
+        "active(stream)"
+      ],
+      "post": [
+        "buffered(data) ∨ sent(data)"
+      ],
+      "fx": [
+        "Applies backpressure if needed",
+        "Enqueues data",
+        "Flushes when ready"
+      ]
+    },
+    {
+      "n": "Read From Stream",
+      "sig": "read(stream: Stream) → Data | EOF",
+      "def": "$read(stream: Stream) → Data | EOF = if stream.buffer.empty(): wait\\_for\\_data(); if stream.closed(): return EOF else: return stream.buffer.dequeue()$",
+      "pre": [
+        "stream ≠ null"
+      ],
+      "post": [
+        "result ≠ null ∨ closed(stream)"
+      ],
+      "fx": [
+        "Waits for data if needed",
+        "Returns data or EOF"
+      ]
+    },
+    {
+      "n": "Readable Stream",
+      "sig": "read(stream: ReadableStream) → Promise⟨Chunk⟩",
+      "def": "$read(stream: ReadableStream) → Promise⟨Chunk⟩ = reader := stream.getReader(); reader.read()$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Writable Stream",
+      "sig": "write(stream: WritableStream, chunk: Chunk) → Promise⟨void⟩",
+      "def": "$write(stream: WritableStream, chunk: Chunk) → Promise⟨void⟩ = writer := stream.getWriter(); writer.write(chunk)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Transform Stream",
+      "sig": "transform(input: ReadableStream, f: Chunk → Chunk) → ReadableStream",
+      "def": "$transform(input: ReadableStream, f: Chunk → Chunk) → ReadableStream = pipe(input, map(f))$",
+      "pre": [
+        "input ≠ null",
+        "valid_transformation(type)"
+      ],
+      "post": [
+        "output = transform(input)",
+        "invariants_preserved()"
+      ],
+      "fx": [
+        "Converts data format",
+        "Applies business rules"
+      ]
+    },
+    {
+      "n": "Duplex Stream",
+      "sig": "duplex() → (ReadableStream, WritableStream)",
+      "def": "$duplex() → (ReadableStream, WritableStream) = create bidirectional stream pair$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Produce",
+      "sig": "produce() → Effect",
+      "def": "$produce() → Effect = while state = flowing: chunk := producer.generate()\n    if chunk = EndOfStream: state := ended consumer.close() else: buffer := enqueue(buffer, chunk)\n    if buffer.size ≥ highWaterMark: state := paused producer.pause()$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Consume",
+      "sig": "consume() → Effect",
+      "def": "$consume() → Effect = while ¬empty(buffer): chunk := dequeue(buffer) consumer.consume(chunk)\n    if buffer.size < lowWaterMark\n    ∧ state = paused: state := flowing producer.resume()$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "WebSocket",
+      "d": "bidirectional streaming connections"
+    },
+    {
+      "n": "Live updates",
+      "d": "push updates as data arrives"
+    },
+    {
+      "n": "Progressive rendering",
+      "d": "stream content to render incrementally"
+    },
+    {
+      "n": "File uploads/downloads",
+      "d": "chunked transfer for large files"
+    },
+    {
+      "n": "Video streaming",
+      "d": "continuous media chunks over time"
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+{
+  "id": "P54",
+  "v": "1.1",
+  "name": "Sorting Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (data, columns, order, comparator)$",
+  "desc": "Sorting pattern enables users to order data by specified criteria.",
+  "comps": [
+    {
+      "n": "data",
+      "t": "Sequence⟨Item⟩",
+      "d": "dataset",
+      "nota": "data"
+    },
+    {
+      "n": "columns",
+      "t": "Sequence⟨Column⟩",
+      "d": "sortable columns",
+      "nota": "columns"
+    },
+    {
+      "n": "order",
+      "t": "Sequence⟨(Column, Direction)⟩",
+      "d": "sort specification",
+      "nota": "order"
+    },
+    {
+      "n": "comparator",
+      "t": "Item × Item → \\{-1, 0, 1\\}",
+      "d": "comparison function",
+      "nota": "comparator"
+    }
+  ],
+  "types": [
+    {
+      "n": "Direction",
+      "def": "ASC | DESC",
+      "d": "Sort direction"
+    },
+    {
+      "n": "Column",
+      "def": "(name: String, type: Type, extract: Item → Value)",
+      "d": "Sortable column definition and value extractor"
+    },
+    {
+      "n": "Order",
+      "def": "Sequence⟨(Column, Direction)⟩  // Multi-column sort",
+      "d": "Sort priority sequence across columns"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P54.1",
+      "n": "Stable Sort",
+      "spec": "equal\\_items preserve\\_original\\_order",
+      "d": "Sort is stable",
+      "inv": [
+        "stability"
+      ]
+    },
+    {
+      "id": "P.P54.2",
+      "n": "Direction Indication",
+      "spec": "sort\\_direction visually\\_indicated",
+      "d": "Sort direction clearly shown",
+      "inv": [
+        "clear\\_direction"
+      ]
+    },
+    {
+      "id": "P.P54.3",
+      "n": "Performance",
+      "spec": "sort\\_time = O(n log n)",
+      "d": "Sorting is efficient",
+      "inv": [
+        "efficient\\_sorting"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Drag to Reorder",
+      "sig": "reorder(items: Sequence⟨Item⟩, from: ℕ, to: ℕ) → Sequence⟨Item⟩",
+      "def": "$reorder(items: Sequence⟨Item⟩, from: ℕ, to: ℕ) → Sequence⟨Item⟩ = item := items[from]; remove(items, from); insert(items, to, item)$",
+      "pre": [
+        "0 \\leq from < |items| \\wedge 0 \\leq to < |items|",
+        "items \\neq \\emptyset"
+      ],
+      "post": [
+        "|result| = |items|",
+        "result[to] = items[from]"
+      ],
+      "fx": [
+        "Moves item from position to new position",
+        "Shifts other items accordingly"
+      ]
+    },
+    {
+      "n": "Sort Data",
+      "sig": "sort(data: Sequence⟨Item⟩, order: Order) → Sequence⟨Item⟩",
+      "def": "$sort(data: Sequence⟨Item⟩, order: Order) → Sequence⟨Item⟩ = stable_sort(data, composite_comparator(order))$",
+      "pre": [
+        "data \\neq null",
+        "order.comparator \\neq null"
+      ],
+      "post": [
+        "sorted(result, order.comparator)",
+        "|result| = |data|"
+      ],
+      "fx": [
+        "Arranges items by comparator",
+        "Returns sorted sequence"
+      ]
+    },
+    {
+      "n": "Composite Comparator",
+      "sig": "composite_comparator(order: Order) → Comparator",
+      "def": "$composite_comparator(order: Order) → Comparator = λ(item1, item2): for (column, direction) in order: val1 := column.extract(item1) val2 := column.extract(item2) cmp := compare(val1, val2, column.type) if cmp ≠ 0: return cmp · (direction = Asc ? 1 : -1) return 0 // All keys equal$",
+      "pre": [
+        "order.columns \\neq \\emptyset"
+      ],
+      "post": [
+        "result(a, b) = compare\\_by\\_priority(a, b, order.columns)"
+      ],
+      "fx": [
+        "Creates multi-column comparator",
+        "Falls back to next column on equality"
+      ]
+    },
+    {
+      "n": "Toggle Sort",
+      "sig": "toggle_sort(column: Column) → Effect",
+      "def": "$toggle_sort(column: Column) → Effect = if order[0].column = column: order[0].direction := flip(order[0].direction) else: order := [(column, Asc)] ++ order data := sort(data, order)$",
+      "pre": [
+        "column \\in visible\\_columns",
+        "column.sortable = true"
+      ],
+      "post": [
+        "sort\\_direction' = next\\_direction(sort\\_direction)",
+        "data\\_sorted\\_by(column, sort\\_direction')"
+      ],
+      "fx": [
+        "Cycles through none → asc → desc",
+        "Re-renders sorted data"
+      ]
+    },
+    {
+      "n": "Clear Sort",
+      "sig": "clear_sort() → Effect",
+      "def": "$clear_sort() → Effect = order := [] data := original_data$",
+      "pre": [
+        "sort\\_active = true"
+      ],
+      "post": [
+        "sort\\_active' = false",
+        "data' = original\\_order"
+      ],
+      "fx": [
+        "Removes all sorting",
+        "Restores original data order"
+      ]
+    },
+    {
+      "n": "Single Column",
+      "sig": "Click column header → sort by that column",
+      "def": "Click column header → sort by that column Click again → reverse direction",
+      "pre": [
+        "column.sortable = true"
+      ],
+      "post": [
+        "active\\_sorts = \\{column\\}",
+        "data\\_sorted\\_by\\_single(column)"
+      ],
+      "fx": [
+        "Replaces any existing sort",
+        "Shows sort indicator on column"
+      ]
+    },
+    {
+      "n": "Multi-Column (Shift-Click)",
+      "sig": "Click column → primary sort",
+      "def": "Click column → primary sort Shift+Click another → secondary sort Shift+Click third → tertiary sort",
+      "pre": [
+        "shift\\_key\\_pressed = true",
+        "column.sortable = true"
+      ],
+      "post": [
+        "column \\in active\\_sorts",
+        "|active\\_sorts| > 1 \\implies multi\\_column\\_sort"
+      ],
+      "fx": [
+        "Adds column to sort sequence",
+        "Maintains sort priority order"
+      ]
+    },
+    {
+      "n": "Sort By",
+      "sig": "sort(field: Field, direction: Direction) → Sequence⟨Item⟩",
+      "def": "$sort(field: Field, direction: Direction) → Sequence⟨Item⟩ = comparator := get\\_comparator(field, direction); sorted := sort\\_items(items, comparator); return sorted$",
+      "pre": [
+        "sortable(field)"
+      ],
+      "post": [
+        "ordered(result, field, direction)"
+      ],
+      "fx": [
+        "Gets comparator",
+        "Sorts items",
+        "Returns sorted sequence"
+      ]
+    },
+    {
+      "n": "Toggle Direction",
+      "sig": "toggle(field: Field) → Effect",
+      "def": "$toggle(field: Field) → Effect = if current\\_sort.field = field: current\\_sort.direction := invert(current\\_sort.direction) else: current\\_sort := (field, ASC); apply\\_sort()$",
+      "pre": [
+        "sortable(field)"
+      ],
+      "post": [
+        "current\\_sort.field = field"
+      ],
+      "fx": [
+        "Toggles direction or sets field",
+        "Applies sort"
+      ]
+    },
+    {
+      "n": "Multi Sort",
+      "sig": "multi_sort(criteria: Sequence⟨(Field, Direction)⟩) → Sequence⟨Item⟩",
+      "def": "$multi\\_sort(criteria: Sequence⟨(Field, Direction)⟩) → Sequence⟨Item⟩ = comparator := compose\\_comparators(criteria); sorted := sort\\_items(items, comparator); return sorted$",
+      "pre": [
+        "|criteria| > 0"
+      ],
+      "post": [
+        "multi\\_ordered(result, criteria)"
+      ],
+      "fx": [
+        "Composes comparators",
+        "Applies multi-level sort"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Data tables",
+      "d": "Sort rows by selected columns"
+    },
+    {
+      "n": "File explorers",
+      "d": "Sort by name, date, or size"
+    },
+    {
+      "n": "Email clients",
+      "d": "Sort by sender, date, or subject"
+    },
+    {
+      "n": "Spreadsheets",
+      "d": "Sort ranges by column values"
+    },
+    {
+      "n": "Admin panels",
+      "d": "Sort lists of users, orders, or events"
+    }
+  ]
+}

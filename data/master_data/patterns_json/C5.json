@@ -1,0 +1,159 @@
+{
+  "id": "C5",
+  "v": "1.1",
+  "name": "Version History",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Version Control",
+    "History Tracking"
+  ],
+  "updated": "2025-11-23",
+  "def": "$H = (states, deltas, branches)$",
+  "desc": "Version history tracks changes over time as immutable states and deltas.",
+  "comps": [
+    {
+      "n": "states",
+      "t": "Sequence⟨State⟩",
+      "d": "sequence of states",
+      "nota": "states"
+    },
+    {
+      "n": "deltas",
+      "t": "Sequence⟨Delta⟩",
+      "d": "sequence of changes",
+      "nota": "deltas"
+    },
+    {
+      "n": "branches",
+      "t": "Tree⟨State⟩",
+      "d": "represents branch structure",
+      "nota": "branches"
+    }
+  ],
+  "types": [
+    {
+      "n": "State",
+      "def": "Immutable snapshot at a time",
+      "d": "Recorded system snapshot with a timestamp"
+    },
+    {
+      "n": "Delta",
+      "def": "Change set between two states",
+      "d": "Edits needed to reconstruct a later state"
+    },
+    {
+      "n": "Branch",
+      "def": "Tree⟨State⟩",
+      "d": "Branch structure that relates states over time"
+    },
+    {
+      "n": "Time",
+      "def": "Totally ordered time instant",
+      "d": "Timestamp used to select historical states"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.C5.1",
+      "n": "Immutability",
+      "spec": "∀s ∈ states: s is immutable once committed",
+      "d": "Committed states cannot be modified",
+      "inv": [
+        "∀s ∈ committed: unchangeable(s)"
+      ]
+    },
+    {
+      "id": "P.C5.2",
+      "n": "Reconstructability",
+      "spec": "∀i: states[i] = apply_all(states[0], deltas[1..i])",
+      "d": "Any state can be reconstructed from initial state and deltas",
+      "inv": [
+        "reproducible(states)"
+      ]
+    },
+    {
+      "id": "P.C5.3",
+      "n": "Branching",
+      "spec": "branch(s, name) creates new branch from state s",
+      "d": "History supports diverging branches from any state",
+      "inv": [
+        "tree\\_structure(branches)"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Checkout",
+      "sig": "checkout(H: History, t: Time) → State",
+      "def": "$checkout(H: History, t: Time) → State = states[max{i : states[i].timestamp ≤ t}]$",
+      "pre": [
+        "∃i: states[i].timestamp ≤ t"
+      ],
+      "post": [
+        "result.timestamp ≤ t"
+      ],
+      "fx": [
+        "Retrieves historical state",
+        "Does not modify history"
+      ]
+    },
+    {
+      "n": "Diff",
+      "sig": "diff(H: History, t₁: Time, t₂: Time) → Delta",
+      "def": "$diff(H: History, t₁: Time, t₂: Time) → Delta = compute difference between states at t₁ and t₂$",
+      "pre": [
+        "t₁ ≤ t₂",
+        "∃states at both times"
+      ],
+      "post": [
+        "apply(checkout(H,t₁), result) = checkout(H,t₂)"
+      ],
+      "fx": [
+        "Computes differences between states"
+      ]
+    },
+    {
+      "n": "Revert",
+      "sig": "revert(H: History, t: Time) → History",
+      "def": "$revert(H: History, t: Time) → History = H'\n    where H'.states = H.states + [checkout(H, t)]$",
+      "pre": [
+        "∃state at time t"
+      ],
+      "post": [
+        "|H'.states| = |H.states| + 1"
+      ],
+      "fx": [
+        "Adds new state to history",
+        "Does not delete existing states"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Git commits",
+      "d": "source code version control"
+    },
+    {
+      "n": "Document revisions",
+      "d": "Google Docs, wikis, CMS"
+    },
+    {
+      "n": "Database transaction log",
+      "d": "audit trail, recovery"
+    },
+    {
+      "n": "Edit history",
+      "d": "Google Docs"
+    },
+    {
+      "n": "Feature sequence",
+      "d": "CAD timeline"
+    },
+    {
+      "n": "Proof versions",
+      "d": "Lean"
+    }
+  ]
+}

@@ -1,0 +1,202 @@
+{
+  "id": "P140",
+  "v": "1.1",
+  "name": "Reset/Retrain Controls",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$R_{retrain} = (Model, Reset, Retrain, Confirm) : Model \\to Model_{reset} \\cup Model_{retrained}$",
+  "desc": "Reset and retrain controls allow users to reset learned behaviors and trigger retraining.",
+  "comps": [
+    {
+      "n": "Model",
+      "t": "LearningModel",
+      "d": "Current learned model",
+      "nota": "Model"
+    },
+    {
+      "n": "Checkpoint",
+      "t": "ModelSnapshot",
+      "d": "Saved model state for rollback",
+      "nota": "Checkpoint"
+    },
+    {
+      "n": "Reset",
+      "t": "() → Effect",
+      "d": "Function to reset model to initial state",
+      "nota": "Reset"
+    },
+    {
+      "n": "Retrain",
+      "t": "Dataset → Model",
+      "d": "Function to retrain model from scratch",
+      "nota": "Retrain"
+    }
+  ],
+  "types": [
+    {
+      "n": "Model",
+      "def": "(id: String, weights: Weights, history: TrainingHistory)",
+      "d": "Machine learning model"
+    },
+    {
+      "n": "RetrainJob",
+      "def": "(model_id: String, data: TrainingData, timestamp: Time, status: JobStatus)",
+      "d": "Retraining job"
+    },
+    {
+      "n": "Progress",
+      "def": "(status: JobStatus, percentage: ℝ, metrics: Metrics)",
+      "d": "Retraining progress"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P140.1",
+      "n": "Safe Reset",
+      "spec": "reset(model) preserves backup",
+      "d": "Reset preserves backup for recovery",
+      "inv": [
+        "backup\\_preserved"
+      ]
+    },
+    {
+      "id": "P.P140.2",
+      "n": "Transparent Retraining",
+      "spec": "∀retrain\\_job: progress\\_visible",
+      "d": "Retraining progress is visible",
+      "inv": [
+        "observable\\_training"
+      ]
+    },
+    {
+      "id": "P.P140.3",
+      "n": "Non-Disruptive",
+      "spec": "retrain\\_in\\_background ⇒ ¬interrupts\\_usage",
+      "d": "Retraining doesn't disrupt usage",
+      "inv": [
+        "background\\_training"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Reset Model",
+      "sig": "reset(model: Model) → Effect",
+      "def": "$reset(model: Model) → Effect = backup\\_current(model); model.weights := initial\\_weights; model.history := ∅; clear\\_personalization(model); log\\_reset(model)$",
+      "pre": [
+        "model ≠ null"
+      ],
+      "post": [
+        "model.weights = initial\\_weights"
+      ],
+      "fx": [
+        "Backs up current state",
+        "Resets to initial weights",
+        "Clears history and personalization"
+      ]
+    },
+    {
+      "n": "Trigger Retrain",
+      "sig": "retrain(model: Model, data: TrainingData) → RetrainJob",
+      "def": "$retrain(model: Model, data: TrainingData) → RetrainJob = job := RetrainJob(model.id, data, timestamp=now()); queue.enqueue(job); notify\\_user(job\\_started); return job$",
+      "pre": [
+        "|data| ≥ min\\_training\\_samples"
+      ],
+      "post": [
+        "job ∈ queue"
+      ],
+      "fx": [
+        "Creates retrain job",
+        "Enqueues for processing",
+        "Notifies user"
+      ]
+    },
+    {
+      "n": "Monitor Retrain",
+      "sig": "monitor(job: RetrainJob) → Progress",
+      "def": "$monitor(job: RetrainJob) → Progress = status := get\\_job\\_status(job); progress := compute\\_progress(job); metrics := get\\_current\\_metrics(job); return Progress(status, progress, metrics)$",
+      "pre": [
+        "job ≠ null"
+      ],
+      "post": [
+        "current(result)"
+      ],
+      "fx": [
+        "Gets job status",
+        "Computes progress percentage",
+        "Retrieves metrics"
+      ]
+    },
+    {
+      "n": "CreateCheckpoint",
+      "sig": "checkpoint() → Snapshot",
+      "def": "checkpoint() saves current model state",
+      "pre": [
+        "valid_parameters(input)",
+        "resources_available()"
+      ],
+      "post": [
+        "resource_created()",
+        "id_assigned()"
+      ],
+      "fx": [
+        "Allocates new resources",
+        "Initializes state"
+      ]
+    },
+    {
+      "n": "ResetModel",
+      "sig": "reset() → Effect",
+      "def": "reset() reinitializes model to untrained state",
+      "pre": [
+        "model_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing model",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "RetrainModel",
+      "sig": "retrain(data: Dataset) → Model",
+      "def": "retrain(data) trains new model from scratch",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

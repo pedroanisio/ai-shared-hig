@@ -1,0 +1,200 @@
+{
+  "id": "P131",
+  "v": "1.1",
+  "name": "Multi-User + AI Avatar",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A_{avatar} = (Participants, Humans, Agents, Visual_{rep}) : Collaborators \\to Avatars$",
+  "desc": "Multi-user with AI avatar shows both human users and AI agents as participants with visual avatars.",
+  "comps": [
+    {
+      "n": "Participants",
+      "t": "Set⟨User ∪ Agent⟩",
+      "d": "All collaborators including humans and AI agents",
+      "nota": "Participants"
+    },
+    {
+      "n": "Humans",
+      "t": "Set⟨User⟩",
+      "d": "Human participants in collaboration",
+      "nota": "Humans"
+    },
+    {
+      "n": "Agents",
+      "t": "Set⟨Agent⟩",
+      "d": "AI agent participants",
+      "nota": "Agents"
+    },
+    {
+      "n": "Visual_{rep}",
+      "t": "Participant → Avatar",
+      "d": "Visual representation for each participant",
+      "nota": "Visual_{rep}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Participant",
+      "def": "Human(User) | AI(Agent)",
+      "d": "Human or AI participant"
+    },
+    {
+      "n": "Avatar",
+      "def": "(visual: Image, state: State, cues: Set⟨VisualCue⟩)",
+      "d": "Visual representation of participant"
+    },
+    {
+      "n": "State",
+      "def": "Active | Idle | Typing | Thinking | Offline",
+      "d": "Participant state"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P131.1",
+      "n": "Clear Distinction",
+      "spec": "∀p: easily\\_identified(type(p))",
+      "d": "Human and AI participants are clearly distinguished",
+      "inv": [
+        "distinguishable\\_types"
+      ]
+    },
+    {
+      "id": "P.P131.2",
+      "n": "Equal Representation",
+      "spec": "∀p: appropriately\\_represented(p)",
+      "d": "All participants are appropriately represented",
+      "inv": [
+        "fair\\_representation"
+      ]
+    },
+    {
+      "id": "P.P131.3",
+      "n": "State Visibility",
+      "spec": "∀p: state(p) visible\\_in avatar(p)",
+      "d": "Participant states are visible in avatars",
+      "inv": [
+        "transparent\\_state"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Participant",
+      "sig": "add(participant: Participant) → Avatar",
+      "def": "$add(participant: Participant) → Avatar = avatar := case participant of Human(user) → create\\_user\\_avatar(user) AI(agent) → create\\_ai\\_avatar(agent); participants := participants ∪ {(participant, avatar)}; display(avatar); return avatar$",
+      "pre": [
+        "participant ≠ null"
+      ],
+      "post": [
+        "(participant, avatar) ∈ participants"
+      ],
+      "fx": [
+        "Creates appropriate avatar",
+        "Adds to participant list",
+        "Displays avatar"
+      ]
+    },
+    {
+      "n": "Update Avatar State",
+      "sig": "update(participant: Participant, state: State) → Effect",
+      "def": "$update(participant: Participant, state: State) → Effect = avatar := get\\_avatar(participant); apply\\_state\\_visual(avatar, state); animate\\_transition(avatar)$",
+      "pre": [
+        "participant ∈ participants"
+      ],
+      "post": [
+        "avatar.state = state"
+      ],
+      "fx": [
+        "Updates avatar appearance",
+        "Animates state change"
+      ]
+    },
+    {
+      "n": "Distinguish Human From AI",
+      "sig": "distinguish(participant: Participant) → VisualCue",
+      "def": "$distinguish(participant: Participant) → VisualCue = case participant of Human(_) → HumanCue(badge=\"👤\", border=solid) AI(_) → AICue(badge=\"🤖\", border=dashed)$",
+      "pre": [
+        "participant ≠ null"
+      ],
+      "post": [
+        "clearly\\_identified(result)"
+      ],
+      "fx": [
+        "Determines participant type",
+        "Returns appropriate visual cue"
+      ]
+    },
+    {
+      "n": "AddParticipant",
+      "sig": "add(p: Participant) → Effect",
+      "def": "add(p) includes p in Participants with assigned avatar",
+      "pre": [
+        "valid_p(input)",
+        "p_collection ≠ null"
+      ],
+      "post": [
+        "p ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new p to collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "UpdateAvatar",
+      "sig": "update(p: Participant, a: Avatar) → Effect",
+      "def": "update(p, a) sets Visual_rep(p) to a",
+      "pre": [
+        "p_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing p",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Render",
+      "sig": "render() → Visual",
+      "def": "render() displays all participant avatars in workspace",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

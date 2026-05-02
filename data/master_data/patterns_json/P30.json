@@ -1,0 +1,143 @@
+{
+  "id": "P30",
+  "v": "1.1",
+  "name": "Command Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C = (commands, executor, undo\\_stack, redo\\_stack)$",
+  "desc": "Command pattern encapsulates requests as objects enabling undo/redo and queuing.",
+  "comps": [
+    {
+      "n": "commands",
+      "t": "Sequence⟨Command⟩",
+      "d": "executed commands",
+      "nota": "commands"
+    },
+    {
+      "n": "executor",
+      "t": "Command → Effect",
+      "d": "executes commands",
+      "nota": "executor"
+    },
+    {
+      "n": "undo\\_stack",
+      "t": "Stack⟨Command⟩",
+      "d": "for undo",
+      "nota": "undo\\_stack"
+    },
+    {
+      "n": "redo\\_stack",
+      "t": "Stack⟨Command⟩",
+      "d": "for redo",
+      "nota": "redo\\_stack"
+    }
+  ],
+  "types": [
+    {
+      "n": "Command",
+      "def": "(action: () → Result, undo: () → Effect)",
+      "d": "Encapsulated command with undo"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P30.1",
+      "n": "Reversibility",
+      "spec": "execute(cmd); undo() restores state",
+      "d": "Commands are reversible",
+      "inv": [
+        "undoable\\_commands"
+      ]
+    },
+    {
+      "id": "P.P30.2",
+      "n": "History Tracking",
+      "spec": "∀executed\\_cmd: cmd ∈ history",
+      "d": "All executed commands are tracked",
+      "inv": [
+        "complete\\_history"
+      ]
+    },
+    {
+      "id": "P.P30.3",
+      "n": "Redo Support",
+      "spec": "undo(); redo() re-executes",
+      "d": "Undone commands can be redone",
+      "inv": [
+        "redo\\_capability"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Execute",
+      "sig": "execute(cmd: Command) → Result",
+      "def": "$execute(cmd: Command) → Result = result := cmd.action(); history.push(cmd); return result$",
+      "pre": [
+        "valid\\_command(cmd)"
+      ],
+      "post": [
+        "cmd ∈ history"
+      ],
+      "fx": [
+        "Executes command action",
+        "Adds to history"
+      ]
+    },
+    {
+      "n": "Undo",
+      "sig": "undo() → Effect",
+      "def": "$undo() → Effect = if |history| > 0: cmd := history.pop(); cmd.undo(); redo\\_stack.push(cmd)$",
+      "pre": [
+        "|history| > 0"
+      ],
+      "post": [
+        "|history| = old\\_size - 1"
+      ],
+      "fx": [
+        "Pops from history",
+        "Calls undo",
+        "Pushes to redo stack"
+      ]
+    },
+    {
+      "n": "Redo",
+      "sig": "redo() → Effect",
+      "def": "$redo() → Effect = if |redo\\_stack| > 0: cmd := redo\\_stack.pop(); execute(cmd)$",
+      "pre": [
+        "|redo\\_stack| > 0"
+      ],
+      "post": [
+        "cmd ∈ history"
+      ],
+      "fx": [
+        "Pops from redo stack",
+        "Re-executes command"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Undo/redo system",
+      "d": "command history used for undo and redo"
+    },
+    {
+      "n": "Macro recording",
+      "d": "recorded command sequences for playback"
+    },
+    {
+      "n": "Transaction log",
+      "d": "append-only log of executed commands"
+    },
+    {
+      "n": "Command history",
+      "d": "timeline of actions for audit and replay"
+    }
+  ]
+}

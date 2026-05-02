@@ -1,0 +1,144 @@
+{
+  "id": "P84",
+  "v": "1.1",
+  "name": "Continuous Dictation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Voice",
+    "Dictation"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D_{cont} = (T_{stream}, D_{struct}, F_{auto}, M_{punct}) : Speech_{stream} \\to Text_{structured}$",
+  "desc": "Plugin architecture pattern enables extensibility through dynamically loadable components.",
+  "comps": [
+    {
+      "n": "T_{stream}",
+      "t": "Component",
+      "d": "Stream processing component handling continuous Continuous Dictation data flow",
+      "nota": "T_{stream}"
+    },
+    {
+      "n": "D_{struct}",
+      "t": "Component",
+      "d": "Component implementing Continuous Dictation functionality",
+      "nota": "D_{struct}"
+    },
+    {
+      "n": "F_{auto}",
+      "t": "Component",
+      "d": "Component implementing Continuous Dictation functionality",
+      "nota": "F_{auto}"
+    },
+    {
+      "n": "M_{punct}",
+      "t": "Component",
+      "d": "Component implementing Continuous Dictation functionality",
+      "nota": "M_{punct}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Plugin",
+      "def": "(id: PluginID, name: String, version: Version, entry_point: Module, enabled: 𝔹)",
+      "d": "Plugin component"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P84.1",
+      "n": "Dynamic Loading",
+      "spec": "plugins loadable\\_at\\_runtime",
+      "d": "Plugins loadable at runtime",
+      "inv": [
+        "runtime\\_extensibility"
+      ]
+    },
+    {
+      "id": "P.P84.2",
+      "n": "Isolation",
+      "spec": "plugin\\_failures isolated",
+      "d": "Plugin failures are isolated",
+      "inv": [
+        "fault\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P84.3",
+      "n": "Standard Interface",
+      "spec": "∀plugin: implements\\_plugin\\_interface",
+      "d": "All plugins implement standard interface",
+      "inv": [
+        "uniform\\_interface"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Plugin",
+      "sig": "register(plugin: Plugin) → Effect",
+      "def": "$register(plugin: Plugin) → Effect = validate\\_plugin(plugin); check\\_dependencies(plugin); plugins[plugin.id] := plugin; initialize\\_plugin(plugin)$",
+      "pre": [
+        "valid\\_plugin(plugin) ∧ dependencies\\_satisfied(plugin)"
+      ],
+      "post": [
+        "plugin.id ∈ plugins ∧ initialized(plugin)"
+      ],
+      "fx": [
+        "Validates plugin",
+        "Checks dependencies",
+        "Registers",
+        "Initializes"
+      ]
+    },
+    {
+      "n": "Load Plugin",
+      "sig": "load(plugin_id: PluginID) → Plugin",
+      "def": "$load(plugin\\_id: PluginID) → Plugin = descriptor := read\\_plugin\\_descriptor(plugin\\_id); module := load\\_module(descriptor.entry\\_point); plugin := instantiate(module, descriptor); register(plugin); return plugin$",
+      "pre": [
+        "plugin\\_exists(plugin\\_id)"
+      ],
+      "post": [
+        "plugin\\_loaded ∧ registered(plugin)"
+      ],
+      "fx": [
+        "Reads descriptor",
+        "Loads module",
+        "Instantiates",
+        "Registers"
+      ]
+    },
+    {
+      "n": "Call Plugin",
+      "sig": "call(plugin_id: PluginID, method: String, args: Args) → Result",
+      "def": "$call(plugin\\_id: PluginID, method: String, args: Args) → Result = plugin := plugins[plugin\\_id]; if plugin.enabled: return plugin.invoke(method, args) else: raise PluginDisabled$",
+      "pre": [
+        "plugin\\_id ∈ plugins"
+      ],
+      "post": [
+        "result\\_returned ∨ exception\\_raised"
+      ],
+      "fx": [
+        "Gets plugin",
+        "Checks enabled",
+        "Invokes method"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Voice implementation",
+      "d": "Applied in ai, voice systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

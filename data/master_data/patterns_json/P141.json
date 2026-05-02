@@ -1,0 +1,201 @@
+{
+  "id": "P141",
+  "v": "1.1",
+  "name": "Workflow Template Gallery",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$G_{templates} = (Templates, Categories, Preview, Instantiate) : Templates \\to Workflow$",
+  "desc": "Workflow template gallery provides reusable workflow templates for common tasks and processes.",
+  "comps": [
+    {
+      "n": "Templates",
+      "t": "Set⟨WorkflowTemplate⟩",
+      "d": "Collection of available workflow templates",
+      "nota": "Templates"
+    },
+    {
+      "n": "Gallery",
+      "t": "Templates → Visual",
+      "d": "Visual gallery display of templates",
+      "nota": "Gallery"
+    },
+    {
+      "n": "Search",
+      "t": "Query → Set⟨Template⟩",
+      "d": "Search function for finding templates",
+      "nota": "Search"
+    },
+    {
+      "n": "Instantiate",
+      "t": "Template → Workflow",
+      "d": "Function to create workflow from template",
+      "nota": "Instantiate"
+    }
+  ],
+  "types": [
+    {
+      "n": "Template",
+      "def": "(id: String, name: String, category: Category, generator: Parameters → Workflow)",
+      "d": "Workflow template"
+    },
+    {
+      "n": "Parameters",
+      "def": "Map⟨String, Value⟩",
+      "d": "Template parameters"
+    },
+    {
+      "n": "Workflow",
+      "def": "Executable workflow instance",
+      "d": "Instantiated workflow"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P141.1",
+      "n": "Template Quality",
+      "spec": "∀template: tested(template) ∧ documented(template)",
+      "d": "Templates are tested and documented",
+      "inv": [
+        "quality\\_templates"
+      ]
+    },
+    {
+      "id": "P.P141.2",
+      "n": "Discoverability",
+      "spec": "∀template: easily\\_findable(template)",
+      "d": "Templates are easily discoverable",
+      "inv": [
+        "searchable\\_gallery"
+      ]
+    },
+    {
+      "id": "P.P141.3",
+      "n": "Customizability",
+      "spec": "∀template: customizable(template)",
+      "d": "Templates can be customized",
+      "inv": [
+        "flexible\\_templates"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Browse Templates",
+      "sig": "browse(category: Category) → Set⟨Template⟩",
+      "def": "$browse(category: Category) → Set⟨Template⟩ = templates := gallery.templates; filtered := filter\\_by\\_category(templates, category); ranked := rank\\_by\\_popularity(filtered); return ranked$",
+      "pre": [
+        "valid\\_category(category)"
+      ],
+      "post": [
+        "∀t ∈ result: t.category = category"
+      ],
+      "fx": [
+        "Filters templates by category",
+        "Ranks by popularity"
+      ]
+    },
+    {
+      "n": "Instantiate Template",
+      "sig": "instantiate(template: Template, params: Parameters) → Workflow",
+      "def": "$instantiate(template: Template, params: Parameters) → Workflow = validate\\_params(params, template.schema); workflow := template.generator(params); initialize\\_workflow(workflow); return workflow$",
+      "pre": [
+        "valid\\_params(params, template)"
+      ],
+      "post": [
+        "runnable(result)"
+      ],
+      "fx": [
+        "Validates parameters",
+        "Generates workflow from template",
+        "Initializes workflow"
+      ]
+    },
+    {
+      "n": "Save Custom Template",
+      "sig": "save(workflow: Workflow, metadata: Metadata) → Template",
+      "def": "$save(workflow: Workflow, metadata: Metadata) → Template = template := extract\\_template(workflow); template.metadata := metadata; template.author := current\\_user; gallery.add(template); return template$",
+      "pre": [
+        "workflow ≠ null"
+      ],
+      "post": [
+        "template ∈ gallery.templates"
+      ],
+      "fx": [
+        "Extracts template from workflow",
+        "Adds metadata",
+        "Saves to gallery"
+      ]
+    },
+    {
+      "n": "Browse",
+      "sig": "browse(category: String) → Set⟨Template⟩",
+      "def": "browse(cat) returns templates in category",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "SearchTemplates",
+      "sig": "search(q: Query) → Set⟨Template⟩",
+      "def": "search(q) finds templates matching query",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "CreateWorkflow",
+      "sig": "instantiate(t: Template) → Workflow",
+      "def": "instantiate(t) creates executable workflow from template",
+      "pre": [
+        "valid_parameters(input)",
+        "resources_available()"
+      ],
+      "post": [
+        "resource_created()",
+        "id_assigned()"
+      ],
+      "fx": [
+        "Allocates new resources",
+        "Initializes state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

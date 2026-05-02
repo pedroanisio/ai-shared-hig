@@ -1,0 +1,226 @@
+{
+  "id": "F3.1",
+  "v": "1.1",
+  "name": "State Transition Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$L = (observe, learn, update, apply)$",
+  "desc": "State transition flows manage discrete state changes through defined transitions.",
+  "comps": [
+    {
+      "n": "observe",
+      "t": "Environment → Observations",
+      "d": "collects data",
+      "nota": "observe"
+    },
+    {
+      "n": "learn",
+      "t": "Observations → Model",
+      "d": "trains or updates model",
+      "nota": "learn"
+    },
+    {
+      "n": "update",
+      "t": "Model → Policy",
+      "d": "updates decision policy",
+      "nota": "update"
+    },
+    {
+      "n": "apply",
+      "t": "Policy → Actions",
+      "d": "applies learned policy",
+      "nota": "apply"
+    }
+  ],
+  "types": [
+    {
+      "n": "State",
+      "def": "Discrete system state",
+      "d": "One of the defined system states"
+    },
+    {
+      "n": "Event",
+      "def": "Trigger causing transition",
+      "d": "Event that triggers state change"
+    },
+    {
+      "n": "Transition",
+      "def": "(from: State, event: Event, to: State)",
+      "d": "Allowed state transition"
+    },
+    {
+      "n": "Observations",
+      "def": "Sequence⟨(State, Action, Reward)⟩",
+      "d": "Collected trajectories used for learning"
+    },
+    {
+      "n": "Model",
+      "def": "Learned representation of environment",
+      "d": "Model of dynamics or value estimates"
+    },
+    {
+      "n": "Policy",
+      "def": "Decision-making strategy",
+      "d": "Rule that selects actions given state"
+    },
+    {
+      "n": "Actions",
+      "def": "Commands applied to environment",
+      "d": "Action set available to the agent"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F3.1.1",
+      "n": "Determinism",
+      "spec": "∀s, e: transition(s, e) produces same result",
+      "d": "State transitions are deterministic",
+      "inv": [
+        "deterministic\\_transitions"
+      ]
+    },
+    {
+      "id": "P.F3.1.2",
+      "n": "Completeness",
+      "spec": "∀s ∈ non\\_terminal: ∃e: allowed(s, e)",
+      "d": "All non-terminal states have at least one valid transition",
+      "inv": [
+        "no\\_dead\\_ends"
+      ]
+    },
+    {
+      "id": "P.F3.1.3",
+      "n": "State Validity",
+      "spec": "∀s ∈ States: invariant(s)",
+      "d": "All states maintain system invariants",
+      "inv": [
+        "invariants\\_preserved"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Execute Loop",
+      "sig": "loop(environment: Environment) → Effect",
+      "def": "$loop(environment: Environment) → Effect = observations := [] model := initialize_model() while running: obs := observe(environment) observations := observations + [obs] if should_update(observations): model := learn(observations) policy := update(model) actions := apply(policy, environment)$",
+      "pre": [
+        "environment \\neq null",
+        "environment.initialized = true"
+      ],
+      "post": [
+        "state\\_transitions\\_completed = true",
+        "final\\_state\\_reached \\vee max\\_iterations\\_exceeded"
+      ],
+      "fx": [
+        "Executes state transition loop",
+        "Continues until terminal condition"
+      ]
+    },
+    {
+      "n": "Learn",
+      "sig": "learn(observations: Observations) → Model",
+      "def": "$learn(observations: Observations) → Model = features := extract_features(observations) model := train(features, current_model) validate(model, validation_set) return model$",
+      "pre": [
+        "observations \\neq \\emptyset",
+        "\\forall o \\in observations: valid(o)"
+      ],
+      "post": [
+        "result.trained = true",
+        "result.incorporates(observations)"
+      ],
+      "fx": [
+        "Updates model from observations",
+        "Improves future predictions"
+      ]
+    },
+    {
+      "n": "Apply",
+      "sig": "apply(policy: Policy, env: Environment) → Actions",
+      "def": "$apply(policy: Policy, env: Environment) → Actions = state := env.current_state() action := policy.select_action(state) env.execute(action) return action$",
+      "pre": [
+        "policy \\neq null \\wedge env \\neq null",
+        "env.state \\in policy.domain"
+      ],
+      "post": [
+        "result = policy(env.state)",
+        "applicable(result, env)"
+      ],
+      "fx": [
+        "Determines actions from policy",
+        "Based on current environment state"
+      ]
+    },
+    {
+      "n": "Transition",
+      "sig": "transition(current: State, event: Event) → State | Error",
+      "def": "$transition(current: State, event: Event) → State | Error = if allowed(current, event): next := rules[current][event]; execute\\_actions(current, event, next); return next else: return Error(\"Invalid transition\")$",
+      "pre": [
+        "valid\\_state(current)"
+      ],
+      "post": [
+        "valid\\_state(result) ∨ error(result)"
+      ],
+      "fx": [
+        "Validates transition",
+        "Executes transition actions",
+        "Updates state"
+      ]
+    },
+    {
+      "n": "Is Allowed",
+      "sig": "allowed(from: State, event: Event) → 𝔹",
+      "def": "$allowed(from: State, event: Event) → 𝔹 = (from, event) ∈ valid\\_transitions$",
+      "pre": [
+        "from ≠ null ∧ event ≠ null"
+      ],
+      "post": [
+        "result ∈ {true, false}"
+      ],
+      "fx": [
+        "Checks transition table"
+      ]
+    },
+    {
+      "n": "Get Valid Events",
+      "sig": "valid_events(state: State) → Set⟨Event⟩",
+      "def": "$valid\\_events(state: State) → Set⟨Event⟩ = {e : allowed(state, e)}$",
+      "pre": [
+        "valid\\_state(state)"
+      ],
+      "post": [
+        "∀e ∈ result: allowed(state, e)"
+      ],
+      "fx": [
+        "Queries valid transitions"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Reinforcement learning systems",
+      "d": "Agent learns policies from rewards"
+    },
+    {
+      "n": "Recommender systems",
+      "d": "Feedback-driven updates to recommendations"
+    },
+    {
+      "n": "Adaptive user interfaces",
+      "d": "Interfaces adjust based on observed behavior"
+    },
+    {
+      "n": "Auto-tuning systems",
+      "d": "Parameters updated from observed performance"
+    },
+    {
+      "n": "Online learning algorithms",
+      "d": "Models updated continuously from streams"
+    }
+  ]
+}

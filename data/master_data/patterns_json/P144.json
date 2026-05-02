@@ -1,0 +1,144 @@
+{
+  "id": "P144",
+  "v": "1.1",
+  "name": "Trigger-Action",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{action} = (Trigger, Condition, Action, Execute) : Event \\to Action_{conditional}$",
+  "desc": "Trigger-action patterns execute actions automatically when specified conditions are met.",
+  "comps": [
+    {
+      "n": "Trigger",
+      "t": "Component",
+      "d": "Component implementing Trigger-Action functionality",
+      "nota": "Trigger"
+    },
+    {
+      "n": "Condition",
+      "t": "Component",
+      "d": "Component implementing Trigger-Action functionality",
+      "nota": "Condition"
+    },
+    {
+      "n": "Action",
+      "t": "Component",
+      "d": "Component implementing Trigger-Action functionality",
+      "nota": "Action"
+    },
+    {
+      "n": "Execute",
+      "t": "Component",
+      "d": "Component implementing Trigger-Action functionality",
+      "nota": "Execute"
+    }
+  ],
+  "types": [
+    {
+      "n": "Trigger",
+      "def": "(event: EventType, condition: Condition, action: Action)",
+      "d": "Trigger definition"
+    },
+    {
+      "n": "Condition",
+      "def": "Data → 𝔹",
+      "d": "Boolean predicate on event data"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P144.1",
+      "n": "Determinism",
+      "spec": "∀trigger,event: evaluate(trigger,event) deterministic",
+      "d": "Trigger evaluation is deterministic",
+      "inv": [
+        "deterministic\\_triggers"
+      ]
+    },
+    {
+      "id": "P.P144.2",
+      "n": "Low Latency",
+      "spec": "trigger\\_fire\\_latency < threshold",
+      "d": "Triggers fire with low latency",
+      "inv": [
+        "responsive\\_triggers"
+      ]
+    },
+    {
+      "id": "P.P144.3",
+      "n": "Debuggability",
+      "spec": "∀trigger: traceable(trigger.firings)",
+      "d": "Trigger firings are traceable",
+      "inv": [
+        "debuggable\\_triggers"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Define Trigger",
+      "sig": "define(event: EventType, condition: Condition, action: Action) → Trigger",
+      "def": "$define(event: EventType, condition: Condition, action: Action) → Trigger = trigger := Trigger(event, condition, action); validate\\_trigger(trigger); triggers := triggers ∪ {trigger}; return trigger$",
+      "pre": [
+        "valid\\_event(event) ∧ valid\\_condition(condition)"
+      ],
+      "post": [
+        "trigger ∈ triggers"
+      ],
+      "fx": [
+        "Creates trigger",
+        "Validates trigger",
+        "Adds to trigger list"
+      ]
+    },
+    {
+      "n": "Evaluate Trigger",
+      "sig": "evaluate(trigger: Trigger, event: Event) → 𝔹",
+      "def": "$evaluate(trigger: Trigger, event: Event) → 𝔹 = if event.type = trigger.event: return trigger.condition(event.data) else: return false$",
+      "pre": [
+        "trigger ≠ null ∧ event ≠ null"
+      ],
+      "post": [
+        "result ∈ {true, false}"
+      ],
+      "fx": [
+        "Checks event type",
+        "Evaluates condition"
+      ]
+    },
+    {
+      "n": "Fire Trigger",
+      "sig": "fire(trigger: Trigger, event: Event) → Effect",
+      "def": "$fire(trigger: Trigger, event: Event) → Effect = if evaluate(trigger, event): log\\_trigger\\_fire(trigger, event); trigger.action.execute(event.data)$",
+      "pre": [
+        "evaluate(trigger, event) = true"
+      ],
+      "post": [
+        "executed(trigger.action)"
+      ],
+      "fx": [
+        "Logs trigger firing",
+        "Executes action"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,194 @@
+{
+  "id": "P124",
+  "v": "1.1",
+  "name": "Agent Trace Viewer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{trace} = (Execution, Steps, Branch_{decisions}, Visualization) : Agent_{run} \\to Trace$",
+  "desc": "Agent trace viewer visualizes AI agent decision-making process and execution steps.",
+  "comps": [
+    {
+      "n": "Execution",
+      "t": "AgentRun",
+      "d": "Complete agent execution record with all steps",
+      "nota": "Execution"
+    },
+    {
+      "n": "Steps",
+      "t": "Sequence⟨(Step, State, Result)⟩",
+      "d": "Ordered sequence of execution steps with intermediate states",
+      "nota": "Steps"
+    },
+    {
+      "n": "Branch_{decisions}",
+      "t": "Set⟨(Step, Condition, Branch)⟩",
+      "d": "Decision points where execution branched based on conditions",
+      "nota": "Branch_{decisions}"
+    },
+    {
+      "n": "Visualization",
+      "t": "Execution → Visual",
+      "d": "Function to render execution trace as visual representation",
+      "nota": "Visualization"
+    }
+  ],
+  "types": [
+    {
+      "n": "TraceEntry",
+      "def": "(agent_id: String, action: Action, context: Context, timestamp: Time)",
+      "d": "Single trace entry with context"
+    },
+    {
+      "n": "Trace",
+      "def": "Sequence⟨TraceEntry⟩",
+      "d": "Sequence of trace entries"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P124.1",
+      "n": "Completeness",
+      "spec": "∀action: recorded(action, trace)",
+      "d": "All agent actions are recorded in trace",
+      "inv": [
+        "complete\\_recording"
+      ]
+    },
+    {
+      "id": "P.P124.2",
+      "n": "Chronological Order",
+      "spec": "∀i,j: i < j ⇒ trace[i].timestamp ≤ trace[j].timestamp",
+      "d": "Trace entries are chronologically ordered",
+      "inv": [
+        "time\\_ordered"
+      ]
+    },
+    {
+      "id": "P.P124.3",
+      "n": "Interactivity",
+      "spec": "∀entry: clickable(entry) ⇒ show\\_details(entry)",
+      "d": "Users can explore trace details interactively",
+      "inv": [
+        "explorable\\_trace"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Record Trace",
+      "sig": "record(agent: Agent, action: Action) → TraceEntry",
+      "def": "$record(agent: Agent, action: Action) → TraceEntry = entry := TraceEntry(agent.id, action, context, timestamp=now()); trace.append(entry); return entry$",
+      "pre": [
+        "agent ≠ null ∧ action ≠ null"
+      ],
+      "post": [
+        "entry ∈ trace"
+      ],
+      "fx": [
+        "Creates trace entry",
+        "Appends to trace log"
+      ]
+    },
+    {
+      "n": "Visualize Trace",
+      "sig": "visualize(trace: Trace) → Visualization",
+      "def": "$visualize(trace: Trace) → Visualization = timeline := build\\_timeline(trace); decisions := highlight\\_decisions(trace); render\\_trace(timeline, decisions)$",
+      "pre": [
+        "|trace| > 0"
+      ],
+      "post": [
+        "readable(result)"
+      ],
+      "fx": [
+        "Builds timeline view",
+        "Highlights decision points",
+        "Renders visualization"
+      ]
+    },
+    {
+      "n": "Filter Trace",
+      "sig": "filter(trace: Trace, criteria: FilterCriteria) → Trace",
+      "def": "$filter(trace: Trace, criteria: FilterCriteria) → Trace = {entry ∈ trace : matches(entry, criteria)}$",
+      "pre": [
+        "valid\\_criteria(criteria)"
+      ],
+      "post": [
+        "∀entry ∈ result: matches(entry, criteria)"
+      ],
+      "fx": [
+        "Filters trace entries by criteria"
+      ]
+    },
+    {
+      "n": "Capture",
+      "sig": "capture(step: Step, state: State) → Effect",
+      "def": "capture(step, state) = Steps := Steps + [(step, state, execute(step, state))]",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetTrace",
+      "sig": "get_trace() → Sequence⟨Step⟩",
+      "def": "get_trace() = [",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "Visualize",
+      "sig": "visualize() → Visual",
+      "def": "visualize() = Visualization(Execution)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

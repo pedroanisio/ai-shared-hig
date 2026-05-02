@@ -1,0 +1,142 @@
+{
+  "id": "P88",
+  "v": "1.1",
+  "name": "Collaboration Mode Switcher",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Collaboration",
+    "Mode Switching"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M_{collab} = (Modes, T_{transition}, P_{state}, I_{mode}) : Mode \\to \\{AI\\text{-}Centric, Human\\text{-}Centric, Symbiotic\\}$",
+  "desc": "Breadcrumb navigation provides hierarchical location context and navigation.",
+  "comps": [
+    {
+      "n": "Modes",
+      "t": "Component",
+      "d": "Component implementing Collaboration Mode Switcher functionality",
+      "nota": "Modes"
+    },
+    {
+      "n": "T_{transition}",
+      "t": "Component",
+      "d": "Component implementing Collaboration Mode Switcher functionality",
+      "nota": "T_{transition}"
+    },
+    {
+      "n": "P_{state}",
+      "t": "Component",
+      "d": "State management component maintaining Collaboration Mode Switcher state",
+      "nota": "P_{state}"
+    },
+    {
+      "n": "I_{mode}",
+      "t": "Component",
+      "d": "Component implementing Collaboration Mode Switcher functionality",
+      "nota": "I_{mode}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Breadcrumb",
+      "def": "(items: Sequence⟨BreadcrumbItem⟩)",
+      "d": "Breadcrumb trail"
+    },
+    {
+      "n": "BreadcrumbItem",
+      "def": "(label: String, url: URL, active: 𝔹)",
+      "d": "Single breadcrumb item"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P88.1",
+      "n": "Hierarchical Display",
+      "spec": "shows\\_full\\_path",
+      "d": "Shows full hierarchical path",
+      "inv": [
+        "complete\\_hierarchy"
+      ]
+    },
+    {
+      "id": "P.P88.2",
+      "n": "Clickable Segments",
+      "spec": "∀item: clickable\\_and\\_navigable",
+      "d": "All segments are clickable",
+      "inv": [
+        "interactive\\_breadcrumbs"
+      ]
+    },
+    {
+      "id": "P.P88.3",
+      "n": "Current Indication",
+      "spec": "current\\_location highlighted",
+      "d": "Current location is highlighted",
+      "inv": [
+        "clear\\_current"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Build Breadcrumbs",
+      "sig": "build(path: Path) → Breadcrumb",
+      "def": "$build(path: Path) → Breadcrumb = segments := split\\_path(path); items := map(segments, λseg: BreadcrumbItem(seg.label, seg.url)); breadcrumb := Breadcrumb(items); return breadcrumb$",
+      "pre": [
+        "valid\\_path(path)"
+      ],
+      "post": [
+        "|breadcrumb.items| = |segments|"
+      ],
+      "fx": [
+        "Splits path into segments",
+        "Maps to breadcrumb items"
+      ]
+    },
+    {
+      "n": "Navigate To",
+      "sig": "navigate(item: BreadcrumbItem) → Effect",
+      "def": "$navigate(item: BreadcrumbItem) → Effect = route\\_to(item.url)$",
+      "pre": [
+        "item.url ≠ null"
+      ],
+      "post": [
+        "current\\_path = item.url"
+      ],
+      "fx": [
+        "Navigates to item URL"
+      ]
+    },
+    {
+      "n": "Update Active",
+      "sig": "update(breadcrumb: Breadcrumb, current: Path) → Effect",
+      "def": "$update(breadcrumb: Breadcrumb, current: Path) → Effect = for item in breadcrumb.items: item.active := (item.url = current)$",
+      "pre": [
+        "breadcrumb ≠ null"
+      ],
+      "post": [
+        "∃!item: item.active"
+      ],
+      "fx": [
+        "Marks current item as active"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Collaboration implementation",
+      "d": "Applied in ai, collaboration systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

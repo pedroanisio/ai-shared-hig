@@ -1,0 +1,187 @@
+{
+  "id": "P96",
+  "v": "1.1",
+  "name": "Real-Time Confidence Display",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "Confidence",
+    "Real-time"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{rt} = (Conf_{stream}, Update_{live}, Threshold_{alert}) : Decision_{stream} \\to Confidence_{t}$",
+  "desc": "Progressive enhancement pattern builds from basic functionality, adding features for capable browsers.",
+  "comps": [
+    {
+      "n": "Conf_{stream}",
+      "t": "Stream⟨(Decision, ℝ)⟩",
+      "d": "Real-time stream of decisions paired with confidence scores [0,1]",
+      "nota": "Conf_{stream}"
+    },
+    {
+      "n": "Update_{live}",
+      "t": "Decision → Effect",
+      "d": "Live UI update function triggered on each confidence change",
+      "nota": "Update_{live}"
+    },
+    {
+      "n": "Threshold_{alert}",
+      "t": "ℝ",
+      "d": "Confidence threshold below which alerts are triggered",
+      "nota": "Threshold_{alert}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Capabilities",
+      "def": "(js: 𝔹, css3: 𝔹, webgl: 𝔹, service_worker: 𝔹)",
+      "d": "Browser capabilities"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P96.1",
+      "n": "Universal Access",
+      "spec": "basic\\_functionality\\_always\\_available",
+      "d": "Basic functionality always available",
+      "inv": [
+        "guaranteed\\_base"
+      ]
+    },
+    {
+      "id": "P.P96.2",
+      "n": "Graceful Degradation",
+      "spec": "degrades\\_gracefully",
+      "d": "Degrades gracefully when features unavailable",
+      "inv": [
+        "smooth\\_fallback"
+      ]
+    },
+    {
+      "id": "P.P96.3",
+      "n": "Performance",
+      "spec": "doesn't\\_load\\_unsupported\\_features",
+      "d": "Doesn't load unsupported features",
+      "inv": [
+        "efficient\\_loading"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Detect Capabilities",
+      "sig": "detect() → Capabilities",
+      "def": "$detect() → Capabilities = caps := Capabilities(); caps.js := has\\_javascript(); caps.css3 := supports\\_css3(); caps.webgl := has\\_webgl(); caps.service\\_worker := has\\_service\\_worker(); return caps$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "capabilities\\_detected"
+      ],
+      "fx": [
+        "Detects JavaScript",
+        "Checks CSS3 support",
+        "Checks WebGL",
+        "Checks Service Worker"
+      ]
+    },
+    {
+      "n": "Apply Enhancement",
+      "sig": "enhance(base: Component, capabilities: Capabilities) → Component",
+      "def": "$enhance(base: Component, capabilities: Capabilities) → Component = enhanced := base; if capabilities.js: enhanced := add\\_interactivity(enhanced); if capabilities.css3: enhanced := add\\_advanced\\_styles(enhanced); if capabilities.webgl: enhanced := add\\_3d\\_effects(enhanced); return enhanced$",
+      "pre": [
+        "base ≠ null"
+      ],
+      "post": [
+        "base\\_functionality\\_preserved"
+      ],
+      "fx": [
+        "Adds interactivity if capable",
+        "Adds advanced styles if supported",
+        "Adds 3D if available"
+      ]
+    },
+    {
+      "n": "Fallback",
+      "sig": "fallback(feature: Feature, base: Alternative) → Component",
+      "def": "$fallback(feature: Feature, base: Alternative) → Component = if supported(feature): return feature else: return base$",
+      "pre": [
+        "base ≠ null"
+      ],
+      "post": [
+        "functional\\_component"
+      ],
+      "fx": [
+        "Uses feature if supported",
+        "Falls back to base otherwise"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe() → Stream⟨(Decision, ℝ)⟩",
+      "def": "subscribe() = Conf_{stream}",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "UpdateThreshold",
+      "sig": "set_threshold(t: ℝ) → Effect",
+      "def": "set_threshold(t) = require 0 ≤ t ≤ 1; Threshold_{alert} := t",
+      "pre": [
+        "t_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing t",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetCurrentConfidence",
+      "sig": "current(d: Decision) → ℝ",
+      "def": "current(d) = latest confidence score for decision d from Conf_{stream}",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Confidence implementation",
+      "d": "Applied in ai, confidence systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,250 @@
+{
+  "id": "P14",
+  "v": "1.1",
+  "name": "Agent Swarm",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (agents, tasks, coord, results)$",
+  "desc": "Agent swarms coordinate multiple AI agents to solve complex problems collaboratively.",
+  "comps": [
+    {
+      "n": "agents",
+      "t": "Set⟨Agent⟩",
+      "d": "autonomous workers",
+      "nota": "agents"
+    },
+    {
+      "n": "tasks",
+      "t": "Queue⟨Task⟩",
+      "d": "pending tasks",
+      "nota": "tasks"
+    },
+    {
+      "n": "coord",
+      "t": "Coordinator",
+      "d": "manages task distribution",
+      "nota": "coord"
+    },
+    {
+      "n": "results",
+      "t": "Map⟨Task, Result⟩",
+      "d": "stores completed results",
+      "nota": "results"
+    }
+  ],
+  "types": [
+    {
+      "n": "Swarm",
+      "def": "(agents: Set⟨Agent⟩, coordinator: Coordinator)",
+      "d": "Collection of coordinated agents"
+    },
+    {
+      "n": "Coordinator",
+      "def": "Agent managing swarm coordination",
+      "d": "Swarm coordination agent"
+    },
+    {
+      "n": "Agent",
+      "def": "(id: ID, status: Status, execute: Task → Result)",
+      "d": "Worker agent with status and execution function"
+    },
+    {
+      "n": "Status",
+      "def": "Idle | Busy(task: Task) | Failed(error: Error)",
+      "d": "Agent execution state"
+    },
+    {
+      "n": "Task",
+      "def": "(id: ID, work: Work, priority: ℕ)",
+      "d": "Unit of work with priority"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P14.1",
+      "n": "Load Balancing",
+      "spec": "∀a1,a2 ∈ agents: |workload(a1) - workload(a2)| < threshold",
+      "d": "Work is balanced across agents",
+      "inv": [
+        "balanced\\_distribution"
+      ]
+    },
+    {
+      "id": "P.P14.2",
+      "n": "Fault Tolerance",
+      "spec": "agent\\_fails ⇒ reassign\\_task",
+      "d": "Swarm tolerates individual agent failures",
+      "inv": [
+        "resilient\\_swarm"
+      ]
+    },
+    {
+      "id": "P.P14.3",
+      "n": "Scalability",
+      "spec": "performance(n\\_agents) scales\\_with n",
+      "d": "Performance scales with swarm size",
+      "inv": [
+        "scalable\\_coordination"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Task Queue",
+      "sig": "enqueue(agent: Agent, task: Task) → Effect",
+      "def": "$enqueue(agent: Agent, task: Task) → Effect = queue(agent) := queue(agent) + [task]$",
+      "pre": [
+        "agent \\neq null \\wedge task \\neq null",
+        "agent.active = true"
+      ],
+      "post": [
+        "task \\in agent.queue'",
+        "|agent.queue'| = |agent.queue| + 1"
+      ],
+      "fx": [
+        "Adds task to agent's work queue",
+        "FIFO processing order"
+      ]
+    },
+    {
+      "n": "Priority Queue",
+      "sig": "enqueue_priority(agent: Agent, task: Task, priority: ℕ) → Effect",
+      "def": "$enqueue\\_priority(agent: Agent, task: Task, priority: ℕ) → Effect = queue(agent) := insert\\_sorted(queue(agent), task, priority)$",
+      "pre": [
+        "agent \\neq null \\wedge task \\neq null",
+        "priority \\geq 0"
+      ],
+      "post": [
+        "(task, priority) \\in agent.priority\\_queue'",
+        "sorted\\_by\\_priority(agent.priority\\_queue')"
+      ],
+      "fx": [
+        "Adds task with priority to queue",
+        "Higher priority tasks processed first"
+      ]
+    },
+    {
+      "n": "Work Stealing",
+      "sig": "steal_work(idle_agent: Agent) → Task | null",
+      "def": "$steal_work(idle\\_agent: Agent) → Task | null = busy\\_agents := filter(agents, λa: |queue(a)| > 1); if empty(busy\\_agents): return null; victim := max(busy\\_agents, λa: |queue(a)|); task := pop(queue(victim)); return task$",
+      "pre": [
+        "idle\\_agent.queue = \\emptyset",
+        "\\exists a \\in swarm: |a.queue| > 1"
+      ],
+      "post": [
+        "result \\neq null \\implies stolen\\_from\\_busy\\_agent(result)",
+        "result = null \\implies no\\_work\\_available"
+      ],
+      "fx": [
+        "Balances load across agents",
+        "Idle agents take work from busy ones"
+      ]
+    },
+    {
+      "n": "Dispatch Task",
+      "sig": "dispatch(task: Task) → Effect",
+      "def": "$dispatch(task: Task) → Effect = tasks := enqueue(tasks, task, task.priority) if ∃agent: agent.status = Idle: assign(agent, task)$",
+      "pre": [
+        "task \\neq null",
+        "\\exists a \\in swarm: available(a)"
+      ],
+      "post": [
+        "assigned(task) = true",
+        "task \\in some\\_agent.queue"
+      ],
+      "fx": [
+        "Routes task to available agent",
+        "Uses load balancing strategy"
+      ]
+    },
+    {
+      "n": "Assign to Agent",
+      "sig": "assign(agent: Agent, task: Task) → Effect",
+      "def": "$assign(agent: Agent, task: Task) → Effect = agent.status := Busy(task) result := agent.execute(task) results[task] := result agent.status := Idle try_assign_next(agent)$",
+      "pre": [
+        "agent \\neq null \\wedge task \\neq null",
+        "agent.capabilities \\supseteq task.requirements"
+      ],
+      "post": [
+        "task.assigned\\_to' = agent",
+        "agent.current\\_task' = task"
+      ],
+      "fx": [
+        "Explicitly assigns task to agent",
+        "Agent begins execution"
+      ]
+    },
+    {
+      "n": "Deploy Swarm",
+      "sig": "deploy(task: Task, size: ℕ) → Swarm",
+      "def": "$deploy(task: Task, size: ℕ) → Swarm = agents := {create\\_agent(i, task) : i ∈ 1..size}; coordinator := create\\_coordinator(agents); swarm := Swarm(agents, coordinator); initialize\\_swarm(swarm); return swarm$",
+      "pre": [
+        "size > 0"
+      ],
+      "post": [
+        "|swarm.agents| = size"
+      ],
+      "fx": [
+        "Creates agent instances",
+        "Creates coordinator",
+        "Initializes swarm"
+      ]
+    },
+    {
+      "n": "Coordinate",
+      "sig": "coordinate(swarm: Swarm, subtasks: Set⟨SubTask⟩) → Effect",
+      "def": "$coordinate(swarm: Swarm, subtasks: Set⟨SubTask⟩) → Effect = assignments := assign\\_tasks(swarm.agents, subtasks); for (agent, task) in assignments: dispatch(agent, task); monitor\\_progress(assignments)$",
+      "pre": [
+        "|subtasks| > 0"
+      ],
+      "post": [
+        "∀task ∈ subtasks: assigned(task)"
+      ],
+      "fx": [
+        "Assigns tasks to agents",
+        "Dispatches tasks",
+        "Monitors progress"
+      ]
+    },
+    {
+      "n": "Aggregate Results",
+      "sig": "aggregate(swarm: Swarm) → Result",
+      "def": "$aggregate(swarm: Swarm) → Result = results := collect\\_agent\\_results(swarm.agents); merged := merge\\_results(results); validated := validate\\_consistency(merged); return validated$",
+      "pre": [
+        "all\\_agents\\_completed(swarm)"
+      ],
+      "post": [
+        "consistent(result)"
+      ],
+      "fx": [
+        "Collects individual results",
+        "Merges results",
+        "Validates consistency"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Multi-agent reasoning",
+      "d": "AI"
+    },
+    {
+      "n": "Parallel analysis",
+      "d": "divide analysis across agents for concurrent reasoning"
+    },
+    {
+      "n": "Distributed builds",
+      "d": "build systems that farm tasks across workers"
+    },
+    {
+      "n": "Map-reduce",
+      "d": "map and reduce phases executed across a cluster"
+    }
+  ]
+}

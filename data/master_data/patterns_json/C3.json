@@ -1,0 +1,159 @@
+{
+  "id": "C3",
+  "v": "1.1",
+  "name": "Symbolic Expression",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Formal Methods",
+    "Type Systems"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T = (root, children)$",
+  "desc": "Symbolic expressions represent mathematical and computational formulas as structured tree data.",
+  "comps": [
+    {
+      "n": "root",
+      "t": "Symbol",
+      "d": "root node (operator or value)",
+      "nota": "root"
+    },
+    {
+      "n": "children",
+      "t": "Sequence⟨Tree⟩",
+      "d": "child expressions",
+      "nota": "children"
+    }
+  ],
+  "types": [
+    {
+      "n": "Symbol",
+      "def": "Operator | Literal | Variable",
+      "d": "Atomic symbol used at expression nodes"
+    },
+    {
+      "n": "Tree",
+      "def": "(root: Symbol, children: Sequence⟨Tree⟩)",
+      "d": "Recursive structure for a symbolic expression"
+    },
+    {
+      "n": "Value",
+      "def": "Number | String | Bool | Composite",
+      "d": "Evaluation result of a symbolic expression"
+    },
+    {
+      "n": "Context",
+      "def": "Map⟨String, Value⟩",
+      "d": "Variable bindings used during evaluation"
+    },
+    {
+      "n": "ParseError",
+      "def": "(position: Int, message: String)",
+      "d": "Parsing failure with location and message"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.C3.1",
+      "n": "Parseability",
+      "spec": "parse(serialize(T)) = T",
+      "d": "Expressions can be serialized and parsed back to original form",
+      "inv": [
+        "∀T: parse(serialize(T)) = T"
+      ]
+    },
+    {
+      "id": "P.C3.2",
+      "n": "Evaluability",
+      "spec": "∀T, context: eval(T, context) → Value | Error",
+      "d": "All well-formed expressions evaluate to a value or error",
+      "inv": [
+        "well\\_formed(T) ⇒ evaluable(T)"
+      ]
+    },
+    {
+      "id": "P.C3.3",
+      "n": "Transformability",
+      "spec": "∃transform: simplify(T) = T' where semantics(T) = semantics(T') ∧ complexity(T') ≤ complexity(T)",
+      "d": "Expressions can be simplified while preserving semantics",
+      "inv": [
+        "semantics\\_preserving(simplify)"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Parse",
+      "sig": "parse(s: String) → Tree | ParseError",
+      "def": "$parse(s: String) → Tree | ParseError = construct AST from string representation$",
+      "pre": [
+        "s ≠ null ∧ |s| > 0"
+      ],
+      "post": [
+        "result = Tree ∨ result = ParseError"
+      ],
+      "fx": [
+        "Tokenizes input string",
+        "Constructs abstract syntax tree"
+      ]
+    },
+    {
+      "n": "Evaluate",
+      "sig": "eval(T: Tree, context: Map⟨String,Value⟩) → Value",
+      "def": "$eval(T: Tree,\n        context: Map⟨String,Value⟩) → Value = case T.root of Literal(v) → v Variable(x) → context[x] Operator(op) → op(map(eval,\n        T.children))$",
+      "pre": [
+        "∀var ∈ variables(T): var ∈ keys(context)"
+      ],
+      "post": [
+        "type(result) ∈ allowed\\_types"
+      ],
+      "fx": [
+        "Recursively evaluates expression",
+        "Applies operators to operands"
+      ]
+    },
+    {
+      "n": "Simplify",
+      "sig": "simplify(T: Tree) → Tree",
+      "def": "$simplify(T: Tree) → Tree = apply rewrite rules until fixpoint$",
+      "pre": [
+        "well\\_formed(T)"
+      ],
+      "post": [
+        "semantics(result) = semantics(T)",
+        "complexity(result) ≤ complexity(T)"
+      ],
+      "fx": [
+        "Applies algebraic simplifications",
+        "Reduces expression complexity"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Symbolic math",
+      "d": "computer algebra systems"
+    },
+    {
+      "n": "Tags/taxonomies",
+      "d": "classification, content organization"
+    },
+    {
+      "n": "Code AST",
+      "d": "abstract syntax trees, parsers"
+    },
+    {
+      "n": "Mathematical formulas",
+      "d": "LaTeX, MathML"
+    },
+    {
+      "n": "Constraints",
+      "d": "SMT-LIB"
+    },
+    {
+      "n": "Queries",
+      "d": "SQL, GraphQL"
+    }
+  ]
+}

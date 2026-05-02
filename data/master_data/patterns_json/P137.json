@@ -1,0 +1,201 @@
+{
+  "id": "P137",
+  "v": "1.1",
+  "name": "Adaptive Interface",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I_{adaptive} = (UI, User_{behavior}, Learn, Adapt) : (UI, Behavior) \\to UI_{personalized}$",
+  "desc": "Adaptive interfaces dynamically adjust UI elements based on user behavior and context.",
+  "comps": [
+    {
+      "n": "UI",
+      "t": "InterfaceConfig",
+      "d": "Current user interface configuration",
+      "nota": "UI"
+    },
+    {
+      "n": "User_{behavior}",
+      "t": "Sequence⟨Action⟩",
+      "d": "Observed user behavior and interactions",
+      "nota": "User_{behavior}"
+    },
+    {
+      "n": "Learn",
+      "t": "Behavior → Model",
+      "d": "Learning function that builds preference model",
+      "nota": "Learn"
+    },
+    {
+      "n": "Adapt",
+      "t": "Model → UIConfig",
+      "d": "Adaptation function that modifies UI based on model",
+      "nota": "Adapt"
+    }
+  ],
+  "types": [
+    {
+      "n": "Layout",
+      "def": "Arrangement of UI elements",
+      "d": "UI layout configuration"
+    },
+    {
+      "n": "ExpertiseLevel",
+      "def": "Novice | Intermediate | Expert",
+      "d": "User expertise level"
+    },
+    {
+      "n": "UIMode",
+      "def": "Configuration of UI complexity",
+      "d": "UI mode matching expertise"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P137.1",
+      "n": "Smooth Adaptation",
+      "spec": "¬jarring(interface\\_change)",
+      "d": "Interface changes are smooth",
+      "inv": [
+        "gradual\\_adaptation"
+      ]
+    },
+    {
+      "id": "P.P137.2",
+      "n": "Contextual Relevance",
+      "spec": "∀adaptation: contextually\\_appropriate(adaptation)",
+      "d": "Adaptations are contextually appropriate",
+      "inv": [
+        "context\\_aware"
+      ]
+    },
+    {
+      "id": "P.P137.3",
+      "n": "Predictability",
+      "spec": "∀adaptation: explainable(adaptation)",
+      "d": "Adaptations are predictable and explainable",
+      "inv": [
+        "transparent\\_adaptation"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Adapt Layout",
+      "sig": "adapt(user: User, context: Context) → Layout",
+      "def": "$adapt(user: User, context: Context) → Layout = preferences := get\\_preferences(user); usage\\_patterns := analyze\\_usage(user); optimal\\_layout := optimize\\_for(preferences, usage\\_patterns, context); return optimal\\_layout$",
+      "pre": [
+        "user ≠ null"
+      ],
+      "post": [
+        "optimized\\_for(result, user)"
+      ],
+      "fx": [
+        "Gets user preferences",
+        "Analyzes usage patterns",
+        "Computes optimal layout"
+      ]
+    },
+    {
+      "n": "Show Relevant Tools",
+      "sig": "show_tools(user: User, task: Task) → Set⟨Tool⟩",
+      "def": "$show\\_tools(user: User, task: Task) → Set⟨Tool⟩ = relevant := filter\\_relevant(all\\_tools, task); frequently\\_used := filter\\_frequent(relevant, user); return rank\\_by\\_likelihood(frequently\\_used, user, task)$",
+      "pre": [
+        "task ≠ null"
+      ],
+      "post": [
+        "∀tool ∈ result: relevant(tool, task)"
+      ],
+      "fx": [
+        "Filters relevant tools",
+        "Ranks by user preference",
+        "Returns top tools"
+      ]
+    },
+    {
+      "n": "Adjust Complexity",
+      "sig": "adjust_complexity(user: User, expertise: ExpertiseLevel) → UIMode",
+      "def": "$adjust\\_complexity(user: User, expertise: ExpertiseLevel) → UIMode = case expertise of Novice → SimpleMode(hide\\_advanced\\_features) Intermediate → StandardMode Expert → AdvancedMode(show\\_all\\_features)$",
+      "pre": [
+        "valid\\_expertise(expertise)"
+      ],
+      "post": [
+        "appropriate(result, expertise)"
+      ],
+      "fx": [
+        "Determines UI mode from expertise",
+        "Adjusts feature visibility"
+      ]
+    },
+    {
+      "n": "Observe",
+      "sig": "observe(a: Action) → Effect",
+      "def": "observe(a) records user action for learning",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "UpdateModel",
+      "sig": "update() → Model",
+      "def": "update() recomputes preference model from behavior",
+      "pre": [
+        "model_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing model",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "ApplyAdaptation",
+      "sig": "apply() → UIConfig",
+      "def": "apply() generates and applies adapted UI configuration",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

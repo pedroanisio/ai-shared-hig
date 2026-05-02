@@ -1,0 +1,200 @@
+{
+  "id": "P129",
+  "v": "1.1",
+  "name": "Performance Metrics Dashboard",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M_{perf} = (Metrics, Time_{series}, Thresholds, Alerts) : System \\to Metrics_{display}$",
+  "desc": "Performance metrics dashboard displays system health and performance indicators.",
+  "comps": [
+    {
+      "n": "Metrics",
+      "t": "Map⟨String, TimeSeries⟩",
+      "d": "Time-series performance metrics (latency, throughput, errors)",
+      "nota": "Metrics"
+    },
+    {
+      "n": "Time_{series}",
+      "t": "Sequence⟨(Time, Value)⟩",
+      "d": "Chronologically ordered metric measurements",
+      "nota": "Time_{series}"
+    },
+    {
+      "n": "Thresholds",
+      "t": "Map⟨Metric, (Min, Max)⟩",
+      "d": "Alert thresholds for each metric",
+      "nota": "Thresholds"
+    },
+    {
+      "n": "Alerts",
+      "t": "Set⟨Alert⟩",
+      "d": "Active alerts for metrics exceeding thresholds",
+      "nota": "Alerts"
+    }
+  ],
+  "types": [
+    {
+      "n": "MetricsSnapshot",
+      "def": "(cpu: ℝ, memory: ℝ, latency: ℝ, throughput: ℝ, timestamp: Time)",
+      "d": "Point-in-time metrics snapshot"
+    },
+    {
+      "n": "Dashboard",
+      "def": "(charts: Set⟨Chart⟩, gauges: Set⟨Gauge⟩, alerts: Set⟨Alert⟩)",
+      "d": "Performance dashboard UI"
+    },
+    {
+      "n": "Alert",
+      "def": "(metric: Metric, severity: Severity, message: String)",
+      "d": "Performance alert"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P129.1",
+      "n": "Real-Time Monitoring",
+      "spec": "metric\\_change ⇒ dashboard\\_update within latency",
+      "d": "Dashboard updates in real-time",
+      "inv": [
+        "timely\\_updates"
+      ]
+    },
+    {
+      "id": "P.P129.2",
+      "n": "Alert Reliability",
+      "spec": "threshold\\_exceeded ⇒ alert\\_raised",
+      "d": "Alerts are reliably triggered",
+      "inv": [
+        "reliable\\_alerting"
+      ]
+    },
+    {
+      "id": "P.P129.3",
+      "n": "Historical Data",
+      "spec": "∀metric: historical\\_data\\_available(metric)",
+      "d": "Historical metrics are retained",
+      "inv": [
+        "data\\_retention"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Collect Metrics",
+      "sig": "collect() → MetricsSnapshot",
+      "def": "$collect() → MetricsSnapshot = cpu := measure\\_cpu(); memory := measure\\_memory(); latency := measure\\_latency(); throughput := measure\\_throughput(); return MetricsSnapshot(cpu, memory, latency, throughput, timestamp=now())$",
+      "pre": [
+        "monitoring\\_enabled"
+      ],
+      "post": [
+        "current(result)"
+      ],
+      "fx": [
+        "Measures CPU and memory",
+        "Measures latency and throughput"
+      ]
+    },
+    {
+      "n": "Render Dashboard",
+      "sig": "render(snapshots: Sequence⟨MetricsSnapshot⟩) → Dashboard",
+      "def": "$render(snapshots: Sequence⟨MetricsSnapshot⟩) → Dashboard = time\\_series := create\\_time\\_series\\_charts(snapshots); gauges := create\\_current\\_value\\_gauges(snapshots[-1]); alerts := check\\_thresholds(snapshots[-1]); return Dashboard(time\\_series, gauges, alerts)$",
+      "pre": [
+        "|snapshots| > 0"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Creates time series charts",
+        "Creates current value gauges",
+        "Checks alert thresholds"
+      ]
+    },
+    {
+      "n": "Alert On Threshold",
+      "sig": "alert(metric: Metric, value: ℝ, threshold: ℝ) → Alert",
+      "def": "$alert(metric: Metric, value: ℝ, threshold: ℝ) → Alert = if value > threshold: severity := compute\\_severity(value, threshold); message := format\\_alert\\_message(metric, value, threshold); return Alert(metric, severity, message) else: return NoAlert$",
+      "pre": [
+        "threshold > 0"
+      ],
+      "post": [
+        "value > threshold ⇔ alert\\_raised"
+      ],
+      "fx": [
+        "Checks threshold violation",
+        "Raises alert if exceeded"
+      ]
+    },
+    {
+      "n": "RecordMetric",
+      "sig": "record(m: Metric, value: ℝ) → Effect",
+      "def": "record(m, val) appends (now(), val) to time series",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "CheckThresholds",
+      "sig": "check() → Set⟨Alert⟩",
+      "def": "check() generates alerts for metrics outside threshold bounds",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Query",
+      "sig": "query(m: Metric, t1: Time, t2: Time) → TimeSeries",
+      "def": "query(m, t1, t2) returns metric values in time range",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

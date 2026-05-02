@@ -1,0 +1,181 @@
+{
+  "id": "F4.4",
+  "v": "1.1",
+  "name": "Synchronization Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M = (query, compute, cache, refresh)$",
+  "desc": "Synchronization flows keep multiple data sources consistent through coordination.",
+  "comps": [
+    {
+      "n": "query",
+      "t": "Query",
+      "d": "defines the view computation",
+      "nota": "query"
+    },
+    {
+      "n": "compute",
+      "t": "Data → Result",
+      "d": "executes the query",
+      "nota": "compute"
+    },
+    {
+      "n": "cache",
+      "t": "Result",
+      "d": "stores computed result",
+      "nota": "cache"
+    },
+    {
+      "n": "refresh",
+      "t": "Trigger → Effect",
+      "d": "updates materialized view",
+      "nota": "refresh"
+    }
+  ],
+  "types": [
+    {
+      "n": "Source",
+      "def": "Data source with versioning",
+      "d": "Versioned data source"
+    },
+    {
+      "n": "Change",
+      "def": "(type: Create|Update|Delete, data: Data)",
+      "d": "Modification to data"
+    },
+    {
+      "n": "Conflict",
+      "def": "Concurrent incompatible changes",
+      "d": "Conflicting concurrent modifications"
+    },
+    {
+      "n": "Strategy",
+      "def": "Last-Write-Wins | Manual | Custom",
+      "d": "Conflict resolution strategy"
+    },
+    {
+      "n": "Query",
+      "def": "(select: Projection, from: Source, where: Predicate, aggregate: Function)",
+      "d": "Specification of view computation"
+    },
+    {
+      "n": "Result",
+      "def": "Computed and cached query result",
+      "d": "Materialized output stored in cache"
+    },
+    {
+      "n": "Trigger",
+      "def": "OnDemand | OnChange | Scheduled(interval: Time)",
+      "d": "Refresh condition for recomputation"
+    },
+    {
+      "n": "Staleness",
+      "def": "Time since last refresh",
+      "d": "Age of cached result"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F4.4.1",
+      "n": "Eventual Consistency",
+      "spec": "lim(t→∞) divergence(sources, t) = 0",
+      "d": "Sources eventually converge to consistent state",
+      "inv": [
+        "convergent\\_synchronization"
+      ]
+    },
+    {
+      "id": "P.F4.4.2",
+      "n": "Conflict-Free",
+      "spec": "after\\_sync: ∀s₁,s₂ ∈ sources: consistent(s₁, s₂)",
+      "d": "No conflicts remain after synchronization",
+      "inv": [
+        "conflict\\_resolution\\_complete"
+      ]
+    },
+    {
+      "id": "P.F4.4.3",
+      "n": "Idempotence",
+      "spec": "sync(sync(sources)) = sync(sources)",
+      "d": "Repeated synchronization has no additional effect",
+      "inv": [
+        "idempotent\\_sync"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Publish",
+      "sig": "publish(message: Message, channel: Channel) → Effect",
+      "def": "$publish(message: Message, channel: Channel) → Effect = serialize(message) send_to_subscribers(channel.subscribers, message) log_event(channel, message)$",
+      "pre": [
+        "message \\neq null \\wedge channel.active = true"
+      ],
+      "post": [
+        "\\forall s \\in channel.subscribers: notified(s, message)"
+      ],
+      "fx": [
+        "Broadcasts message to subscribers",
+        "Triggers subscribed handlers"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(subscriber: Subscriber, channel: Channel) → Effect",
+      "def": "$subscribe(subscriber: Subscriber, channel: Channel) → Effect = channel.subscribers := channel.subscribers ∪ {subscriber} send_confirmation(subscriber)$",
+      "pre": [
+        "subscriber \\neq null \\wedge channel \\neq null"
+      ],
+      "post": [
+        "subscriber \\in channel.subscribers'"
+      ],
+      "fx": [
+        "Registers subscriber to channel",
+        "Receives future messages"
+      ]
+    },
+    {
+      "n": "Sync",
+      "sig": "sync(source: DataSource, target: DataSource) → Effect",
+      "def": "$sync(source: DataSource, target: DataSource) → Effect = delta := diff(source, target) apply_changes(target, delta) verify_consistency(source, target)$",
+      "pre": [
+        "source \\neq null \\wedge target \\neq null"
+      ],
+      "post": [
+        "consistent(source', target')"
+      ],
+      "fx": [
+        "Synchronizes data sources",
+        "Ensures consistency"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Database materialized views",
+      "d": "Cached query results refreshed on schedule"
+    },
+    {
+      "n": "Cached aggregations",
+      "d": "Precomputed rollups for fast reads"
+    },
+    {
+      "n": "Precomputed reports",
+      "d": "Report snapshots refreshed periodically"
+    },
+    {
+      "n": "Search indices",
+      "d": "Index refresh workflows for consistency"
+    },
+    {
+      "n": "Dashboard metrics",
+      "d": "Cached metrics refreshed on changes"
+    }
+  ]
+}

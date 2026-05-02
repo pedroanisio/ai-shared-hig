@@ -1,0 +1,196 @@
+{
+  "id": "P106",
+  "v": "1.1",
+  "name": "Auto-Updating Content",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$U_{auto} = (Content, Sources, Monitor, Update_{trigger}) : Document \\times Time \\to Document'$",
+  "desc": "Auto-updating content monitors sources and automatically refreshes when changes are detected.",
+  "comps": [
+    {
+      "n": "Content",
+      "t": "Document",
+      "d": "The document or content being monitored and updated",
+      "nota": "Content"
+    },
+    {
+      "n": "Sources",
+      "t": "Set⟨Source⟩",
+      "d": "External data sources that content depends on",
+      "nota": "Sources"
+    },
+    {
+      "n": "Monitor",
+      "t": "Source → Change?",
+      "d": "Function that detects changes in monitored sources",
+      "nota": "Monitor"
+    },
+    {
+      "n": "Update_{trigger}",
+      "t": "Change → Effect",
+      "d": "Triggers content update when source changes are detected",
+      "nota": "Update_{trigger}"
+    }
+  ],
+  "types": [
+    {
+      "n": "ChangeSet",
+      "def": "Set of diffs between versions",
+      "d": "Collection of detected changes"
+    },
+    {
+      "n": "Source",
+      "def": "Monitored data source",
+      "d": "External source being monitored"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P106.1",
+      "n": "Freshness",
+      "spec": "age(content) < interval + latency",
+      "d": "Content freshness bounded by monitoring interval",
+      "inv": [
+        "timely\\_updates"
+      ]
+    },
+    {
+      "id": "P.P106.2",
+      "n": "Consistency",
+      "spec": "∀t: content(t) = source(t') where t' ≤ t < t' + interval",
+      "d": "Content reflects recent source state",
+      "inv": [
+        "eventual\\_consistency"
+      ]
+    },
+    {
+      "id": "P.P106.3",
+      "n": "Reliability",
+      "spec": "source\\_unavailable ⇒ retry\\_with\\_backoff",
+      "d": "System handles source unavailability gracefully",
+      "inv": [
+        "resilient\\_monitoring"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Monitor",
+      "sig": "monitor(source: Source, interval: Time) → Effect",
+      "def": "$monitor(source: Source, interval: Time) → Effect = schedule(λ: check\\_for\\_updates(source), interval)$",
+      "pre": [
+        "accessible(source) ∧ interval > 0"
+      ],
+      "post": [
+        "scheduled(check\\_task)"
+      ],
+      "fx": [
+        "Schedules periodic checks",
+        "Monitors source for changes"
+      ]
+    },
+    {
+      "n": "Detect Changes",
+      "sig": "detect(source: Source) → ChangeSet | NoChange",
+      "def": "$detect(source: Source) → ChangeSet | NoChange = current := fetch(source); if hash(current) ≠ hash(cached): return diff(cached, current) else: return NoChange$",
+      "pre": [
+        "has\\_cached\\_version(source)"
+      ],
+      "post": [
+        "result = NoChange ∨ valid\\_changeset(result)"
+      ],
+      "fx": [
+        "Fetches current version",
+        "Compares with cached",
+        "Computes changes"
+      ]
+    },
+    {
+      "n": "Apply Update",
+      "sig": "apply(changes: ChangeSet) → Effect",
+      "def": "$apply(changes: ChangeSet) → Effect = validate(changes); merge(changes, current); notify\\_subscribers(); update\\_cache()$",
+      "pre": [
+        "valid\\_changeset(changes)"
+      ],
+      "post": [
+        "updated(content)"
+      ],
+      "fx": [
+        "Validates changes",
+        "Merges updates",
+        "Notifies subscribers"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(s: Source) → Effect",
+      "def": "subscribe(s) = Sources := Sources ∪ {s}; start_monitoring(s)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "CheckUpdates",
+      "sig": "check() → Set⟨Change⟩",
+      "def": "check() = {Monitor(s",
+      "pre": [
+        "updates_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing updates",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "ApplyUpdate",
+      "sig": "update(changes: Set⟨Change⟩) → Document",
+      "def": "update(changes) = fold(changes, Content, λ(doc, change): apply_change(doc, change))",
+      "pre": [
+        "changes_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing changes",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "id": "P109",
+  "v": "1.1",
+  "name": "Outdated Content Detection",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D_{outdated} = (Content, Sources, Freshness, Alerts) : \\text{Document} \\to \\text{Outdated}_{flags}$",
+  "desc": "Outdated content detection identifies information that needs updating based on freshness criteria.",
+  "comps": [
+    {
+      "n": "Content",
+      "t": "Document",
+      "d": "document content to be checked for staleness",
+      "nota": "Content"
+    },
+    {
+      "n": "Sources",
+      "t": "Set⟨Source × Timestamp⟩",
+      "d": "external sources with last-checked timestamps",
+      "nota": "Sources"
+    },
+    {
+      "n": "Freshness",
+      "t": "ContentSpan → ℝ",
+      "d": "freshness score per content segment (higher = fresher)",
+      "nota": "Freshness"
+    },
+    {
+      "n": "Alerts",
+      "t": "Set⟨Alert⟩",
+      "d": "detected outdated content notifications",
+      "nota": "Alerts"
+    }
+  ],
+  "types": [
+    {
+      "n": "FreshnessReport",
+      "def": "(age: Time, sources_changed: 𝔹, dependencies_updated: 𝔹)",
+      "d": "Report on content freshness"
+    },
+    {
+      "n": "FreshnessPolicy",
+      "def": "(max_age: Time, check_sources: 𝔹, check_dependencies: 𝔹)",
+      "d": "Policy defining freshness criteria"
+    },
+    {
+      "n": "OutdatedReason",
+      "def": "Stale | SourcesUpdated | DependenciesUpdated",
+      "d": "Specific reason for being outdated"
+    },
+    {
+      "n": "Alert",
+      "def": "$\\text{Alert} = (\\text{span}, \\text{reason}, \\text{severity}, \\text{suggested\\_update})$",
+      "d": "Outdated content notification with severity and suggestion"
+    },
+    {
+      "n": "Severity",
+      "def": "$\\text{Severity} = \\{\\text{info}, \\text{warning}, \\text{critical}\\}$",
+      "d": "Severity level for outdated alerts"
+    },
+    {
+      "n": "FreshnessScore",
+      "def": "$\\text{FreshnessScore} = [0, 1] \\subset \\mathbb{R}$ (0 = stale, 1 = fresh)",
+      "d": "Normalized freshness score for a content span"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P109.1",
+      "n": "Timeliness",
+      "spec": "outdated\\_detected ⇒ notification\\_sent",
+      "d": "Outdated content triggers timely notifications",
+      "inv": [
+        "prompt\\_detection"
+      ]
+    },
+    {
+      "id": "P.P109.2",
+      "n": "Accuracy",
+      "spec": "¬false\\_positives ∧ ¬false\\_negatives",
+      "d": "Detection is accurate without false alarms",
+      "inv": [
+        "accurate\\_detection"
+      ]
+    },
+    {
+      "id": "P.P109.3",
+      "n": "Actionability",
+      "spec": "∀detection: includes\\_refresh\\_guidance(detection)",
+      "d": "Detections include guidance for updates",
+      "inv": [
+        "actionable\\_reports"
+      ]
+    },
+    {
+      "id": "P.P109.4",
+      "n": "Continuous Monitoring",
+      "spec": "$\\forall t \\in \\text{Time} : \\exists \\text{check}(Content, Sources) \\text{ at interval } \\Delta t_{check}$ (periodic)",
+      "d": "Freshness checks run on a regular schedule",
+      "inv": [
+        "periodic_checks"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Check Freshness",
+      "sig": "check(content: Content) → FreshnessReport",
+      "def": "$check(content: Content) → FreshnessReport = age := now() - content.timestamp; sources\\_changed := check\\_sources(content.sources); dependencies\\_updated := check\\_dependencies(content); return FreshnessReport(age, sources\\_changed, dependencies\\_updated)$",
+      "pre": [
+        "has\\_timestamp(content)"
+      ],
+      "post": [
+        "complete(result)"
+      ],
+      "fx": [
+        "Computes content age",
+        "Checks source freshness",
+        "Checks dependency freshness"
+      ]
+    },
+    {
+      "n": "Detect Outdated",
+      "sig": "detect(content: Content, policy: FreshnessPolicy) → OutdatedReason | Fresh",
+      "def": "$detect(content: Content, policy: FreshnessPolicy) → OutdatedReason | Fresh = report := check(content); if report.age > policy.max\\_age: return Stale(report.age) elif report.sources\\_changed: return SourcesUpdated(report.sources\\_changed) elif report.dependencies\\_updated: return DependenciesUpdated(report.dependencies\\_updated) else: return Fresh$",
+      "pre": [
+        "valid\\_policy(policy)"
+      ],
+      "post": [
+        "result = Fresh ∨ actionable(result)"
+      ],
+      "fx": [
+        "Evaluates freshness against policy",
+        "Returns specific reason if outdated"
+      ]
+    },
+    {
+      "n": "Suggest Refresh",
+      "sig": "suggest_refresh(outdated: Set⟨Content⟩) → Set⟨RefreshTask⟩",
+      "def": "$suggest\\_refresh(outdated: Set⟨Content⟩) → Set⟨RefreshTask⟩ = {create\\_refresh\\_task(c, prioritize(c)) : c ∈ outdated}$",
+      "pre": [
+        "∀c ∈ outdated: is\\_outdated(c)"
+      ],
+      "post": [
+        "|result| = |outdated|"
+      ],
+      "fx": [
+        "Creates refresh tasks",
+        "Prioritizes by importance"
+      ]
+    },
+    {
+      "n": "Update Freshness Score",
+      "sig": "updateFreshness: ContentSpan × Source → ℝ",
+      "def": "$\\text{updateFreshness}(span, src) = f'$where$\\Delta t = \\text{now}() - src.timestamp$$f' = e^{-\\lambda \\cdot \\Delta t}$(exponential decay)",
+      "pre": [
+        "updateFreshness_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing updateFreshness",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Suggest Updates",
+      "sig": "suggestUpdates: Alert → Set⟨Edit⟩",
+      "def": "$\\text{suggestUpdates}(a) = \\text{LLM}_{\\text{updater}}(a.span, \\text{latestSources}(a.span))$",
+      "pre": [
+        "suggestUpdates_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing suggestUpdates",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P100",
+      "P106"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Wikipedia outdated tags",
+      "d": "\"This article needs to be updated\" banners"
+    },
+    {
+      "n": "Living documents (Elicit, Bit.ai)",
+      "d": "automatic detection and update of stale content"
+    },
+    {
+      "n": "News article freshness indicators",
+      "d": "timestamps and update badges"
+    },
+    {
+      "n": "Technical documentation staleness detection",
+      "d": "alerts when API docs don't match code"
+    }
+  ]
+}

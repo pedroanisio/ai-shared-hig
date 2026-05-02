@@ -1,0 +1,189 @@
+{
+  "id": "P3",
+  "v": "1.1",
+  "name": "Hierarchical Navigator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$N = (tree, selection, expansion, breadcrumb)$",
+  "desc": "Hierarchical navigators display and enable navigation through tree-structured data.",
+  "comps": [
+    {
+      "n": "tree",
+      "t": "Tree⟨Node⟩",
+      "d": "hierarchy",
+      "nota": "tree"
+    },
+    {
+      "n": "selection",
+      "t": "Set⟨Node⟩",
+      "d": "set of currently selected nodes",
+      "nota": "selection"
+    },
+    {
+      "n": "expansion",
+      "t": "Set⟨Node⟩",
+      "d": "expanded nodes",
+      "nota": "expansion"
+    },
+    {
+      "n": "breadcrumb",
+      "t": "Sequence⟨Node⟩",
+      "d": "path to selection",
+      "nota": "breadcrumb"
+    }
+  ],
+  "types": [
+    {
+      "n": "Node",
+      "def": "(id: NodeID, label: String, children: Set⟨Node⟩, expanded: 𝔹)",
+      "d": "Hierarchical tree node"
+    },
+    {
+      "n": "Path",
+      "def": "Sequence⟨Node⟩ from root to target",
+      "d": "Path through hierarchy"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P3.1",
+      "n": "Lazy Loading",
+      "spec": "children loaded only when expanded",
+      "d": "Children are loaded lazily",
+      "inv": [
+        "efficient\\_loading"
+      ]
+    },
+    {
+      "id": "P.P3.2",
+      "n": "Keyboard Navigation",
+      "spec": "supports arrow\\_key\\_navigation",
+      "d": "Supports keyboard navigation",
+      "inv": [
+        "accessible\\_navigation"
+      ]
+    },
+    {
+      "id": "P.P3.3",
+      "n": "Visual Hierarchy",
+      "spec": "∀node: depth(node) visually\\_indicated",
+      "d": "Hierarchy depth is visually indicated",
+      "inv": [
+        "clear\\_hierarchy"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Expand Node",
+      "sig": "expand(node: Node) → Effect",
+      "def": "$expand(node: Node) → Effect = node.expanded := true; children := load\\_children(node); display(children); update\\_view()$",
+      "pre": [
+        "has\\_children(node)"
+      ],
+      "post": [
+        "node.expanded = true ∧ visible(children)"
+      ],
+      "fx": [
+        "Marks node as expanded",
+        "Loads children",
+        "Displays children",
+        "Updates view"
+      ]
+    },
+    {
+      "n": "Collapse Node",
+      "sig": "collapse(node: Node) → Effect",
+      "def": "$collapse(node: Node) → Effect = node.expanded := false; hide(node.children); update\\_view()$",
+      "pre": [
+        "node.expanded = true"
+      ],
+      "post": [
+        "node.expanded = false ∧ ¬visible(node.children)"
+      ],
+      "fx": [
+        "Marks node as collapsed",
+        "Hides children",
+        "Updates view"
+      ]
+    },
+    {
+      "n": "Navigate To",
+      "sig": "navigate(path: Path) → Effect",
+      "def": "$navigate(path: Path) → Effect = for node in path: expand(node); scroll\\_to(path[-1]); highlight(path[-1])$",
+      "pre": [
+        "valid\\_path(path)"
+      ],
+      "post": [
+        "visible(path[-1]) ∧ highlighted(path[-1])"
+      ],
+      "fx": [
+        "Expands path nodes",
+        "Scrolls to target",
+        "Highlights target"
+      ]
+    },
+    {
+      "n": "Select Node",
+      "sig": "select(n: Node) → Effect",
+      "def": "$select(n: Node) → Effect = selection := n breadcrumb := compute_path(root, n) notify_observers(n)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Navigate",
+      "sig": "navigate(direction: Direction) → Effect",
+      "def": "$navigate(direction: Direction) → Effect = case direction of Down → select(next_visible(selection)) Up → select(prev_visible(selection)) Right → expand(selection); select(first_child(selection)) Left → collapse(selection",
+      "pre": [
+        "route_exists(path)",
+        "user_authenticated()"
+      ],
+      "post": [
+        "location = target",
+        "history_updated()"
+      ],
+      "fx": [
+        "Changes application state",
+        "Updates URL"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "File explorer",
+      "d": "OS file browser"
+    },
+    {
+      "n": "Feature tree",
+      "d": "CAD"
+    },
+    {
+      "n": "Theorem library",
+      "d": "Lean"
+    },
+    {
+      "n": "Layer panel",
+      "d": "Photoshop"
+    },
+    {
+      "n": "Outline view",
+      "d": "Word"
+    }
+  ]
+}

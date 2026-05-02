@@ -1,0 +1,231 @@
+{
+  "id": "P100",
+  "v": "1.1",
+  "name": "Source Citation",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{source} = (Sources, Inline_{refs}, Links, Verification) : \\text{Content} \\to \\text{Sources}_{cited}$",
+  "desc": "Source citation patterns attribute information to original sources with verification metadata.",
+  "comps": [
+    {
+      "n": "Sources",
+      "t": "Set⟨Source⟩",
+      "d": "set of source documents with metadata",
+      "nota": "Sources"
+    },
+    {
+      "n": "Inline_{refs}",
+      "t": "Map⟨TextSpan, SourceId⟩",
+      "d": "mapping from content spans to sources",
+      "nota": "Inline_{refs}"
+    },
+    {
+      "n": "Links",
+      "t": "Set⟨URI⟩",
+      "d": "hyperlinks to original sources",
+      "nota": "Links"
+    },
+    {
+      "n": "Verification",
+      "t": "SourceId → Boolean",
+      "d": "verifies source accessibility and validity",
+      "nota": "Verification"
+    }
+  ],
+  "types": [
+    {
+      "n": "Source",
+      "def": "(uri: URI, metadata: Metadata, timestamp: Time)",
+      "d": "Source with location and metadata"
+    },
+    {
+      "n": "Citation",
+      "def": "(source: Source, excerpt: String, confidence: ℝ)",
+      "d": "Reference to source with confidence"
+    },
+    {
+      "n": "VerificationResult",
+      "def": "Verified | Failed | Unavailable",
+      "d": "Result of source verification"
+    },
+    {
+      "n": "TextSpan",
+      "def": "$\\text{TextSpan} = (\\text{start}, \\text{end}) \\subset \\mathbb{N} \\times \\mathbb{N}$ (character range)",
+      "d": "Character range for a cited span"
+    },
+    {
+      "n": "Confidence",
+      "def": "$\\text{Confidence} = [0, 1] \\subset \\mathbb{R}$ (source reliability score)",
+      "d": "Normalized score for source reliability"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P100.1",
+      "n": "Verifiability",
+      "spec": "∀citation: verifiable(citation.source)",
+      "d": "All citations point to verifiable sources",
+      "inv": [
+        "traceable\\_sources"
+      ]
+    },
+    {
+      "id": "P.P100.2",
+      "n": "Completeness",
+      "spec": "∀content: cited(content) ⇒ all\\_sources\\_cited",
+      "d": "All sources are properly cited",
+      "inv": [
+        "comprehensive\\_citations"
+      ]
+    },
+    {
+      "id": "P.P100.3",
+      "n": "Freshness",
+      "spec": "∀citation: timestamp(citation) ≤ timestamp(content)",
+      "d": "Citations reflect current source state",
+      "inv": [
+        "up\\_to\\_date\\_citations"
+      ]
+    },
+    {
+      "id": "P.P100.4",
+      "n": "Bidirectional Linking",
+      "spec": "$span \\xrightarrow{\\text{cites}} source \\land source \\xrightarrow{\\text{cited-by}} span$ (navigable both ways)",
+      "d": "Citations support navigation from content to source and back",
+      "inv": [
+        "bidirectional_citations"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Cite",
+      "sig": "cite(content: Content, source: Source) → Citation",
+      "def": "$cite(content: Content, source: Source) → Citation = extract\\_metadata(source); format\\_citation(metadata); link(content, citation)$",
+      "pre": [
+        "verifiable(source)"
+      ],
+      "post": [
+        "traceable(content, source)"
+      ],
+      "fx": [
+        "Extracts source metadata",
+        "Creates citation",
+        "Links content to source"
+      ]
+    },
+    {
+      "n": "Verify",
+      "sig": "verify(citation: Citation) → VerificationResult",
+      "def": "$verify(citation: Citation) → VerificationResult = check\\_source\\_exists(); validate\\_metadata(); confirm\\_content\\_match()$",
+      "pre": [
+        "citation ≠ null"
+      ],
+      "post": [
+        "result ∈ {Verified, Failed, Unavailable}"
+      ],
+      "fx": [
+        "Validates source exists",
+        "Checks metadata accuracy",
+        "Confirms content match"
+      ]
+    },
+    {
+      "n": "Track Provenance",
+      "sig": "track(content: Content) → Sequence⟨Source⟩",
+      "def": "$track(content: Content) → Sequence⟨Source⟩ = find\\_all\\_citations(content); extract\\_sources(); order\\_by\\_relevance()$",
+      "pre": [
+        "cited(content)"
+      ],
+      "post": [
+        "∀src ∈ result: contributed(src, content)"
+      ],
+      "fx": [
+        "Finds all citations",
+        "Traces provenance chain"
+      ]
+    },
+    {
+      "n": "Add Citation",
+      "sig": "addCitation: TextSpan × Source → C_source",
+      "def": "$\\text{addCitation}(span, src) = C'_{source}$where$Sources' = Sources \\cup \\{src\\}$$Inline_{refs}' = Inline_{refs} \\oplus [span \\mapsto src.id]$$Links' = Links \\cup \\{src.URI\\}$",
+      "pre": [
+        "valid_addCitation(input)",
+        "addCitation_collection ≠ null"
+      ],
+      "post": [
+        "addCitation ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new addCitation to collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Verify All Sources",
+      "sig": "verifyAll: C_source → Set⟨SourceId × Boolean⟩",
+      "def": "$\\text{verifyAll}(C_{source}) = \\{(s.id, accessible(s.URI)) \\mid s \\in Sources\\}$where$accessible: URI \\to Boolean$checks validity",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Get Citations for Span",
+      "sig": "getCitations: TextSpan → Set⟨Source⟩",
+      "def": "$\\text{getCitations}(span) = \\{s \\in Sources \\mid Inline_{refs}(span) = s.id\\}$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P9",
+      "P101",
+      "P102"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Academic citations",
+      "d": "numbered references [1], [2] in papers"
+    },
+    {
+      "n": "Wikipedia footnotes",
+      "d": "superscript citation markers with source links"
+    },
+    {
+      "n": "AI-generated content citations",
+      "d": "LLM outputs with inline source attribution"
+    },
+    {
+      "n": "GraphRAG citations",
+      "d": "knowledge graph path visualization with sources"
+    }
+  ]
+}

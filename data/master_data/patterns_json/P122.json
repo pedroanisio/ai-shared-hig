@@ -1,0 +1,149 @@
+{
+  "id": "P122",
+  "v": "1.1",
+  "name": "Multi-Domain Dashboard",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D_{multi} = (Domains, Metrics, Aggregation, Layout) : Set\\langle Domain \\rangle \\to Dashboard$",
+  "desc": "Multi-domain dashboard provides unified view and control across multiple operational domains.",
+  "comps": [
+    {
+      "n": "Domains",
+      "t": "Component",
+      "d": "Component implementing Multi-Domain Dashboard functionality",
+      "nota": "Domains"
+    },
+    {
+      "n": "Metrics",
+      "t": "Component",
+      "d": "Component implementing Multi-Domain Dashboard functionality",
+      "nota": "Metrics"
+    },
+    {
+      "n": "Aggregation",
+      "t": "Component",
+      "d": "Component implementing Multi-Domain Dashboard functionality",
+      "nota": "Aggregation"
+    },
+    {
+      "n": "Layout",
+      "t": "Component",
+      "d": "Component implementing Multi-Domain Dashboard functionality",
+      "nota": "Layout"
+    }
+  ],
+  "types": [
+    {
+      "n": "Widget",
+      "def": "(domain: Domain, config: WidgetConfig, data: Data)",
+      "d": "Dashboard widget for domain"
+    },
+    {
+      "n": "WidgetConfig",
+      "def": "(size: Size, position: Position, refresh_rate: Time)",
+      "d": "Widget configuration"
+    },
+    {
+      "n": "DomainView",
+      "def": "Detailed view of specific domain",
+      "d": "Full domain interface"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P122.1",
+      "n": "Unified View",
+      "spec": "∀domain ∈ active\\_domains: visible(domain, dashboard)",
+      "d": "All active domains are visible on dashboard",
+      "inv": [
+        "comprehensive\\_view"
+      ]
+    },
+    {
+      "id": "P.P122.2",
+      "n": "Real-Time Updates",
+      "spec": "data\\_change ⇒ widget\\_update within latency\\_threshold",
+      "d": "Widgets update in real-time",
+      "inv": [
+        "timely\\_updates"
+      ]
+    },
+    {
+      "id": "P.P122.3",
+      "n": "Customizable Layout",
+      "spec": "∀user: can\\_customize\\_layout(user)",
+      "d": "Users can customize dashboard layout",
+      "inv": [
+        "user\\_customization"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Domain Widget",
+      "sig": "add_widget(domain: Domain, config: WidgetConfig) → Widget",
+      "def": "$add\\_widget(domain: Domain, config: WidgetConfig) → Widget = widget := create\\_widget(domain, config); dashboard.widgets := dashboard.widgets ∪ {widget}; update\\_layout(); return widget$",
+      "pre": [
+        "valid\\_domain(domain)"
+      ],
+      "post": [
+        "widget ∈ dashboard.widgets"
+      ],
+      "fx": [
+        "Creates domain widget",
+        "Adds to dashboard",
+        "Updates layout"
+      ]
+    },
+    {
+      "n": "Update Dashboard",
+      "sig": "update() → Effect",
+      "def": "$update() → Effect = for widget in dashboard.widgets: data := fetch\\_domain\\_data(widget.domain); widget.render(data)$",
+      "pre": [
+        "|dashboard.widgets| > 0"
+      ],
+      "post": [
+        "∀widget: current(widget.data)"
+      ],
+      "fx": [
+        "Fetches data for all domains",
+        "Updates all widgets"
+      ]
+    },
+    {
+      "n": "Drill Down",
+      "sig": "drill_down(widget: Widget) → DomainView",
+      "def": "$drill\\_down(widget: Widget) → DomainView = switch\\_to(widget.domain); return detailed\\_view(widget.domain)$",
+      "pre": [
+        "widget ∈ dashboard.widgets"
+      ],
+      "post": [
+        "viewing(widget.domain)"
+      ],
+      "fx": [
+        "Switches to domain",
+        "Shows detailed view"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

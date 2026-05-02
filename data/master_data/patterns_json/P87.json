@@ -1,0 +1,141 @@
+{
+  "id": "P87",
+  "v": "1.1",
+  "name": "Agency Slider",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Agency",
+    "Control"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S_{agency} = (Spectrum_{control}, Level_{current}, Sens_{ctx}, Adj_{dynamic}) : Context \\to Control_{distribution}$",
+  "desc": "Peer-to-peer architecture pattern enables direct communication between nodes without central coordination.",
+  "comps": [
+    {
+      "n": "Spectrum_{control}",
+      "t": "Component",
+      "d": "Component implementing Agency Slider functionality",
+      "nota": "Spectrum_{control}"
+    },
+    {
+      "n": "Level_{current}",
+      "t": "Component",
+      "d": "Component implementing Agency Slider functionality",
+      "nota": "Level_{current}"
+    },
+    {
+      "n": "Sens_{ctx}",
+      "t": "Component",
+      "d": "Context container holding current application state for Agency Slider",
+      "nota": "Sens_{ctx}"
+    },
+    {
+      "n": "Adj_{dynamic}",
+      "t": "Component",
+      "d": "Component implementing Agency Slider functionality",
+      "nota": "Adj_{dynamic}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Node",
+      "def": "(id: NodeID, address: Address, peers: Set⟨Node⟩)",
+      "d": "Network peer node"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P87.1",
+      "n": "Decentralization",
+      "spec": "no\\_central\\_authority",
+      "d": "No central authority required",
+      "inv": [
+        "fully\\_distributed"
+      ]
+    },
+    {
+      "id": "P.P87.2",
+      "n": "Self-Organization",
+      "spec": "network self\\_organizes",
+      "d": "Network self-organizes",
+      "inv": [
+        "autonomous\\_organization"
+      ]
+    },
+    {
+      "id": "P.P87.3",
+      "n": "Resilience",
+      "spec": "tolerates\\_node\\_failures",
+      "d": "Tolerates node failures",
+      "inv": [
+        "resilient\\_network"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Join Network",
+      "sig": "join(node: Node, network: NetworkID) → Effect",
+      "def": "$join(node: Node, network: NetworkID) → Effect = bootstrap := find\\_bootstrap\\_nodes(network); peers := discover\\_peers(bootstrap); connect\\_to\\_peers(node, peers); announce\\_presence(node, network)$",
+      "pre": [
+        "node ≠ null"
+      ],
+      "post": [
+        "node ∈ network ∧ connected(node)"
+      ],
+      "fx": [
+        "Finds bootstrap nodes",
+        "Discovers peers",
+        "Connects",
+        "Announces presence"
+      ]
+    },
+    {
+      "n": "Send Message",
+      "sig": "send(from: Node, to: Node, message: Message) → Effect",
+      "def": "$send(from: Node, to: Node, message: Message) → Effect = if direct\\_connection(from, to): send\\_direct(message, to) else: route := find\\_route(from, to); forward\\_through\\_route(message, route)$",
+      "pre": [
+        "from ≠ to ∧ reachable(to)"
+      ],
+      "post": [
+        "message\\_delivered\\_or\\_routed"
+      ],
+      "fx": [
+        "Checks connection",
+        "Sends direct or routes"
+      ]
+    },
+    {
+      "n": "Replicate Data",
+      "sig": "replicate(data: Data, replication_factor: ℕ) → Effect",
+      "def": "$replicate(data: Data, replication\\_factor: ℕ) → Effect = peers := select\\_peers\\_for\\_replication(replication\\_factor); for peer in peers: send\\_data(peer, data)$",
+      "pre": [
+        "replication\\_factor > 0"
+      ],
+      "post": [
+        "|replicas| ≥ replication\\_factor"
+      ],
+      "fx": [
+        "Selects peers",
+        "Sends data to peers"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Agency implementation",
+      "d": "Applied in ai, agency systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

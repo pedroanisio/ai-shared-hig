@@ -1,0 +1,201 @@
+{
+  "id": "P132",
+  "v": "1.1",
+  "name": "AI Cursor Sharing",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C_{ai} = (Agent, Focus_{current}, Path, Highlight) : Agent_{activity} \\to Cursor_{virtual}$",
+  "desc": "AI cursor sharing shows AI agent's focus point and selection in collaborative editing.",
+  "comps": [
+    {
+      "n": "Agent",
+      "t": "AIAgent",
+      "d": "The AI agent whose focus is being visualized",
+      "nota": "Agent"
+    },
+    {
+      "n": "Focus_{current}",
+      "t": "Element",
+      "d": "Current element or region the agent is analyzing",
+      "nota": "Focus_{current}"
+    },
+    {
+      "n": "Path",
+      "t": "Sequence⟨Element⟩",
+      "d": "Historical path of agent focus movements",
+      "nota": "Path"
+    },
+    {
+      "n": "Highlight",
+      "t": "Element → Visual",
+      "d": "Visual highlighting function for focused elements",
+      "nota": "Highlight"
+    }
+  ],
+  "types": [
+    {
+      "n": "Position",
+      "def": "(line: ℕ, column: ℕ)",
+      "d": "Cursor position in document"
+    },
+    {
+      "n": "Range",
+      "def": "(start: Position, end: Position)",
+      "d": "Selection range"
+    },
+    {
+      "n": "EditAction",
+      "def": "Insert | Delete | Replace",
+      "d": "Type of edit action"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P132.1",
+      "n": "Real-Time Synchronization",
+      "spec": "ai\\_action ⇒ cursor\\_update immediately",
+      "d": "AI cursor updates in real-time",
+      "inv": [
+        "synchronized\\_cursors"
+      ]
+    },
+    {
+      "id": "P.P132.2",
+      "n": "Visual Distinction",
+      "spec": "ai\\_cursor ≠ human\\_cursor visually",
+      "d": "AI cursors are visually distinct from human cursors",
+      "inv": [
+        "distinct\\_styling"
+      ]
+    },
+    {
+      "id": "P.P132.3",
+      "n": "Non-Intrusive",
+      "spec": "¬obstructs\\_user\\_view(ai\\_cursor)",
+      "d": "AI cursors don't obstruct user's view",
+      "inv": [
+        "unobtrusive\\_display"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update AI Cursor",
+      "sig": "update(agent: Agent, position: Position) → Effect",
+      "def": "$update(agent: Agent, position: Position) → Effect = cursor := get\\_or\\_create\\_cursor(agent); cursor.position := position; style\\_as\\_ai\\_cursor(cursor); broadcast\\_cursor\\_update(agent, position)$",
+      "pre": [
+        "valid\\_position(position)"
+      ],
+      "post": [
+        "cursor[agent].position = position"
+      ],
+      "fx": [
+        "Updates cursor position",
+        "Applies AI cursor styling",
+        "Broadcasts to collaborators"
+      ]
+    },
+    {
+      "n": "Show AI Selection",
+      "sig": "show_selection(agent: Agent, range: Range) → Effect",
+      "def": "$show\\_selection(agent: Agent, range: Range) → Effect = selection := create\\_selection(range); apply\\_ai\\_selection\\_style(selection, agent); highlight\\_range(selection)$",
+      "pre": [
+        "valid\\_range(range)"
+      ],
+      "post": [
+        "visible(selection)"
+      ],
+      "fx": [
+        "Creates selection highlight",
+        "Applies AI-specific styling",
+        "Displays selection"
+      ]
+    },
+    {
+      "n": "Animate AI Action",
+      "sig": "animate(agent: Agent, action: EditAction) → Animation",
+      "def": "$animate(agent: Agent, action: EditAction) → Animation = animation := case action of Insert(text) → typing\\_animation(text) Delete(range) → deletion\\_animation(range) Replace(old, new) → replacement\\_animation(old, new); play(animation); return animation$",
+      "pre": [
+        "action ≠ null"
+      ],
+      "post": [
+        "user\\_aware\\_of\\_action"
+      ],
+      "fx": [
+        "Creates action animation",
+        "Plays animation"
+      ]
+    },
+    {
+      "n": "UpdateFocus",
+      "sig": "focus(e: Element) → Effect",
+      "def": "focus(e) sets current focus and appends to path",
+      "pre": [
+        "e_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing e",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetPath",
+      "sig": "get_path() → Sequence⟨Element⟩",
+      "def": "get_path() returns historical focus path",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "RenderCursor",
+      "sig": "render() → CursorVisual",
+      "def": "render() displays virtual cursor at current focus with highlight",
+      "pre": [
+        "template_exists()",
+        "data_bound()"
+      ],
+      "post": [
+        "view_updated()",
+        "dom_synchronized()"
+      ],
+      "fx": [
+        "Updates display",
+        "Reflows layout"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

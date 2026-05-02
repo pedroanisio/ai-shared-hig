@@ -1,0 +1,145 @@
+{
+  "id": "P147",
+  "v": "1.1",
+  "name": "Cost Estimation Preview",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E_{cost} = (Action, Tokens_{estimated}, Cost, Preview) : Action \\to Cost_{preview}$",
+  "desc": "Cost estimation previews show expected costs before executing operations.",
+  "comps": [
+    {
+      "n": "Action",
+      "t": "Component",
+      "d": "Component implementing Cost Estimation Preview functionality",
+      "nota": "Action"
+    },
+    {
+      "n": "Tokens_{estimated}",
+      "t": "Component",
+      "d": "Component implementing Cost Estimation Preview functionality",
+      "nota": "Tokens_{estimated}"
+    },
+    {
+      "n": "Cost",
+      "t": "Component",
+      "d": "Component implementing Cost Estimation Preview functionality",
+      "nota": "Cost"
+    },
+    {
+      "n": "Preview",
+      "t": "Component",
+      "d": "Component implementing Cost Estimation Preview functionality",
+      "nota": "Preview"
+    }
+  ],
+  "types": [
+    {
+      "n": "CostEstimate",
+      "def": "(tokens: ℕ, cost: ℝ, confidence: ℝ, operation: Operation)",
+      "d": "Estimated operation cost"
+    },
+    {
+      "n": "PreviewUI",
+      "def": "(estimate: CostEstimate, breakdown: Breakdown, alternatives: Set⟨Alternative⟩)",
+      "d": "Cost preview interface"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P147.1",
+      "n": "Estimate Accuracy",
+      "spec": "|actual\\_cost - estimated\\_cost| / estimated\\_cost < tolerance",
+      "d": "Cost estimates are reasonably accurate",
+      "inv": [
+        "reliable\\_estimates"
+      ]
+    },
+    {
+      "id": "P.P147.2",
+      "n": "User Control",
+      "spec": "¬execute without user\\_confirmation",
+      "d": "Operations require user confirmation",
+      "inv": [
+        "explicit\\_consent"
+      ]
+    },
+    {
+      "id": "P.P147.3",
+      "n": "Transparency",
+      "spec": "∀estimate: breakdown\\_available(estimate)",
+      "d": "Cost breakdowns are available",
+      "inv": [
+        "transparent\\_costs"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Estimate Cost",
+      "sig": "estimate(operation: Operation, params: Parameters) → CostEstimate",
+      "def": "$estimate(operation: Operation, params: Parameters) → CostEstimate = tokens := estimate\\_tokens(operation, params); rate := get\\_rate(operation.model); cost := tokens × rate; confidence := compute\\_confidence(estimate); return CostEstimate(tokens, cost, confidence)$",
+      "pre": [
+        "operation ≠ null"
+      ],
+      "post": [
+        "result.cost ≥ 0"
+      ],
+      "fx": [
+        "Estimates token count",
+        "Retrieves pricing rate",
+        "Calculates cost"
+      ]
+    },
+    {
+      "n": "Show Preview",
+      "sig": "preview(estimate: CostEstimate) → PreviewUI",
+      "def": "$preview(estimate: CostEstimate) → PreviewUI = breakdown := create\\_cost\\_breakdown(estimate); comparison := compare\\_with\\_alternatives(estimate); ui := PreviewUI(estimate, breakdown, comparison); return ui$",
+      "pre": [
+        "estimate ≠ null"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Creates cost breakdown",
+        "Compares alternatives",
+        "Builds preview UI"
+      ]
+    },
+    {
+      "n": "Confirm Or Cancel",
+      "sig": "confirm(estimate: CostEstimate, user_choice: Choice) → Effect",
+      "def": "$confirm(estimate: CostEstimate, user\\_choice: Choice) → Effect = case user\\_choice of Proceed → execute\\_operation(estimate.operation) Cancel → abort\\_operation() ViewAlternatives → show\\_cheaper\\_options()$",
+      "pre": [
+        "user\\_choice ≠ null"
+      ],
+      "post": [
+        "user\\_made\\_decision"
+      ],
+      "fx": [
+        "Processes user choice",
+        "Executes or aborts"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

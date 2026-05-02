@@ -1,0 +1,235 @@
+{
+  "id": "P70",
+  "v": "1.1",
+  "name": "Agent Handoff",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Agent Coordination",
+    "Handoff"
+  ],
+  "updated": "2025-11-23",
+  "def": "$H = (A_{from}, A_{to}, \\Sigma_{state}, T_{transfer}, V_{verify}) : \\text{Task} \\times \\text{Context} \\to \\text{Transfer}$",
+  "desc": "Message queue pattern enables asynchronous communication through buffered message delivery.",
+  "comps": [
+    {
+      "n": "A_{from}",
+      "t": "Agent",
+      "d": "source agent initiating handoff",
+      "nota": "A_{from}"
+    },
+    {
+      "n": "A_{to}",
+      "t": "Agent",
+      "d": "target agent receiving handoff",
+      "nota": "A_{to}"
+    },
+    {
+      "n": "\\Sigma_{state}",
+      "t": "State",
+      "d": "state being transferred between agents",
+      "nota": "\\Sigma_{state}"
+    },
+    {
+      "n": "T_{transfer}",
+      "t": "TransferProtocol",
+      "d": "protocol for state transfer",
+      "nota": "T_{transfer}"
+    },
+    {
+      "n": "V_{verify}",
+      "t": "State → Boolean",
+      "d": "verification function for transfer integrity",
+      "nota": "V_{verify}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Message",
+      "def": "(id: MessageID, payload: Data, timestamp: Time, retries: ℕ)",
+      "d": "Queue message"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{context}, \\text{progress}, \\text{data}, \\text{history})$",
+      "d": "Serializable task state for handoff"
+    },
+    {
+      "n": "TransferProtocol",
+      "def": "$\\text{TransferProtocol} = \\{\\text{synchronous}, \\text{asynchronous}, \\text{atomic}, \\text{gradual}\\}$",
+      "d": "Transfer mode and guarantees"
+    },
+    {
+      "n": "Transfer",
+      "def": "$\\text{Transfer} = (\\text{state}, \\text{status}, \\text{timestamp}, \\text{acknowledgment})$",
+      "d": "Handoff record with status and acknowledgment"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P70.1",
+      "n": "FIFO Order",
+      "spec": "∀i,j: i enqueued\\_before j ⇒ i dequeued\\_before j",
+      "d": "Messages processed in FIFO order",
+      "inv": [
+        "ordered\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P70.2",
+      "n": "At-Least-Once Delivery",
+      "spec": "∀message: delivered ≥ 1 times",
+      "d": "Messages delivered at least once",
+      "inv": [
+        "guaranteed\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P70.3",
+      "n": "Bounded Queue",
+      "spec": "|queue| ≤ max\\_size",
+      "d": "Queue size is bounded",
+      "inv": [
+        "capacity\\_limited"
+      ]
+    },
+    {
+      "id": "P.P70.4",
+      "n": "Verification Required",
+      "spec": "$\\forall \\text{transfer} : \\text{complete}(\\text{transfer}) \\iff V_{verify}(\\Sigma_{state}) = \\text{true}$",
+      "d": "Transfers complete only after state verification",
+      "inv": [
+        "verified\\_handoff"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Enqueue",
+      "sig": "enqueue(queue: QueueID, message: Message) → Effect",
+      "def": "$enqueue(queue: QueueID, message: Message) → Effect = if queue.size < queue.max\\_size: message.id := generate\\_id(); message.timestamp := now(); queue.messages.append(message); notify\\_consumers() else: handle\\_overflow()$",
+      "pre": [
+        "valid\\_message(message)"
+      ],
+      "post": [
+        "message ∈ queue ∨ queue\\_full"
+      ],
+      "fx": [
+        "Assigns ID and timestamp",
+        "Appends to queue",
+        "Notifies consumers"
+      ]
+    },
+    {
+      "n": "Dequeue",
+      "sig": "dequeue(queue: QueueID) → Message | null",
+      "def": "$dequeue(queue: QueueID) → Message | null = if |queue.messages| > 0: message := queue.messages.take\\_first(); mark\\_processing(message); return message else: return null$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "(result ≠ null ∧ processing(result)) ∨ (result = null ∧ queue\\_empty)"
+      ],
+      "fx": [
+        "Takes first message",
+        "Marks as processing",
+        "Returns message or null"
+      ]
+    },
+    {
+      "n": "Acknowledge",
+      "sig": "ack(queue: QueueID, message: Message) → Effect",
+      "def": "$ack(queue: QueueID, message: Message) → Effect = remove\\_from\\_processing(message); delete\\_message(message)$",
+      "pre": [
+        "processing(message)"
+      ],
+      "post": [
+        "¬exists(message)"
+      ],
+      "fx": [
+        "Removes from processing",
+        "Deletes message"
+      ]
+    },
+    {
+      "n": "Initiate Handoff",
+      "sig": "initiate: Agent × Agent × State → Transfer",
+      "def": "$\\text{initiate}(a_1, a_2, s) = t$where$t.state = \\text{serialize}(s)$$t.status = \\text{pending}$$\\text{notify}(a_2, t)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Accept Handoff",
+      "sig": "accept: Agent × Transfer → State",
+      "def": "$\\text{accept}(a, t) = s$where$s = \\text{deserialize}(t.state)$$V_{verify}(s) = \\text{true}$$t.status \\leftarrow \\text{complete}$$t.acknowledgment \\leftarrow \\text{signed}(a)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Rollback Handoff",
+      "sig": "rollback: Transfer → State",
+      "def": "$\\text{rollback}(t) = s$where$s = t.state_{original}$$\\text{owner}(\\text{task}) \\leftarrow A_{from}$$t.status \\leftarrow \\text{cancelled}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P14"
+    ],
+    "use": [
+      "P69",
+      "P91"
+    ]
+  },
+  "manif": [
+    {
+      "n": "CrewAI task delegation",
+      "d": "tasks passed between specialized agents"
+    },
+    {
+      "n": "LangGraph conditional edges",
+      "d": "routing between agent nodes with state transfer"
+    },
+    {
+      "n": "AutoGPT sub-agent spawning",
+      "d": "parent agent hands off subtasks to children"
+    },
+    {
+      "n": "Customer service agent escalation",
+      "d": "tier-1 bot hands off to tier-2 specialist"
+    }
+  ]
+}

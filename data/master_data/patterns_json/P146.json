@@ -1,0 +1,196 @@
+{
+  "id": "P146",
+  "v": "1.1",
+  "name": "Token Budget Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B_{tokens} = (Budget, Used, Remaining, Alerts) : Usage \\to Budget_{status}$",
+  "desc": "Token budget indicators display remaining token allocation and consumption rate.",
+  "comps": [
+    {
+      "n": "Budget",
+      "t": "ℕ",
+      "d": "Total token budget allocation",
+      "nota": "Budget"
+    },
+    {
+      "n": "Used",
+      "t": "ℕ",
+      "d": "Tokens consumed so far",
+      "nota": "Used"
+    },
+    {
+      "n": "Remaining",
+      "t": "ℕ",
+      "d": "Remaining token budget",
+      "nota": "Remaining"
+    },
+    {
+      "n": "Indicator",
+      "t": "(Used, Budget) → Visual",
+      "d": "Visual indicator function",
+      "nota": "Indicator"
+    }
+  ],
+  "types": [
+    {
+      "n": "Budget",
+      "def": "(total: ℕ, period: TimePeriod)",
+      "d": "Token budget allocation"
+    },
+    {
+      "n": "Indicator",
+      "def": "(remaining: ℕ, percentage: ℝ, color: Color)",
+      "d": "Visual budget indicator"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P146.1",
+      "n": "Accuracy",
+      "spec": "displayed\\_budget = actual\\_budget",
+      "d": "Budget display is accurate",
+      "inv": [
+        "accurate\\_tracking"
+      ]
+    },
+    {
+      "id": "P.P146.2",
+      "n": "Visual Clarity",
+      "spec": "∀percentage: color(percentage) intuitive",
+      "d": "Colors intuitively indicate budget status",
+      "inv": [
+        "clear\\_indicators"
+      ]
+    },
+    {
+      "id": "P.P146.3",
+      "n": "Timely Warnings",
+      "spec": "approaching\\_limit ⇒ warning\\_shown early",
+      "d": "Warnings appear before budget exhaustion",
+      "inv": [
+        "proactive\\_warnings"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Track Usage",
+      "sig": "track(usage: TokenUsage) → Effect",
+      "def": "$track(usage: TokenUsage) → Effect = consumed := consumed + usage.tokens; rate := update\\_rate(consumed); remaining := budget - consumed; update\\_indicator(remaining, rate)$",
+      "pre": [
+        "usage.tokens ≥ 0"
+      ],
+      "post": [
+        "consumed ≤ budget"
+      ],
+      "fx": [
+        "Updates consumed tokens",
+        "Recalculates rate",
+        "Updates indicator"
+      ]
+    },
+    {
+      "n": "Display Indicator",
+      "sig": "display(budget: Budget, consumed: ℕ) → Indicator",
+      "def": "$display(budget: Budget, consumed: ℕ) → Indicator = remaining := budget.total - consumed; percentage := consumed / budget.total; color := get\\_color\\_for\\_percentage(percentage); return Indicator(remaining, percentage, color)$",
+      "pre": [
+        "budget.total > 0"
+      ],
+      "post": [
+        "visible(result)"
+      ],
+      "fx": [
+        "Computes remaining",
+        "Calculates percentage",
+        "Determines color"
+      ]
+    },
+    {
+      "n": "Warn On Threshold",
+      "sig": "warn(remaining: ℕ, threshold: ℕ) → Warning | null",
+      "def": "$warn(remaining: ℕ, threshold: ℕ) → Warning | null = if remaining < threshold: return Warning(\"Low budget\", remaining) else: return null$",
+      "pre": [
+        "threshold ≥ 0"
+      ],
+      "post": [
+        "remaining < threshold ⇔ result ≠ null"
+      ],
+      "fx": [
+        "Checks threshold",
+        "Returns warning if needed"
+      ]
+    },
+    {
+      "n": "RecordUsage",
+      "sig": "record(tokens: ℕ) → Effect",
+      "def": "record(tokens) increments Used by tokens",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetStatus",
+      "sig": "status() → (Used, Remaining, Budget)",
+      "def": "status() returns current budget state",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "SetBudget",
+      "sig": "set_budget(b: ℕ) → Effect",
+      "def": "set_budget(b) establishes new budget limit",
+      "pre": [
+        "b_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing b",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,271 @@
+{
+  "id": "P23",
+  "v": "1.1",
+  "name": "Real-Time Sync",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S = (local, remote, diff, merge, conflicts)$",
+  "desc": "Real-time sync keeps data synchronized across multiple clients with conflict resolution.",
+  "comps": [
+    {
+      "n": "local",
+      "t": "State",
+      "d": "local state",
+      "nota": "local"
+    },
+    {
+      "n": "remote",
+      "t": "State",
+      "d": "remote state",
+      "nota": "remote"
+    },
+    {
+      "n": "diff",
+      "t": "State × State → Delta",
+      "d": "computes differences",
+      "nota": "diff"
+    },
+    {
+      "n": "merge",
+      "t": "State × Delta → State",
+      "d": "applies changes",
+      "nota": "merge"
+    },
+    {
+      "n": "conflicts",
+      "t": "Sequence⟨Conflict⟩",
+      "d": "tracks unresolved conflicts",
+      "nota": "conflicts"
+    }
+  ],
+  "types": [
+    {
+      "n": "Change",
+      "def": "(type: ChangeType, data: Data, timestamp: Time, author: Client)",
+      "d": "Single state change"
+    },
+    {
+      "n": "Client",
+      "def": "(id: ClientID, state: State, last_sync: Time)",
+      "d": "Sync client"
+    },
+    {
+      "n": "State",
+      "def": "Map⟨Path, Value⟩  // Complete state snapshot",
+      "d": "Snapshot of synchronized state"
+    },
+    {
+      "n": "Delta",
+      "def": "Sequence⟨Change⟩  // Incremental changes",
+      "d": "Ordered incremental changes"
+    },
+    {
+      "n": "Conflict",
+      "def": "(path: Path, local_value: Value, remote_value: Value)",
+      "d": "Conflict between local and remote values"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P23.1",
+      "n": "Eventual Consistency",
+      "spec": "lim(t→∞) ∀c1,c2: state(c1,t) = state(c2,t)",
+      "d": "Clients eventually converge to same state",
+      "inv": [
+        "convergent\\_sync"
+      ]
+    },
+    {
+      "id": "P.P23.2",
+      "n": "Conflict Resolution",
+      "spec": "conflicts\\_resolved\\_deterministically",
+      "d": "Conflicts resolved deterministically",
+      "inv": [
+        "deterministic\\_resolution"
+      ]
+    },
+    {
+      "id": "P.P23.3",
+      "n": "Low Latency",
+      "spec": "propagation\\_time < latency\\_threshold",
+      "d": "Changes propagate with low latency",
+      "inv": [
+        "timely\\_sync"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Broadcast Change",
+      "sig": "broadcast(change: Change, clients: Set⟨Client⟩) → Effect",
+      "def": "$broadcast(change: Change, clients: Set⟨Client⟩) → Effect = for client in clients: send(client, change); track\\_acknowledgment(client, change)$",
+      "pre": [
+        "change ≠ null"
+      ],
+      "post": [
+        "∀client: sent(client, change)"
+      ],
+      "fx": [
+        "Sends change to all clients",
+        "Tracks acknowledgments"
+      ]
+    },
+    {
+      "n": "Merge Changes",
+      "sig": "merge(local: State, remote: Change) → State",
+      "def": "$merge(local: State, remote: Change) → State = if conflicts(local, remote): resolved := resolve\\_conflict(local, remote); apply(local, resolved) else: apply(local, remote)$",
+      "pre": [
+        "remote ≠ null"
+      ],
+      "post": [
+        "consistent(result)"
+      ],
+      "fx": [
+        "Detects conflicts",
+        "Resolves if needed",
+        "Applies change"
+      ]
+    },
+    {
+      "n": "Sync State",
+      "sig": "sync(client: Client) → Effect",
+      "def": "$sync(client: Client) → Effect = local\\_changes := get\\_pending\\_changes(client); server\\_changes := get\\_server\\_changes\\_since(client.last\\_sync); send(client, server\\_changes); receive(local\\_changes); client.last\\_sync := now()$",
+      "pre": [
+        "connected(client)"
+      ],
+      "post": [
+        "synchronized(client)"
+      ],
+      "fx": [
+        "Exchanges pending changes",
+        "Updates sync timestamp"
+      ]
+    },
+    {
+      "n": "Polling",
+      "sig": "poll(endpoint: URL, interval: Time) → Stream⟨Update⟩",
+      "def": "$poll(endpoint: URL, interval: Time) → Stream⟨Update⟩ = every(interval): data := fetch(endpoint); if changed(data): emit(data)$",
+      "pre": [
+        "endpoint_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing endpoint",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "WebSocket",
+      "sig": "websocket(url: URL) → Stream⟨Message⟩",
+      "def": "$websocket(url: URL) → Stream⟨Message⟩ = conn := connect(url); on\\_message(msg): emit(msg)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Operational Transformation",
+      "sig": "transform(op1: Operation, op2: Operation) → Operation",
+      "def": "$transform(op1: Operation, op2: Operation) → Operation = adjust op1 for concurrent op2$",
+      "pre": [
+        "input ≠ null",
+        "valid_transformation(type)"
+      ],
+      "post": [
+        "output = transform(input)",
+        "invariants_preserved()"
+      ],
+      "fx": [
+        "Converts data format",
+        "Applies business rules"
+      ]
+    },
+    {
+      "n": "Compute Delta",
+      "sig": "diff(old: State, new: State) → Delta",
+      "def": "$diff(old: State, new: State) → Delta = changes := [] for path in keys(old) ∪ keys(new): if old[path] ≠ new[path]: changes := changes ++ [Change(path, old[path], new[path])] return changes$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Apply Delta",
+      "sig": "merge(state: State, delta: Delta) → State",
+      "def": "$merge(state: State, delta: Delta) → State = for change in delta: if ¬conflict(change, state): state[change.path] := change.new_value else: conflicts := conflicts ++ [Conflict(change.path, state[change.path], change.new_value)] return state$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Resolve Conflict",
+      "sig": "resolve(conflict: Conflict, strategy: Strategy) → Value",
+      "def": "$resolve(conflict: Conflict, strategy: Strategy) → Value = case strategy of LastWriteWins → newer(conflict.local_value, conflict.remote_value) ManualResolve → prompt_user(conflict) MergeValues → merge_function(conflict.local_value, conflict.remote_value)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Collaborative editing",
+      "d": "real-time shared document syncing"
+    },
+    {
+      "n": "Live preview",
+      "d": "preview stays synced with editor state"
+    },
+    {
+      "n": "Cloud sync",
+      "d": "Dropbox"
+    },
+    {
+      "n": "Multi-device sync",
+      "d": "keeps state consistent across devices"
+    }
+  ]
+}

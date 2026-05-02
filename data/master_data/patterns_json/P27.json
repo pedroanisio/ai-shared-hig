@@ -1,0 +1,219 @@
+{
+  "id": "P27",
+  "v": "1.1",
+  "name": "Toast/Notification",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$toa = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Toasts and notifications display temporary messages to inform users of events and updates.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to toast/notification",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from toast/notification",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Toast",
+      "def": "(id: ToastID, message: String, type: ToastType, duration: Time)",
+      "d": "Temporary notification"
+    },
+    {
+      "n": "ToastType",
+      "def": "Info | Success | Warning | Error",
+      "d": "Toast message type"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Event or message to notify"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Displayed toast instance"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Active toast queue and timing metadata"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P27.1",
+      "n": "Temporary Display",
+      "spec": "∀toast: auto\\_dismiss(toast) after duration",
+      "d": "Toasts automatically dismiss",
+      "inv": [
+        "self\\_dismissing"
+      ]
+    },
+    {
+      "id": "P.P27.2",
+      "n": "Non-Blocking",
+      "spec": "¬prevents\\_user\\_interaction",
+      "d": "Toasts don't block user interaction",
+      "inv": [
+        "non\\_modal"
+      ]
+    },
+    {
+      "id": "P.P27.3",
+      "n": "Type Indication",
+      "spec": "∀toast: visually\\_distinct(toast.type)",
+      "d": "Toast types are visually distinct",
+      "inv": [
+        "clear\\_type\\_indication"
+      ]
+    },
+    {
+      "id": "P.P27.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Notifications are readable and dismissible without disruption",
+      "inv": [
+        "low\\_disruption"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show Toast",
+      "sig": "show(message: String, type: ToastType, duration: Time) → Toast",
+      "def": "$show(message: String, type: ToastType, duration: Time) → Toast = toast := Toast(message, type, id=generate\\_id()); display(toast); schedule\\_dismiss(toast, duration); return toast$",
+      "pre": [
+        "message ≠ null ∧ duration > 0"
+      ],
+      "post": [
+        "visible(toast)"
+      ],
+      "fx": [
+        "Creates toast",
+        "Displays toast",
+        "Schedules auto-dismiss"
+      ]
+    },
+    {
+      "n": "Dismiss",
+      "sig": "dismiss(toast_id: ToastID) → Effect",
+      "def": "$dismiss(toast\\_id: ToastID) → Effect = toast := toasts[toast\\_id]; animate\\_out(toast); remove(toasts, toast\\_id)$",
+      "pre": [
+        "toast\\_id ∈ toasts"
+      ],
+      "post": [
+        "toast\\_id ∉ toasts"
+      ],
+      "fx": [
+        "Animates toast out",
+        "Removes from display"
+      ]
+    },
+    {
+      "n": "Queue Toast",
+      "sig": "queue(message: String, type: ToastType) → Effect",
+      "def": "$queue(message: String, type: ToastType) → Effect = if |active\\_toasts| < max\\_concurrent: show(message, type, default\\_duration) else: toast\\_queue.enqueue((message, type))$",
+      "pre": [
+        "message ≠ null"
+      ],
+      "post": [
+        "shown(message) ∨ queued(message)"
+      ],
+      "fx": [
+        "Shows immediately if space available",
+        "Queues otherwise"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Toast/Notification in modern applications",
+      "d": "implements toast/notification pattern"
+    },
+    {
+      "n": "Web-based toast/notification",
+      "d": "browser implementation of toast/notification"
+    },
+    {
+      "n": "Mobile toast/notification",
+      "d": "mobile app implementation"
+    }
+  ]
+}

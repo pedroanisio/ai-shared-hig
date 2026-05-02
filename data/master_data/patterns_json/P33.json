@@ -1,0 +1,187 @@
+{
+  "id": "P33",
+  "v": "1.1",
+  "name": "Hook System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$H = (hooks, handlers, register, invoke)$",
+  "desc": "Hook systems allow code injection at specific execution points for customization.",
+  "comps": [
+    {
+      "n": "hooks",
+      "t": "Set⟨HookPoint⟩",
+      "d": "extension points",
+      "nota": "hooks"
+    },
+    {
+      "n": "handlers",
+      "t": "Map⟨HookPoint, Sequence⟨Handler⟩⟩",
+      "d": "registered handlers",
+      "nota": "handlers"
+    },
+    {
+      "n": "register",
+      "t": "(HookPoint, Handler) → Effect",
+      "d": "registers handlers",
+      "nota": "register"
+    },
+    {
+      "n": "invoke",
+      "t": "(HookPoint, Context) → Effect",
+      "d": "invokes handlers",
+      "nota": "invoke"
+    }
+  ],
+  "types": [
+    {
+      "n": "HookPoint",
+      "def": "Named extension point in code",
+      "d": "Location where hooks execute"
+    },
+    {
+      "n": "Handler",
+      "def": "Context → Context",
+      "d": "Hook handler function"
+    },
+    {
+      "n": "Context",
+      "def": "Map⟨String, Value⟩  // Hook-specific data",
+      "d": "Hook invocation context"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P33.1",
+      "n": "Non-Invasive Extension",
+      "spec": "hooks extend without modifying\\_core",
+      "d": "Hooks extend behavior non-invasively",
+      "inv": [
+        "core\\_unchanged"
+      ]
+    },
+    {
+      "id": "P.P33.2",
+      "n": "Priority Ordering",
+      "spec": "∀h1,h2: priority(h1) < priority(h2) ⇒ executes(h1) before executes(h2)",
+      "d": "Hooks execute in priority order",
+      "inv": [
+        "ordered\\_execution"
+      ]
+    },
+    {
+      "id": "P.P33.3",
+      "n": "Context Passing",
+      "spec": "handler\\_output becomes next\\_handler\\_input",
+      "d": "Context passes through handlers",
+      "inv": [
+        "chained\\_context"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Hook",
+      "sig": "register(hook_point: HookPoint, handler: Handler, priority: ℕ) → HookID",
+      "def": "$register(hook\\_point: HookPoint, handler: Handler, priority: ℕ) → HookID = id := generate\\_id(); hooks[hook\\_point] := hooks[hook\\_point] ∪ {(id, handler, priority)}; sort\\_by\\_priority(hooks[hook\\_point]); return id$",
+      "pre": [
+        "valid\\_hook\\_point(hook\\_point)"
+      ],
+      "post": [
+        "registered(id, hook\\_point)"
+      ],
+      "fx": [
+        "Generates hook ID",
+        "Adds handler with priority",
+        "Sorts by priority"
+      ]
+    },
+    {
+      "n": "Execute Hooks",
+      "sig": "execute(hook_point: HookPoint, context: Context) → Context",
+      "def": "$execute(hook\\_point: HookPoint, context: Context) → Context = handlers := hooks[hook\\_point]; result := context; for (id, handler, priority) in handlers: result := handler(result); return result$",
+      "pre": [
+        "hook\\_point ∈ hooks"
+      ],
+      "post": [
+        "all\\_handlers\\_executed"
+      ],
+      "fx": [
+        "Gets registered handlers",
+        "Executes in priority order",
+        "Passes context through"
+      ]
+    },
+    {
+      "n": "Unregister Hook",
+      "sig": "unregister(hook_id: HookID) → Effect",
+      "def": "$unregister(hook\\_id: HookID) → Effect = for point in hooks: hooks[point] := {h : h ∈ hooks[point], h.id ≠ hook\\_id}$",
+      "pre": [
+        "hook\\_id ≠ null"
+      ],
+      "post": [
+        "¬registered(hook\\_id)"
+      ],
+      "fx": [
+        "Removes hook from all points"
+      ]
+    },
+    {
+      "n": "Register Handler",
+      "sig": "register(hook: HookPoint, handler: Handler, priority: ℕ) → Effect",
+      "def": "$register(hook: HookPoint, handler: Handler, priority: ℕ) → Effect = handlers[hook] := insert_sorted(handlers[hook], (handler, priority))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Invoke Hooks",
+      "sig": "invoke(hook: HookPoint, context: Context) → Effect",
+      "def": "$invoke(hook: HookPoint, context: Context) → Effect = for (handler, priority) in handlers[hook]: try: handler(context) catch error: log_error(error) // Continue with next handler Application lifecycle: - app:init - app:ready - app:shutdown Data operations: - before:save - after:save - before:delete - after:delete Rendering: - before:render - after:render$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Lifecycle hooks",
+      "d": "React, Vue"
+    },
+    {
+      "n": "Event handlers",
+      "d": "registered callbacks for hook points"
+    },
+    {
+      "n": "Middleware",
+      "d": "pre and post processing hooks in pipelines"
+    },
+    {
+      "n": "Aspect-oriented programming",
+      "d": "cross-cutting hooks around functions"
+    }
+  ]
+}

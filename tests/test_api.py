@@ -522,6 +522,61 @@ class TestUpdatePattern:
         assert "does not match" in response.json()["detail"]
 
 
+class TestPartialUpdatePattern:
+    """Test pattern partial update endpoint."""
+
+    def test_partial_update_adds_operation_without_dropping_existing(
+        self, client, valid_pattern_data
+    ):
+        """Test adding a new operation preserves existing ones."""
+        client.post("/patterns", json=valid_pattern_data)
+
+        update_data = {
+            "operations": {
+                "operation": [
+                    {
+                        "name": "Search",
+                        "signature": "search(q: Query) \u2192 Set\u27e8N\u27e9",
+                        "formal_definition": {
+                            "content": "search(q: Query) = {n \u2208 N : matches(n, q)}",
+                            "format": "latex",
+                        },
+                    }
+                ]
+            }
+        }
+
+        response = client.patch(f"/patterns/{valid_pattern_data['id']}", json=update_data)
+        assert response.status_code == 200
+        operations = response.json()["operations"]["operation"]
+        names = {op["name"] for op in operations}
+        assert names == {"Traverse", "Search"}
+
+    def test_partial_update_merges_existing_operation(self, client, valid_pattern_data):
+        """Test updating an existing operation preserves its other fields."""
+        client.post("/patterns", json=valid_pattern_data)
+
+        update_data = {
+            "operations": {
+                "operation": [
+                    {
+                        "name": "Traverse",
+                        "signature": "traverse(n: N) \u2192 List\u27e8N\u27e9",
+                    }
+                ]
+            }
+        }
+
+        response = client.patch(f"/patterns/{valid_pattern_data['id']}", json=update_data)
+        assert response.status_code == 200
+        operations = response.json()["operations"]["operation"]
+        assert len(operations) == 1
+        op = next(op for op in operations if op["name"] == "Traverse")
+        assert op["signature"] == "traverse(n: N) \u2192 List\u27e8N\u27e9"
+        formal_definition = op.get("formal-definition") or op.get("formal_definition")
+        assert formal_definition is not None
+
+
 class TestDeletePattern:
     """Test pattern deletion endpoint."""
     
@@ -814,5 +869,4 @@ class TestCompleteWorkflow:
         # Verify deletion
         response = client.get(f"/patterns/{pattern_id}")
         assert response.status_code == 404
-
 

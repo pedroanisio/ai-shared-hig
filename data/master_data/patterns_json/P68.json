@@ -1,0 +1,238 @@
+{
+  "id": "P68",
+  "v": "1.1",
+  "name": "Agent Team Visualization",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Multi-Agent",
+    "Visualization"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{team} = (A_{roster}, R_{roles}, S_{status}, C_{coord}) : \\text{Agents} \\to \\text{Visualization}$",
+  "desc": "CQRS pattern separates read and write operations for optimized data access.",
+  "comps": [
+    {
+      "n": "A_{roster}",
+      "t": "Set⟨Agent⟩",
+      "d": "current team of active agents",
+      "nota": "A_{roster}"
+    },
+    {
+      "n": "R_{roles}",
+      "t": "Agent → Role",
+      "d": "role assignment mapping for each agent",
+      "nota": "R_{roles}"
+    },
+    {
+      "n": "S_{status}",
+      "t": "Agent → Status",
+      "d": "current status of each agent",
+      "nota": "S_{status}"
+    },
+    {
+      "n": "C_{coord}",
+      "t": "Set⟨Coordination⟩",
+      "d": "coordination relationships between agents",
+      "nota": "C_{coord}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Command",
+      "def": "(type: CommandType, aggregate_id: ID, data: Data)",
+      "d": "State-changing command"
+    },
+    {
+      "n": "Query",
+      "def": "(type: QueryType, filters: Filters, pagination: Pagination)",
+      "d": "Read-only query"
+    },
+    {
+      "n": "Agent",
+      "def": "$\\text{Agent} = (\\text{id}, \\text{capabilities}, \\text{model}, \\text{state})$",
+      "d": "Agent identity and capabilities"
+    },
+    {
+      "n": "Role",
+      "def": "$\\text{Role} = \\{\\text{coordinator}, \\text{worker}, \\text{specialist}, \\text{reviewer}, \\text{observer}\\}$",
+      "d": "Assigned responsibility within the team"
+    },
+    {
+      "n": "Status",
+      "def": "$\\text{Status} = \\{\\text{idle}, \\text{thinking}, \\text{executing}, \\text{waiting}, \\text{complete}, \\text{error}\\}$",
+      "d": "Current lifecycle state of an agent"
+    },
+    {
+      "n": "Coordination",
+      "def": "$\\text{Coordination} = (\\text{source}, \\text{target}, \\text{relation}, \\text{data})$",
+      "d": "Link describing coordination between agents"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P68.1",
+      "n": "Write Optimization",
+      "spec": "writes optimized\\_for\\_consistency",
+      "d": "Writes optimized for consistency",
+      "inv": [
+        "consistent\\_writes"
+      ]
+    },
+    {
+      "id": "P.P68.2",
+      "n": "Read Optimization",
+      "spec": "reads optimized\\_for\\_queries",
+      "d": "Reads optimized for query patterns",
+      "inv": [
+        "fast\\_reads"
+      ]
+    },
+    {
+      "id": "P.P68.3",
+      "n": "Eventual Consistency",
+      "spec": "read\\_models eventually\\_consistent",
+      "d": "Read models eventually consistent",
+      "inv": [
+        "eventual\\_consistency"
+      ]
+    },
+    {
+      "id": "P.P68.4",
+      "n": "Coordination Visibility",
+      "spec": "$\\forall c \\in C_{coord} : \\text{visible}(c) \\land \\text{direction}(c) \\in \\{\\text{bidirectional}, \\text{unidirectional}\\}$",
+      "d": "Coordination links are visible with directionality",
+      "inv": [
+        "visible\\_coordination"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Execute Command",
+      "sig": "command(cmd: Command) → CommandResult",
+      "def": "$command(cmd: Command) → CommandResult = validate\\_command(cmd); aggregate := load\\_aggregate(cmd.aggregate\\_id); aggregate.apply(cmd); events := aggregate.uncommitted\\_events(); persist\\_events(events); publish\\_events(events); return Success(events)$",
+      "pre": [
+        "valid\\_command(cmd)"
+      ],
+      "post": [
+        "events\\_persisted ∧ events\\_published"
+      ],
+      "fx": [
+        "Validates command",
+        "Applies to aggregate",
+        "Persists events",
+        "Publishes"
+      ]
+    },
+    {
+      "n": "Execute Query",
+      "sig": "query(q: Query) → QueryResult",
+      "def": "$query(q: Query) → QueryResult = read\\_model := select\\_read\\_model(q.type); result := read\\_model.execute(q); return result$",
+      "pre": [
+        "valid\\_query(q)"
+      ],
+      "post": [
+        "result consistent\\_at\\_query\\_time"
+      ],
+      "fx": [
+        "Selects read model",
+        "Executes query",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Project Events",
+      "sig": "project(events: Sequence⟨Event⟩, model: ReadModel) → Effect",
+      "def": "$project(events: Sequence⟨Event⟩, model: ReadModel) → Effect = for event in events: model.apply(event); model.save()$",
+      "pre": [
+        "|events| > 0"
+      ],
+      "post": [
+        "model\\_updated"
+      ],
+      "fx": [
+        "Projects events to read model"
+      ]
+    },
+    {
+      "n": "Add Agent",
+      "sig": "addAgent: Agent × Role → A_roster",
+      "def": "$\\text{addAgent}(a, r) = A_{roster}'$where$A_{roster}' = A_{roster} \\cup \\{a\\}$$R_{roles}'(a) = r$$S_{status}'(a) = \\text{idle}$",
+      "pre": [
+        "valid_addAgent(input)",
+        "addAgent_collection ≠ null"
+      ],
+      "post": [
+        "addAgent ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new addAgent to collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Update Status",
+      "sig": "updateStatus: Agent × Status → Effect",
+      "def": "$\\text{updateStatus}(a, s) = S_{status}'$where$S_{status}'(a) = s$$\\text{notify}(\\text{visualization}, a, s)$",
+      "pre": [
+        "updateStatus_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing updateStatus",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "Visualize Coordination",
+      "sig": "visualize: Set⟨Coordination⟩ → Graph",
+      "def": "$\\text{visualize}(C) = G$where$G.vertices = A_{roster}$$G.edges = \\{(c.source, c.target, c.relation) \\mid c \\in C\\}$$\\text{layout}(G) = \\text{force-directed}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P14"
+    ],
+    "use": [
+      "P93"
+    ]
+  },
+  "manif": [
+    {
+      "n": "CrewAI agent dashboard",
+      "d": "visualizes agent team with roles and status"
+    },
+    {
+      "n": "AutoGPT agent tree",
+      "d": "hierarchical view of agent spawning and coordination"
+    },
+    {
+      "n": "LangGraph agent graph",
+      "d": "node-edge visualization of agent workflow"
+    },
+    {
+      "n": "Mastra agent monitor",
+      "d": "real-time agent team status display"
+    }
+  ]
+}

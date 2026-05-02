@@ -1,0 +1,200 @@
+{
+  "id": "P148",
+  "v": "1.1",
+  "name": "Resource Limit Controls",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$L_{resources} = (Limits, Current, Controls, Enforcement) : Resources \\to Limits_{managed}$",
+  "desc": "Resource limit controls enforce constraints on resource consumption and usage patterns.",
+  "comps": [
+    {
+      "n": "Limits",
+      "t": "Map⟨Resource, Limit⟩",
+      "d": "Resource limits by type",
+      "nota": "Limits"
+    },
+    {
+      "n": "Current",
+      "t": "Map⟨Resource, Usage⟩",
+      "d": "Current resource usage",
+      "nota": "Current"
+    },
+    {
+      "n": "Controls",
+      "t": "Set⟨Control⟩",
+      "d": "UI controls for adjusting limits",
+      "nota": "Controls"
+    },
+    {
+      "n": "Enforce",
+      "t": "Resource → Effect",
+      "d": "Enforcement function for limits",
+      "nota": "Enforce"
+    }
+  ],
+  "types": [
+    {
+      "n": "Resource",
+      "def": "Tokens | Memory | CPU | Storage | Requests",
+      "d": "Type of resource being limited"
+    },
+    {
+      "n": "Allowed",
+      "def": "Permission granted",
+      "d": "Resource allocation allowed"
+    },
+    {
+      "n": "Denied",
+      "def": "(reason: String)",
+      "d": "Resource allocation denied"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P148.1",
+      "n": "Hard Limits",
+      "spec": "∀resource: consumption[resource] ≤ limits[resource]",
+      "d": "Resource consumption never exceeds limits",
+      "inv": [
+        "enforced\\_limits"
+      ]
+    },
+    {
+      "id": "P.P148.2",
+      "n": "Graceful Degradation",
+      "spec": "limit\\_exceeded ⇒ graceful\\_error",
+      "d": "Limit violations produce graceful errors",
+      "inv": [
+        "user\\_friendly\\_errors"
+      ]
+    },
+    {
+      "id": "P.P148.3",
+      "n": "Configurable Limits",
+      "spec": "∀resource: limit\\_adjustable(resource)",
+      "d": "All resource limits are adjustable",
+      "inv": [
+        "flexible\\_limits"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Set Limit",
+      "sig": "set_limit(resource: Resource, limit: ℕ) → Effect",
+      "def": "$set\\_limit(resource: Resource, limit: ℕ) → Effect = validate\\_limit(limit); limits[resource] := limit; reset\\_consumption(resource); log\\_limit\\_change(resource, limit)$",
+      "pre": [
+        "limit > 0"
+      ],
+      "post": [
+        "limits[resource] = limit"
+      ],
+      "fx": [
+        "Validates limit value",
+        "Sets resource limit",
+        "Resets consumption counter"
+      ]
+    },
+    {
+      "n": "Check Limit",
+      "sig": "check(resource: Resource, amount: ℕ) → Allowed | Denied",
+      "def": "$check(resource: Resource, amount: ℕ) → Allowed | Denied = current := consumption[resource]; if current + amount ≤ limits[resource]: return Allowed else: return Denied(\"Limit exceeded\")$",
+      "pre": [
+        "amount > 0"
+      ],
+      "post": [
+        "result = Allowed ⇔ would\\_not\\_exceed(resource, amount)"
+      ],
+      "fx": [
+        "Gets current consumption",
+        "Checks against limit"
+      ]
+    },
+    {
+      "n": "Consume Resource",
+      "sig": "consume(resource: Resource, amount: ℕ) → Effect | Error",
+      "def": "$consume(resource: Resource, amount: ℕ) → Effect | Error = if check(resource, amount) = Allowed: consumption[resource] := consumption[resource] + amount else: throw LimitExceededError(resource)$",
+      "pre": [
+        "amount > 0"
+      ],
+      "post": [
+        "consumption[resource] ≤ limits[resource]"
+      ],
+      "fx": [
+        "Checks limit",
+        "Updates consumption or throws error"
+      ]
+    },
+    {
+      "n": "SetLimit",
+      "sig": "set_limit(r: Resource, l: Limit) → Effect",
+      "def": "set_limit(r, l) configures limit for resource",
+      "pre": [
+        "r_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing r",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetUsage",
+      "sig": "usage(r: Resource) → Usage",
+      "def": "usage(r) returns current usage for resource",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "CheckLimit",
+      "sig": "within_limit(r: Resource) → 𝔹",
+      "def": "within_limit(r) checks if usage below limit",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

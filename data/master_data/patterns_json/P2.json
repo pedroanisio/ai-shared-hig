@@ -1,0 +1,142 @@
+{
+  "id": "P2",
+  "v": "1.1",
+  "name": "Command Interface",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I = (input, parser, executor, history)$",
+  "desc": "Command interfaces enable users to execute actions through text-based commands.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "String",
+      "d": "command text",
+      "nota": "input"
+    },
+    {
+      "n": "parser",
+      "t": "String → Command | Error",
+      "d": "parses input string into command structure",
+      "nota": "parser"
+    },
+    {
+      "n": "executor",
+      "t": "Command → Result",
+      "d": "executes commands",
+      "nota": "executor"
+    },
+    {
+      "n": "history",
+      "t": "Sequence⟨String⟩",
+      "d": "command history",
+      "nota": "history"
+    }
+  ],
+  "types": [
+    {
+      "n": "Command",
+      "def": "(name: String, params: Parameters, handler: Function)",
+      "d": "Executable command"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P2.1",
+      "n": "Discoverability",
+      "spec": "∀command: discoverable(command) via help",
+      "d": "Commands are discoverable",
+      "inv": [
+        "documented\\_commands"
+      ]
+    },
+    {
+      "id": "P.P2.2",
+      "n": "Error Feedback",
+      "spec": "parse\\_error ⇒ helpful\\_message",
+      "d": "Parse errors provide helpful feedback",
+      "inv": [
+        "actionable\\_errors"
+      ]
+    },
+    {
+      "id": "P.P2.3",
+      "n": "Undo Support",
+      "spec": "∀command: undoable(command) ∨ marked\\_irreversible",
+      "d": "Commands support undo or are marked",
+      "inv": [
+        "reversibility\\_known"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(input: Input) → Output",
+      "def": "$process(input: Input) → Output = validated := validate(input) result := execute(validated) return result$",
+      "pre": [
+        "input \\neq null"
+      ],
+      "post": [
+        "valid(result)"
+      ],
+      "fx": [
+        "Processes input",
+        "Returns output"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := format(data) render(formatted)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "visible(data)"
+      ],
+      "fx": [
+        "Displays data",
+        "Renders output"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(changes: Set⟨Change⟩) → Effect",
+      "def": "$update(changes: Set⟨Change⟩) → Effect = for c in changes: apply(c)$",
+      "pre": [
+        "changes \\neq \\emptyset"
+      ],
+      "post": [
+        "updated = true"
+      ],
+      "fx": [
+        "Applies changes",
+        "Updates state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Search bar",
+      "d": "Google, Spotlight"
+    },
+    {
+      "n": "Command line",
+      "d": "Terminal, bash"
+    },
+    {
+      "n": "Command palette",
+      "d": "VS Code Ctrl+Shift+P"
+    },
+    {
+      "n": "Query input",
+      "d": "SQL clients"
+    }
+  ]
+}

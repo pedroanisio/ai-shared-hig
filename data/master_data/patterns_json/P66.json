@@ -1,0 +1,238 @@
+{
+  "id": "P66",
+  "v": "1.1",
+  "name": "Context-Adaptive Interface",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Adaptive UI",
+    "Personalization"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A = (U_{state}, T_{ctx}, T_{ui}, R_{adapt}) : \\text{Context} \\to \\text{UI}_{morphed}$",
+  "desc": "Webhook pattern enables event-driven integrations through HTTP callbacks.",
+  "comps": [
+    {
+      "n": "U_{state}",
+      "t": "ApplicationState",
+      "d": "current application state",
+      "nota": "U_{state}"
+    },
+    {
+      "n": "T_{ctx}",
+      "t": "Context → ContextVector",
+      "d": "context extraction and encoding function",
+      "nota": "T_{ctx}"
+    },
+    {
+      "n": "T_{ui}",
+      "t": "Set⟨UIVariant⟩",
+      "d": "set of UI variants for different contexts",
+      "nota": "T_{ui}"
+    },
+    {
+      "n": "R_{adapt}",
+      "t": "ContextVector → UIVariant",
+      "d": "adaptation function mapping context to UI",
+      "nota": "R_{adapt}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Webhook",
+      "def": "(id: WebhookID, url: URL, events: Set⟨EventType⟩, secret: String, active: 𝔹)",
+      "d": "Webhook registration"
+    },
+    {
+      "n": "DeliveryAttempt",
+      "def": "(webhook: Webhook, event: Event, attempts: ℕ, status: Status)",
+      "d": "Delivery attempt record"
+    },
+    {
+      "n": "Context",
+      "def": "$\\text{Context} = (\\text{user}, \\text{task}, \\text{environment}, \\text{history})$",
+      "d": "Signals describing user intent and environment"
+    },
+    {
+      "n": "ContextVector",
+      "def": "$\\text{ContextVector} = \\mathbb{R}^d$ (embedded representation)",
+      "d": "Numeric embedding of the current context"
+    },
+    {
+      "n": "UIVariant",
+      "def": "$\\text{UIVariant} = (\\text{layout}, \\text{components}, \\text{interactions}, \\text{metadata})$",
+      "d": "Concrete UI configuration for a context"
+    },
+    {
+      "n": "ApplicationState",
+      "def": "$\\text{ApplicationState} = \\text{Map}(\\text{Key}, \\text{Value})$",
+      "d": "Runtime state used to derive context"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P66.1",
+      "n": "At-Least-Once Delivery",
+      "spec": "∀event: delivered ≥ 1 times",
+      "d": "Events delivered at least once",
+      "inv": [
+        "guaranteed\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P66.2",
+      "n": "Signature Verification",
+      "spec": "∀delivery: signed\\_with\\_secret",
+      "d": "Deliveries are cryptographically signed",
+      "inv": [
+        "secure\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P66.3",
+      "n": "Idempotency Support",
+      "spec": "duplicate\\_delivery safe",
+      "d": "Duplicate deliveries are safe",
+      "inv": [
+        "idempotent\\_delivery"
+      ]
+    },
+    {
+      "id": "P.P66.4",
+      "n": "Variant Coverage",
+      "spec": "$\\forall c \\in \\text{Context} : \\exists v \\in T_{ui} : R_{adapt}(T_{ctx}(c)) = v$ (complete coverage)",
+      "d": "Every context maps to a valid UI variant",
+      "inv": [
+        "complete\\_variant\\_mapping"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Register Webhook",
+      "sig": "register(url: URL, events: Set⟨EventType⟩, secret: String) → WebhookID",
+      "def": "$register(url: URL, events: Set⟨EventType⟩, secret: String) → WebhookID = validate\\_url(url); id := generate\\_id(); webhook := Webhook(id, url, events, secret, active=true); webhooks[id] := webhook; return id$",
+      "pre": [
+        "valid\\_url(url) ∧ |events| > 0"
+      ],
+      "post": [
+        "id ∈ webhooks"
+      ],
+      "fx": [
+        "Validates URL",
+        "Creates webhook",
+        "Stores registration"
+      ]
+    },
+    {
+      "n": "Deliver Event",
+      "sig": "deliver(event: Event) → Effect",
+      "def": "$deliver(event: Event) → Effect = webhooks\\_to\\_notify := {w : w ∈ webhooks, event.type ∈ w.events ∧ w.active}; for webhook in webhooks\\_to\\_notify: payload := construct\\_payload(event); signature := hmac\\_sign(payload, webhook.secret); send\\_http\\_post(webhook.url, payload, signature); log\\_delivery(webhook, event)$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "∀webhook: notified ∨ logged\\_failure"
+      ],
+      "fx": [
+        "Finds matching webhooks",
+        "Constructs signed payload",
+        "Sends HTTP POST",
+        "Logs delivery"
+      ]
+    },
+    {
+      "n": "Retry Failed",
+      "sig": "retry(delivery: DeliveryAttempt) → Effect",
+      "def": "$retry(delivery: DeliveryAttempt) → Effect = if delivery.attempts < max\\_retries: wait(exponential\\_backoff(delivery.attempts)); attempt\\_delivery(delivery); else: mark\\_failed(delivery)$",
+      "pre": [
+        "delivery.status = Failed"
+      ],
+      "post": [
+        "delivery.attempts incremented"
+      ],
+      "fx": [
+        "Waits with backoff",
+        "Retries delivery",
+        "Marks failed if exhausted"
+      ]
+    },
+    {
+      "n": "Extract Context",
+      "sig": "extract: ApplicationState → Context",
+      "def": "$\\text{extract}(state) = ctx$where$ctx.user = state[\\text{user\\_profile}]$$ctx.task = \\text{infer\\_task}(state[\\text{recent\\_actions}])$$ctx.environment = \\text{detect\\_env}()$$ctx.history = state[\\text{interaction\\_history}]$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Select Variant",
+      "sig": "select: Context → UIVariant",
+      "def": "$\\text{select}(ctx) = v$where$v = R_{adapt}(T_{ctx}(ctx))$$v = \\arg\\max_{v' \\in T_{ui}} \\text{score}(v', ctx)$(best match)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Morph Interface",
+      "sig": "morph: UIVariant × UIVariant → Transition",
+      "def": "$\\text{morph}(v_{old}, v_{new}) = trans$where$trans = \\text{compute\\_diff}(v_{old}, v_{new})$$\\text{animate}(trans, \\text{duration})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "use": [
+      "P136",
+      "P137"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Notion adaptive workspace",
+      "d": "UI adapts to document type and user role"
+    },
+    {
+      "n": "Figma context-aware panels",
+      "d": "tools change based on selected object"
+    },
+    {
+      "n": "VS Code adaptive UI",
+      "d": "panels adjust to programming language and task"
+    },
+    {
+      "n": "Gmail smart compose",
+      "d": "suggestions adapt to email context and recipient"
+    }
+  ]
+}

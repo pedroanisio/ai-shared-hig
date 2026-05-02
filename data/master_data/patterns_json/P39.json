@@ -1,0 +1,155 @@
+{
+  "id": "P39",
+  "v": "1.1",
+  "name": "Contextual Action Menu",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M = (T, C, A, \\pi_{39}, \\sigma_{39}, \\delta_{39})$",
+  "desc": "Contextual action menus provide relevant actions based on current selection and context.",
+  "comps": [
+    {
+      "n": "\\pi_{39}",
+      "t": "A \\times C → \\{\\text{visible}, \\text{hidden}, \\text{disabled}\\}",
+      "d": "**availability**",
+      "nota": "\\pi_{39}"
+    },
+    {
+      "n": "\\sigma_{39}",
+      "t": "M → \\{\\text{open}, \\text{closed}\\}",
+      "d": "**state**",
+      "nota": "\\sigma_{39}"
+    },
+    {
+      "n": "\\delta_{39}",
+      "t": "M → \\mathbb{R}^2",
+      "d": "**positioning function**",
+      "nota": "\\delta_{39}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Menu",
+      "def": "(actions: Set⟨Action⟩, position: Point, target: Element)",
+      "d": "Contextual menu"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P39.1",
+      "n": "Context Relevance",
+      "spec": "∀action ∈ menu: applicable(action, target)",
+      "d": "All menu actions are contextually relevant",
+      "inv": [
+        "relevant\\_actions"
+      ]
+    },
+    {
+      "id": "P.P39.2",
+      "n": "Quick Access",
+      "spec": "right\\_click ⇒ show\\_menu",
+      "d": "Menus provide quick action access",
+      "inv": [
+        "efficient\\_access"
+      ]
+    },
+    {
+      "id": "P.P39.3",
+      "n": "Auto Hide",
+      "spec": "click\\_outside ⇒ hide\\_menu",
+      "d": "Menus hide on outside click",
+      "inv": [
+        "auto\\_dismiss"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show Menu",
+      "sig": "show(target: Element, position: Point) → Menu",
+      "def": "$show(target: Element, position: Point) → Menu = actions := get\\_contextual\\_actions(target); menu := Menu(actions, position); display(menu); return menu$",
+      "pre": [
+        "target ≠ null"
+      ],
+      "post": [
+        "visible(menu)"
+      ],
+      "fx": [
+        "Gets contextual actions",
+        "Creates menu",
+        "Displays at position"
+      ]
+    },
+    {
+      "n": "Execute Action",
+      "sig": "execute(action: Action, target: Element) → Effect",
+      "def": "$execute(action: Action, target: Element) → Effect = result := action.handler(target); hide\\_menu(); return result$",
+      "pre": [
+        "action ∈ menu.actions"
+      ],
+      "post": [
+        "executed(action) ∧ ¬visible(menu)"
+      ],
+      "fx": [
+        "Executes action handler",
+        "Hides menu",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Filter Actions",
+      "sig": "filter(target: Element) → Set⟨Action⟩",
+      "def": "$filter(target: Element) → Set⟨Action⟩ = all\\_actions := get\\_all\\_actions(); {action : action ∈ all\\_actions, applicable(action, target)}$",
+      "pre": [
+        "target ≠ null"
+      ],
+      "post": [
+        "∀action ∈ result: applicable(action, target)"
+      ],
+      "fx": [
+        "Gets all actions",
+        "Filters by applicability"
+      ]
+    },
+    {
+      "n": "Open Menu",
+      "sig": "open(T: Element, C: Context) → Effect",
+      "def": "$open(T: Element, C: Context) → Effect = σ₃₉ := open position := δ₃₉(T, viewport) actions_visible := filter(A, λa: π₃₉(a, C) ≠ hidden) render(M, position, actions_visible)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Three-dot menu",
+      "d": "overflow menu button for item actions"
+    },
+    {
+      "n": "Right-click context menu",
+      "d": "context menu surfaced on right click"
+    },
+    {
+      "n": "Kebab menu",
+      "d": "⋮"
+    },
+    {
+      "n": "More actions dropdown",
+      "d": "dropdown listing additional contextual actions"
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "id": "P152",
+  "v": "1.1",
+  "name": "Audit Trail Viewer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V_{audit} = (Actions, Actors, Timestamps, Filter) : History \\to Audit_{view}$",
+  "desc": "Audit trail viewers display chronological records of system actions and changes for compliance and debugging.",
+  "comps": [
+    {
+      "n": "Actions",
+      "t": "Sequence⟨AuditEntry⟩",
+      "d": "Chronological log of all actions",
+      "nota": "Actions"
+    },
+    {
+      "n": "Actors",
+      "t": "Entry → Actor",
+      "d": "Actor responsible for each action",
+      "nota": "Actors"
+    },
+    {
+      "n": "Timestamps",
+      "t": "Entry → Time",
+      "d": "Timestamp of each action",
+      "nota": "Timestamps"
+    },
+    {
+      "n": "Filter",
+      "t": "Predicate → Sequence⟨Entry⟩",
+      "d": "Filter function for audit log",
+      "nota": "Filter"
+    }
+  ],
+  "types": [
+    {
+      "n": "AuditEvent",
+      "def": "(actor: User, action: Action, resource: Resource, timestamp: Time, hash: Hash)",
+      "d": "Single audit trail entry"
+    },
+    {
+      "n": "Filter",
+      "def": "Predicate on AuditEvent",
+      "d": "Event filter criterion"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P152.1",
+      "n": "Immutability",
+      "spec": "∀event ∈ trail: immutable(event)",
+      "d": "Audit events cannot be modified",
+      "inv": [
+        "tamper\\_proof"
+      ]
+    },
+    {
+      "id": "P.P152.2",
+      "n": "Completeness",
+      "spec": "∀action: recorded(action) in trail",
+      "d": "All actions are recorded",
+      "inv": [
+        "complete\\_audit"
+      ]
+    },
+    {
+      "id": "P.P152.3",
+      "n": "Searchability",
+      "spec": "∀event: findable(event) via query",
+      "d": "All events are searchable",
+      "inv": [
+        "searchable\\_trail"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Record Event",
+      "sig": "record(event: AuditEvent) → Effect",
+      "def": "$record(event: AuditEvent) → Effect = event.timestamp := now(); event.hash := compute\\_hash(event); trail.append(event); persist(event)$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "event ∈ trail ∧ immutable(event)"
+      ],
+      "fx": [
+        "Timestamps event",
+        "Computes integrity hash",
+        "Appends to trail",
+        "Persists event"
+      ]
+    },
+    {
+      "n": "Query Trail",
+      "sig": "query(filters: Set⟨Filter⟩, timeRange: TimeRange) → Sequence⟨AuditEvent⟩",
+      "def": "$query(filters: Set⟨Filter⟩, timeRange: TimeRange) → Sequence⟨AuditEvent⟩ = events := filter\\_by\\_time(trail, timeRange); filtered := apply\\_filters(events, filters); return sort\\_by\\_timestamp(filtered)$",
+      "pre": [
+        "valid\\_time\\_range(timeRange)"
+      ],
+      "post": [
+        "chronological(result)"
+      ],
+      "fx": [
+        "Filters by time range",
+        "Applies additional filters",
+        "Sorts chronologically"
+      ]
+    },
+    {
+      "n": "Verify Integrity",
+      "sig": "verify(event: AuditEvent) → 𝔹",
+      "def": "$verify(event: AuditEvent) → 𝔹 = computed\\_hash := compute\\_hash(event); return computed\\_hash = event.hash$",
+      "pre": [
+        "event.hash ≠ null"
+      ],
+      "post": [
+        "result ⇔ unmodified(event)"
+      ],
+      "fx": [
+        "Recomputes hash",
+        "Compares with stored hash"
+      ]
+    },
+    {
+      "n": "RecordAction",
+      "sig": "record(action: Action, actor: Actor) → Effect",
+      "def": "record(action, actor) appends immutable audit entry",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "QueryLog",
+      "sig": "query(pred: Predicate) → Sequence⟨Entry⟩",
+      "def": "query(pred) returns entries satisfying predicate",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "ExportAudit",
+      "sig": "export(range: TimeRange) → Report",
+      "def": "export(range) generates audit report for time range",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

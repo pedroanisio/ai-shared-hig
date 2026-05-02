@@ -1,0 +1,265 @@
+{
+  "id": "P53",
+  "v": "1.1",
+  "name": "Filtering Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$F = (data, filters, active, result, facets)$",
+  "desc": "Filtering pattern enables users to narrow down displayed data based on criteria.",
+  "comps": [
+    {
+      "n": "data",
+      "t": "Set⟨Item⟩",
+      "d": "full dataset",
+      "nota": "data"
+    },
+    {
+      "n": "filters",
+      "t": "Map⟨String, Filter⟩",
+      "d": "available filters",
+      "nota": "filters"
+    },
+    {
+      "n": "active",
+      "t": "Map⟨String, FilterValue⟩",
+      "d": "active filters",
+      "nota": "active"
+    },
+    {
+      "n": "result",
+      "t": "Set⟨Item⟩",
+      "d": "filtered result",
+      "nota": "result"
+    },
+    {
+      "n": "facets",
+      "t": "Map⟨String, Facet⟩",
+      "d": "shows filter counts",
+      "nota": "facets"
+    }
+  ],
+  "types": [
+    {
+      "n": "Filter",
+      "def": "(field: String, operator: Operator, value: Value)",
+      "d": "Filter criterion"
+    },
+    {
+      "n": "FilterType",
+      "def": "Range | Select | MultiSelect | Search | Boolean",
+      "d": "Supported filter UI types"
+    },
+    {
+      "n": "FilterValue",
+      "def": "Value | Range(min, max) | Set⟨Value⟩",
+      "d": "Value representation for an active filter"
+    },
+    {
+      "n": "Facet",
+      "def": "Map⟨Value, ℕ⟩  // value → count",
+      "d": "Counts per value for a facet"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P53.1",
+      "n": "Compound Filtering",
+      "spec": "multiple\\_filters combine\\_with\\_AND",
+      "d": "Multiple filters combine with AND logic",
+      "inv": [
+        "conjunctive\\_filters"
+      ]
+    },
+    {
+      "id": "P.P53.2",
+      "n": "Real-Time Results",
+      "spec": "filter\\_change ⇒ immediate\\_update",
+      "d": "Results update immediately",
+      "inv": [
+        "instant\\_filtering"
+      ]
+    },
+    {
+      "id": "P.P53.3",
+      "n": "Filter Visibility",
+      "spec": "active\\_filters clearly\\_displayed",
+      "d": "Active filters clearly shown",
+      "inv": [
+        "visible\\_filters"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Range Filter",
+      "sig": "range_filter(min: Value, max: Value) → FilterValue",
+      "def": "Price: $0 - $1000; apply(item, (min, max)) = min ≤ item.price ≤ max; Search: \\\"laptop\\\"; apply(item, query) = contains(item.name, query, case_insensitive)",
+      "pre": [
+        "min \\leq max",
+        "comparable(min, max)"
+      ],
+      "post": [
+        "result.min = min \\wedge result.max = max",
+        "result.type = range"
+      ],
+      "fx": [
+        "Creates range filter with bounds",
+        "Filters items within min-max range"
+      ]
+    },
+    {
+      "n": "Boolean Filter",
+      "sig": "boolean_filter(enabled: 𝔹) → FilterValue",
+      "def": "[✓] In Stock Only; apply(item, true) = item.in_stock",
+      "pre": [
+        "enabled \\in \\{true, false\\}"
+      ],
+      "post": [
+        "result.value = enabled",
+        "result.type = boolean"
+      ],
+      "fx": [
+        "Creates boolean filter",
+        "Filters by true/false attribute"
+      ]
+    },
+    {
+      "n": "Apply Filter",
+      "sig": "apply_filter(filter_name: String, value: FilterValue) → Effect",
+      "def": "$apply_filter(filter_name: String, value: FilterValue) → Effect = active[filter_name] := value result := compute_result(data, active) facets := compute_facets(result, filters) notify_observers(result)$",
+      "pre": [
+        "filter\\_name \\in available\\_filters",
+        "value \\neq null"
+      ],
+      "post": [
+        "active\\_filters'[filter\\_name] = value",
+        "results\\_recomputed = true"
+      ],
+      "fx": [
+        "Activates filter with value",
+        "Triggers result recomputation"
+      ]
+    },
+    {
+      "n": "Compute Result",
+      "sig": "compute_result(data: Set⟨Item⟩, active: Map⟨String, FilterValue⟩) → Set⟨Item⟩",
+      "def": "$compute_result(data: Set⟨Item⟩, active: Map⟨String, FilterValue⟩) → Set⟨Item⟩ = filter(data, λitem: ∀(k, v) ∈ active: filters[k].apply(item, v) )$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "result \\subseteq data",
+        "\\forall i \\in result: matches\\_all\\_filters(i, active)"
+      ],
+      "fx": [
+        "Filters data by active filters",
+        "Returns matching subset"
+      ]
+    },
+    {
+      "n": "Compute Facets",
+      "sig": "compute_facets(result: Set⟨Item⟩, filters: Map⟨String, Filter⟩) → Map⟨String, Facet⟩",
+      "def": "$compute_facets(result: Set⟨Item⟩, filters: Map⟨String, Filter⟩) → Map⟨String, Facet⟩ = { (filter_name, { (value, count(result, λitem: item[filter_name] = value)) for value in possible_values(filter_name) }) for filter_name in keys(filters) }$",
+      "pre": [
+        "result \\neq null \\wedge filters \\neq null"
+      ],
+      "post": [
+        "\\forall f \\in filters: result\\_map[f] = count\\_values(result, f)",
+        "facet\\_counts\\_accurate = true"
+      ],
+      "fx": [
+        "Calculates value distribution per filter",
+        "Shows available filter options with counts"
+      ]
+    },
+    {
+      "n": "Clear Filters",
+      "sig": "clear() → Effect",
+      "def": "$clear() → Effect = active := {} result := data facets := compute_facets(result, filters)$",
+      "pre": [
+        "has\\_active\\_filters()"
+      ],
+      "post": [
+        "active\\_filters' = \\emptyset",
+        "results' = all\\_data"
+      ],
+      "fx": [
+        "Removes all active filters",
+        "Shows unfiltered data"
+      ]
+    },
+    {
+      "n": "Add Filter",
+      "sig": "add(filter: Filter) → Effect",
+      "def": "$add(filter: Filter) → Effect = active\\_filters := active\\_filters ∪ {filter}; apply\\_filters()$",
+      "pre": [
+        "valid\\_filter(filter)"
+      ],
+      "post": [
+        "filter ∈ active\\_filters"
+      ],
+      "fx": [
+        "Adds filter to active set",
+        "Applies all filters"
+      ]
+    },
+    {
+      "n": "Remove Filter",
+      "sig": "remove(filter: Filter) → Effect",
+      "def": "$remove(filter: Filter) → Effect = active\\_filters := active\\_filters \\ {filter}; apply\\_filters()$",
+      "pre": [
+        "filter ∈ active\\_filters"
+      ],
+      "post": [
+        "filter ∉ active\\_filters"
+      ],
+      "fx": [
+        "Removes filter",
+        "Reapplies remaining filters"
+      ]
+    },
+    {
+      "n": "Apply Filters",
+      "sig": "apply() → Set⟨Item⟩",
+      "def": "$apply() → Set⟨Item⟩ = result := all\\_items; for filter in active\\_filters: result := {item ∈ result : filter.matches(item)}; return result$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "∀item ∈ result: ∀filter ∈ active\\_filters: filter.matches(item)"
+      ],
+      "fx": [
+        "Applies all active filters",
+        "Returns filtered items"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "E-commerce product filters",
+      "d": "Filter by category, price, brand, and more"
+    },
+    {
+      "n": "Search result filters",
+      "d": "Narrow results by facets and ranges"
+    },
+    {
+      "n": "Data table column filters",
+      "d": "Filter rows by column values"
+    },
+    {
+      "n": "Email filters",
+      "d": "Filter messages by sender, label, and date"
+    },
+    {
+      "n": "Log viewers",
+      "d": "Filter logs by level, service, or time"
+    }
+  ]
+}

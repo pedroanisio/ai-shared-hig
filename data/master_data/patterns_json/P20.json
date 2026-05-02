@@ -1,0 +1,211 @@
+{
+  "id": "P20",
+  "v": "1.1",
+  "name": "Document Store",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D = (collections, documents, queries, indices)$",
+  "desc": "Document stores save and retrieve semi-structured documents with flexible schemas.",
+  "comps": [
+    {
+      "n": "collections",
+      "t": "Map⟨String, Set⟨Document⟩⟩",
+      "d": "group documents",
+      "nota": "collections"
+    },
+    {
+      "n": "documents",
+      "t": "Set⟨Document⟩",
+      "d": "schema-free documents",
+      "nota": "documents"
+    },
+    {
+      "n": "queries",
+      "t": "Query → Set⟨Document⟩",
+      "d": "find documents",
+      "nota": "queries"
+    },
+    {
+      "n": "indices",
+      "t": "Map⟨Path, Index⟩",
+      "d": "speed queries",
+      "nota": "indices"
+    }
+  ],
+  "types": [
+    {
+      "n": "Document",
+      "def": "Semi-structured JSON-like data",
+      "d": "Flexible document"
+    },
+    {
+      "n": "Collection",
+      "def": "Set of related documents",
+      "d": "Document collection"
+    },
+    {
+      "n": "Query",
+      "def": "Document filter criteria",
+      "d": "Query specification"
+    },
+    {
+      "n": "Value",
+      "def": "String | ℕ | ℝ | 𝔹 | null | Sequence⟨Value⟩ | Map⟨String,Value⟩",
+      "d": "Allowed value types in documents"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P20.1",
+      "n": "Flexible Schema",
+      "spec": "∀doc1,doc2 ∈ collection: schema(doc1) = schema(doc2) not required",
+      "d": "Documents can have varying schemas",
+      "inv": [
+        "schema\\_flexibility"
+      ]
+    },
+    {
+      "id": "P.P20.2",
+      "n": "Query Expressiveness",
+      "spec": "supports\\_nested\\_queries ∧ supports\\_array\\_queries",
+      "d": "Queries handle nested and array fields",
+      "inv": [
+        "expressive\\_queries"
+      ]
+    },
+    {
+      "id": "P.P20.3",
+      "n": "Index Performance",
+      "spec": "indexed\\_query\\_time << unindexed\\_query\\_time",
+      "d": "Indexed queries are much faster",
+      "inv": [
+        "efficient\\_indexes"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Insert Document",
+      "sig": "insert(collection: Collection, doc: Document) → DocumentID",
+      "def": "$insert(collection: Collection, doc: Document) → DocumentID = id := generate\\_id(); doc.id := id; validate\\_document(doc); collections[collection].docs := collections[collection].docs ∪ {doc}; update\\_indexes(collection, doc); return id$",
+      "pre": [
+        "valid\\_document(doc)"
+      ],
+      "post": [
+        "doc ∈ collections[collection].docs"
+      ],
+      "fx": [
+        "Generates document ID",
+        "Validates document",
+        "Inserts into collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Find Documents",
+      "sig": "find(collection: Collection, query: Query) → Set⟨Document⟩",
+      "def": "$find(collection: Collection, query: Query) → Set⟨Document⟩ = {doc ∈ collections[collection].docs : matches(doc, query)}$",
+      "pre": [
+        "valid\\_query(query)"
+      ],
+      "post": [
+        "∀doc ∈ result: matches(doc, query)"
+      ],
+      "fx": [
+        "Filters documents by query"
+      ]
+    },
+    {
+      "n": "Update Document",
+      "sig": "update(collection: Collection, id: DocumentID, updates: Updates) → Effect",
+      "def": "$update(collection: Collection, id: DocumentID, updates: Updates) → Effect = doc := find\\_by\\_id(collection, id); apply\\_updates(doc, updates); validate\\_document(doc); update\\_indexes(collection, doc)$",
+      "pre": [
+        "exists(collection, id)"
+      ],
+      "post": [
+        "updated(doc, updates)"
+      ],
+      "fx": [
+        "Finds document",
+        "Applies updates",
+        "Revalidates",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Find",
+      "sig": "find({age: {$gt: 25}, city: \"NYC\"}) → Set⟨Document⟩",
+      "def": "find({age: {$gt: 25}, city: \"NYC\"}) → Set⟨Document⟩",
+      "pre": [
+        "search_criteria ≠ null",
+        "valid_filters(params)"
+      ],
+      "post": [
+        "∀item ∈ results: matches(criteria)",
+        "results_ordered()"
+      ],
+      "fx": [
+        "Searches collection",
+        "Returns filtered results"
+      ]
+    },
+    {
+      "n": "Insert",
+      "sig": "insert(collection, document) → Effect",
+      "def": "insert(collection, document) → Effect",
+      "pre": [
+        "valid_document_store(input)",
+        "document_store_collection ≠ null"
+      ],
+      "post": [
+        "document_store ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new document_store to collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(query, changes) → Effect",
+      "def": "update(query, changes) → Effect",
+      "pre": [
+        "document_store_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing document_store",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Note storage",
+      "d": "Notion, Roam"
+    },
+    {
+      "n": "Configuration",
+      "d": "JSON files"
+    },
+    {
+      "n": "Log aggregation",
+      "d": "semi-structured log documents indexed for search"
+    },
+    {
+      "n": "CMS content",
+      "d": "articles and pages stored as JSON documents"
+    }
+  ]
+}

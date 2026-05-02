@@ -1,0 +1,140 @@
+{
+  "id": "P76",
+  "v": "1.1",
+  "name": "Ambient AI",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Ambient",
+    "Background"
+  ],
+  "updated": "2025-11-23",
+  "def": "$A_{ambient} = (C_{aware}, P_{cont}, I_{subtle}, E_{bg}) : Context \\to Actions_{unobtrusive}$",
+  "desc": "Strangler fig pattern gradually replaces legacy systems with new implementations.",
+  "comps": [
+    {
+      "n": "C_{aware}",
+      "t": "Component",
+      "d": "Component implementing Ambient AI functionality",
+      "nota": "C_{aware}"
+    },
+    {
+      "n": "P_{cont}",
+      "t": "Component",
+      "d": "Component implementing Ambient AI functionality",
+      "nota": "P_{cont}"
+    },
+    {
+      "n": "I_{subtle}",
+      "t": "Component",
+      "d": "Component implementing Ambient AI functionality",
+      "nota": "I_{subtle}"
+    },
+    {
+      "n": "E_{bg}",
+      "t": "Component",
+      "d": "Component implementing Ambient AI functionality",
+      "nota": "E_{bg}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Feature",
+      "def": "(id: FeatureID, path: Path, migrated: 𝔹)",
+      "d": "System feature"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P76.1",
+      "n": "Gradual Migration",
+      "spec": "features migrate\\_incrementally",
+      "d": "Features migrated incrementally",
+      "inv": [
+        "incremental\\_replacement"
+      ]
+    },
+    {
+      "id": "P.P76.2",
+      "n": "Zero Downtime",
+      "spec": "service\\_always\\_available",
+      "d": "Service remains available during migration",
+      "inv": [
+        "continuous\\_availability"
+      ]
+    },
+    {
+      "id": "P.P76.3",
+      "n": "Rollback Safety",
+      "spec": "can\\_rollback\\_any\\_feature",
+      "d": "Any feature can be rolled back",
+      "inv": [
+        "safe\\_rollback"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Route Request",
+      "sig": "route(request: Request) → Response",
+      "def": "$route(request: Request) → Response = if feature\\_migrated(request.path): return new\\_system.handle(request) else: return legacy\\_system.handle(request)$",
+      "pre": [
+        "request ≠ null"
+      ],
+      "post": [
+        "response\\_from\\_appropriate\\_system"
+      ],
+      "fx": [
+        "Checks migration status",
+        "Routes to appropriate system"
+      ]
+    },
+    {
+      "n": "Migrate Feature",
+      "sig": "migrate(feature: Feature) → Effect",
+      "def": "$migrate(feature: Feature) → Effect = implement\\_in\\_new\\_system(feature); test\\_parity(); enable\\_shadow\\_mode(); compare\\_results(); if results\\_match: switch\\_traffic(feature, new\\_system)$",
+      "pre": [
+        "feature\\_in\\_legacy"
+      ],
+      "post": [
+        "feature\\_available\\_in\\_new\\_system"
+      ],
+      "fx": [
+        "Implements in new system",
+        "Tests parity",
+        "Switches traffic"
+      ]
+    },
+    {
+      "n": "Decommission Legacy",
+      "sig": "decommission(feature: Feature) → Effect",
+      "def": "$decommission(feature: Feature) → Effect = if all\\_traffic\\_migrated(feature): disable\\_legacy\\_feature(feature); remove\\_legacy\\_code(feature)$",
+      "pre": [
+        "feature\\_fully\\_migrated"
+      ],
+      "post": [
+        "¬exists\\_in\\_legacy(feature)"
+      ],
+      "fx": [
+        "Disables in legacy",
+        "Removes code"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Ambient implementation",
+      "d": "Applied in ai, ambient systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

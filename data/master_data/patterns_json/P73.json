@@ -1,0 +1,229 @@
+{
+  "id": "P73",
+  "v": "1.1",
+  "name": "Composite Action",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Composite Actions",
+    "Automation"
+  ],
+  "updated": "2025-11-23",
+  "def": "$C = (A_{atomic}, compose, exec, rollback) : \\text{Set}\\langle \\text{Action} \\rangle \\to \\text{Action}_{composite}$",
+  "desc": "API Gateway pattern provides a unified entry point for microservices.",
+  "comps": [
+    {
+      "n": "A_{atomic}",
+      "t": "Set⟨AtomicAction⟩",
+      "d": "set of atomic actions to compose",
+      "nota": "A_{atomic}"
+    },
+    {
+      "n": "compose",
+      "t": "Seq⟨Action⟩ → CompositeAction",
+      "d": "composition function creating compound action",
+      "nota": "compose"
+    },
+    {
+      "n": "exec",
+      "t": "CompositeAction → Result",
+      "d": "execution function for composite action",
+      "nota": "exec"
+    },
+    {
+      "n": "rollback",
+      "t": "CompositeAction → Effect",
+      "d": "rollback function for failed composites",
+      "nota": "rollback"
+    }
+  ],
+  "types": [
+    {
+      "n": "Service",
+      "def": "(id: ServiceID, endpoints: Set⟨Endpoint⟩, health: HealthStatus)",
+      "d": "Backend service"
+    },
+    {
+      "n": "AtomicAction",
+      "def": "$\\text{AtomicAction} = (\\text{name}, \\text{params}, \\text{execute}, \\text{undo})$",
+      "d": "Single action with executable and undo steps"
+    },
+    {
+      "n": "CompositeAction",
+      "def": "$\\text{CompositeAction} = (\\text{actions}, \\text{order}, \\text{dependencies}, \\text{compensation})$",
+      "d": "Ordered collection of atomic actions with compensation"
+    },
+    {
+      "n": "Result",
+      "def": "$\\text{Result} = \\{\\text{success}, \\text{partial}, \\text{failure}\\} \\times \\text{Data}$",
+      "d": "Outcome status and data for composite execution"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P73.1",
+      "n": "Single Entry Point",
+      "spec": "all\\_requests via\\_gateway",
+      "d": "All requests go through gateway",
+      "inv": [
+        "centralized\\_entry"
+      ]
+    },
+    {
+      "id": "P.P73.2",
+      "n": "Service Discovery",
+      "spec": "services dynamically\\_discovered",
+      "d": "Services discovered dynamically",
+      "inv": [
+        "dynamic\\_routing"
+      ]
+    },
+    {
+      "id": "P.P73.3",
+      "n": "Protocol Translation",
+      "spec": "translates\\_protocols",
+      "d": "Translates between protocols",
+      "inv": [
+        "protocol\\_adapter"
+      ]
+    },
+    {
+      "id": "P.P73.4",
+      "n": "Compensation Completeness",
+      "spec": "$\\forall a \\in A_{atomic} : \\exists u : a.\\text{undo} = u$ (every action has undo)",
+      "d": "Each atomic action provides an undo path",
+      "inv": [
+        "undoable\\_actions"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Route Request",
+      "sig": "route(request: Request) → Response",
+      "def": "$route(request: Request) → Response = authenticate(request); authorize(request); service := find\\_service(request.path); if service: enrich\\_request(request); response := forward(service, request); transform\\_response(response); return response else: return NotFound$",
+      "pre": [
+        "request ≠ null"
+      ],
+      "post": [
+        "response\\_returned"
+      ],
+      "fx": [
+        "Authenticates",
+        "Authorizes",
+        "Routes to service",
+        "Transforms response"
+      ]
+    },
+    {
+      "n": "Aggregate Requests",
+      "sig": "aggregate(requests: Sequence⟨Request⟩) → Response",
+      "def": "$aggregate(requests: Sequence⟨Request⟩) → Response = responses := parallel\\_for req in requests: route(req); aggregated := combine(responses); return aggregated$",
+      "pre": [
+        "|requests| > 0"
+      ],
+      "post": [
+        "combined\\_response"
+      ],
+      "fx": [
+        "Routes requests in parallel",
+        "Combines responses"
+      ]
+    },
+    {
+      "n": "Apply Rate Limit",
+      "sig": "limit(client: ClientID, request: Request) → 𝔹",
+      "def": "$limit(client: ClientID, request: Request) → 𝔹 = if rate\\_limiter.allow(client): return true else: return false$",
+      "pre": [
+        "client ≠ null"
+      ],
+      "post": [
+        "result ⇔ within\\_limits(client)"
+      ],
+      "fx": [
+        "Checks rate limit",
+        "Returns decision"
+      ]
+    },
+    {
+      "n": "Compose Actions",
+      "sig": "compose: Seq⟨Action⟩ → CompositeAction",
+      "def": "$\\text{compose}([a_1, ..., a_n]) = c$where$c.\\text{actions} = [a_1, ..., a_n]$$c.\\text{order} = \\text{topological\\_sort}(\\text{dependencies})$$c.\\text{compensation} = [a_n.\\text{undo}, ..., a_1.\\text{undo}]$(reverse order)",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Execute Composite",
+      "sig": "execute: CompositeAction → Result",
+      "def": "$\\text{execute}(c) = r$where$r = \\text{foldl}(\\lambda s, a. s \\land \\text{exec}(a), \\text{true}, c.\\text{actions})$if$r = \\text{failure}$then$rollback(c)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Rollback Composite",
+      "sig": "rollback: CompositeAction → Effect",
+      "def": "$\\text{rollback}(c) =$effect where$\\forall a \\in \\text{executed}(c) : a.\\text{undo}()$in reverse order of execution",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P30"
+    ],
+    "use": [
+      "P14",
+      "P92"
+    ]
+  },
+  "manif": [
+    {
+      "n": "LangChain sequential chains",
+      "d": "composing multiple LLM calls"
+    },
+    {
+      "n": "Database transactions",
+      "d": "composite operations with rollback"
+    },
+    {
+      "n": "Workflow orchestration",
+      "d": "composing atomic tasks into workflows"
+    },
+    {
+      "n": "API composition patterns",
+      "d": "chaining multiple API calls with compensation"
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+{
+  "id": "P136",
+  "v": "1.1",
+  "name": "User Preference Learning",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$L_{pref} = (Interactions, Patterns, Model, Adaptation) : History \\to Preferences_{learned}$",
+  "desc": "User preference learning observes user behavior to learn and adapt to preferences automatically.",
+  "comps": [
+    {
+      "n": "Interactions",
+      "t": "Sequence⟨UserAction⟩",
+      "d": "Historical sequence of user interactions",
+      "nota": "Interactions"
+    },
+    {
+      "n": "Patterns",
+      "t": "Set⟨BehaviorPattern⟩",
+      "d": "Detected behavioral patterns",
+      "nota": "Patterns"
+    },
+    {
+      "n": "Model",
+      "t": "PreferenceModel",
+      "d": "Learned model of user preferences",
+      "nota": "Model"
+    },
+    {
+      "n": "Adaptation",
+      "t": "Model → UIConfig",
+      "d": "Function to adapt UI based on learned model",
+      "nota": "Adaptation"
+    }
+  ],
+  "types": [
+    {
+      "n": "Observation",
+      "def": "(user_id: String, action: Action, context: Context, timestamp: Time)",
+      "d": "Recorded user behavior"
+    },
+    {
+      "n": "Preference",
+      "def": "(setting: String, value: Value, confidence: ℝ)",
+      "d": "Learned user preference"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P136.1",
+      "n": "Privacy Preservation",
+      "spec": "¬leaks\\_private\\_data(learning\\_process)",
+      "d": "Learning preserves user privacy",
+      "inv": [
+        "privacy\\_preserving"
+      ]
+    },
+    {
+      "id": "P.P136.2",
+      "n": "Adaptation Quality",
+      "spec": "satisfaction(user) increases over time",
+      "d": "Preferences improve user satisfaction",
+      "inv": [
+        "beneficial\\_adaptation"
+      ]
+    },
+    {
+      "id": "P.P136.3",
+      "n": "User Control",
+      "spec": "user\\_can\\_override(learned\\_preference)",
+      "d": "Users can override learned preferences",
+      "inv": [
+        "user\\_control"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Observe Behavior",
+      "sig": "observe(user: User, action: Action, context: Context) → Observation",
+      "def": "$observe(user: User, action: Action, context: Context) → Observation = obs := Observation(user.id, action, context, timestamp=now()); history[user.id].append(obs); return obs$",
+      "pre": [
+        "user ≠ null ∧ action ≠ null"
+      ],
+      "post": [
+        "obs ∈ history[user.id]"
+      ],
+      "fx": [
+        "Records user action with context",
+        "Adds to user history"
+      ]
+    },
+    {
+      "n": "Infer Preference",
+      "sig": "infer(user: User, domain: Domain) → Preference",
+      "def": "$infer(user: User, domain: Domain) → Preference = observations := filter\\_by\\_domain(history[user.id], domain); patterns := detect\\_patterns(observations); preference := extract\\_preference(patterns); return preference$",
+      "pre": [
+        "|history[user.id]| > min\\_observations"
+      ],
+      "post": [
+        "supported\\_by\\_data(result)"
+      ],
+      "fx": [
+        "Filters relevant observations",
+        "Detects behavioral patterns",
+        "Extracts preference"
+      ]
+    },
+    {
+      "n": "Apply Preference",
+      "sig": "apply(user: User, preference: Preference) → Effect",
+      "def": "$apply(user: User, preference: Preference) → Effect = update\\_user\\_settings(user, preference); personalize\\_interface(user, preference); log\\_preference\\_application(user, preference)$",
+      "pre": [
+        "valid\\_preference(preference)"
+      ],
+      "post": [
+        "applied(preference, user)"
+      ],
+      "fx": [
+        "Updates user settings",
+        "Personalizes interface",
+        "Logs application"
+      ]
+    },
+    {
+      "n": "RecordInteraction",
+      "sig": "record(a: UserAction) → Effect",
+      "def": "record(a) appends action and updates model",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "DetectPatterns",
+      "sig": "analyze() → Set⟨Pattern⟩",
+      "def": "analyze() extracts behavioral patterns from interactions",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "AdaptUI",
+      "sig": "adapt() → UIConfig",
+      "def": "adapt() generates UI configuration from learned preferences",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "id": "P74",
+  "v": "1.1",
+  "name": "Continuous AI Monitoring",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Monitoring",
+    "Observability"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M_{cont} = (S_{stream}, D_{detect}, T_{threshold}, A_{alert}) : \\text{State}_{stream} \\to \\text{Anomalies}$",
+  "desc": "Service mesh pattern manages service-to-service communication through sidecar proxies.",
+  "comps": [
+    {
+      "n": "S_{stream}",
+      "t": "Stream⟨State⟩",
+      "d": "continuous stream of system state",
+      "nota": "S_{stream}"
+    },
+    {
+      "n": "D_{detect}",
+      "t": "State → Set⟨Anomaly⟩",
+      "d": "anomaly detection function",
+      "nota": "D_{detect}"
+    },
+    {
+      "n": "T_{threshold}",
+      "t": "Map⟨Metric, ℝ⟩",
+      "d": "threshold values for each monitored metric",
+      "nota": "T_{threshold}"
+    },
+    {
+      "n": "A_{alert}",
+      "t": "Anomaly → Alert",
+      "d": "alert generation function",
+      "nota": "A_{alert}"
+    }
+  ],
+  "types": [
+    {
+      "n": "Instance",
+      "def": "(id: InstanceID, address: Address, health: HealthStatus)",
+      "d": "Service instance"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{metrics}, \\text{context}, \\text{timestamp})$",
+      "d": "Observed system state at a point in time"
+    },
+    {
+      "n": "Anomaly",
+      "def": "$\\text{Anomaly} = (\\text{type}, \\text{severity}, \\text{metric}, \\text{value}, \\text{expected})$",
+      "d": "Detected deviation from expected behavior"
+    },
+    {
+      "n": "Alert",
+      "def": "$\\text{Alert} = (\\text{anomaly}, \\text{priority}, \\text{actions}, \\text{recipients})$",
+      "d": "Notification generated for an anomaly"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P74.1",
+      "n": "Transparent Proxying",
+      "spec": "proxy transparent\\_to\\_services",
+      "d": "Proxying transparent to services",
+      "inv": [
+        "invisible\\_infrastructure"
+      ]
+    },
+    {
+      "id": "P.P74.2",
+      "n": "mTLS",
+      "spec": "∀communication: mutually\\_authenticated",
+      "d": "All communication mutually authenticated",
+      "inv": [
+        "secure\\_mesh"
+      ]
+    },
+    {
+      "id": "P.P74.3",
+      "n": "Observability",
+      "spec": "all\\_traffic observed\\_and\\_measured",
+      "d": "All traffic observed and measured",
+      "inv": [
+        "complete\\_telemetry"
+      ]
+    },
+    {
+      "id": "P.P74.4",
+      "n": "False Positive Rate",
+      "spec": "$\\frac{|\\text{false\\_positives}|}{|\\text{all\\_alerts}|} < \\alpha$ where $\\alpha < 0.05$ (acceptable rate)",
+      "d": "Alerts maintain a low false positive rate",
+      "inv": [
+        "low\\_false\\_positives"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Intercept Request",
+      "sig": "intercept(request: ServiceRequest) → Response",
+      "def": "$intercept(request: ServiceRequest) → Response = apply\\_policies(request); target := discover\\_service(request.service); if circuit\\_breaker.allows(target): add\\_telemetry(request); response := forward\\_with\\_retry(target, request); record\\_metrics(response); return response else: return ServiceUnavailable$",
+      "pre": [
+        "request ≠ null"
+      ],
+      "post": [
+        "response\\_returned ∧ telemetry\\_recorded"
+      ],
+      "fx": [
+        "Applies policies",
+        "Discovers service",
+        "Checks circuit breaker",
+        "Forwards",
+        "Records telemetry"
+      ]
+    },
+    {
+      "n": "Load Balance",
+      "sig": "balance(service: ServiceID, instances: Set⟨Instance⟩) → Instance",
+      "def": "$balance(service: ServiceID, instances: Set⟨Instance⟩) → Instance = healthy := {i : i ∈ instances, i.health = Healthy}; selected := load\\_balancer.select(healthy, strategy); return selected$",
+      "pre": [
+        "|instances| > 0"
+      ],
+      "post": [
+        "result ∈ instances ∧ result.health = Healthy"
+      ],
+      "fx": [
+        "Filters healthy instances",
+        "Selects by strategy"
+      ]
+    },
+    {
+      "n": "Encrypt Traffic",
+      "sig": "encrypt(data: Data, target: Instance) → EncryptedData",
+      "def": "$encrypt(data: Data, target: Instance) → EncryptedData = cert := get\\_certificate(target); encrypted := tls\\_encrypt(data, cert); return encrypted$",
+      "pre": [
+        "data ≠ null"
+      ],
+      "post": [
+        "encrypted(result)"
+      ],
+      "fx": [
+        "Gets certificate",
+        "Encrypts with TLS"
+      ]
+    },
+    {
+      "n": "Detect Anomalies",
+      "sig": "detect: State → Set⟨Anomaly⟩",
+      "def": "$\\text{detect}(s) = \\{a \\mid m \\in s.\\text{metrics} \\land |m - \\mu_m| > k \\cdot \\sigma_m\\}$where$\\mu_m$= mean,$\\sigma_m$= std dev,$k$= sensitivity",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Generate Alert",
+      "sig": "generateAlert: Anomaly → Alert",
+      "def": "$\\text{generateAlert}(a) = alert$where$alert.\\text{priority} = f(a.\\text{severity})$$alert.\\text{actions} = \\text{recommend}(a)$$alert.\\text{recipients} = \\text{escalate}(a.\\text{severity})$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update Thresholds",
+      "sig": "updateThresholds: History → T_threshold",
+      "def": "$\\text{updateThresholds}(H) = T'$where$\\forall m : T'[m] = \\mu_m + k \\cdot \\sigma_m$(adaptive thresholds)",
+      "pre": [
+        "updateThresholds_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing updateThresholds",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P22",
+      "P112"
+    ],
+    "use": [
+      "P27",
+      "P129"
+    ]
+  },
+  "manif": [
+    {
+      "n": "LangSmith monitoring",
+      "d": "continuous LLM application monitoring"
+    },
+    {
+      "n": "Datadog AI observability",
+      "d": "real-time AI system monitoring"
+    },
+    {
+      "n": "Weights & Biases monitoring",
+      "d": "ML model performance tracking"
+    },
+    {
+      "n": "Arize AI monitoring",
+      "d": "production ML monitoring and alerting"
+    }
+  ]
+}

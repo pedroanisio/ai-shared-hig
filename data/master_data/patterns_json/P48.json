@@ -1,0 +1,291 @@
+{
+  "id": "P48",
+  "v": "1.1",
+  "name": "Form Validation Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$V = (fields, rules, state, errors)$",
+  "desc": "Form validation pattern validates user input and provides helpful error feedback.",
+  "comps": [
+    {
+      "n": "fields",
+      "t": "Map⟨String, Field⟩",
+      "d": "form fields",
+      "nota": "fields"
+    },
+    {
+      "n": "rules",
+      "t": "Map⟨String, Validator⟩",
+      "d": "validation rules",
+      "nota": "rules"
+    },
+    {
+      "n": "state",
+      "t": "Map⟨String, ValidationState⟩",
+      "d": "tracks validation status",
+      "nota": "state"
+    },
+    {
+      "n": "errors",
+      "t": "Map⟨String, Sequence⟨String⟩⟩",
+      "d": "stores error messages",
+      "nota": "errors"
+    }
+  ],
+  "types": [
+    {
+      "n": "ValidationResult",
+      "def": "Valid | Invalid(errors: Set⟨String⟩)",
+      "d": "Validation outcome"
+    },
+    {
+      "n": "ValidationRule",
+      "def": "(check: Value → 𝔹, message: String)",
+      "d": "Validation rule"
+    },
+    {
+      "n": "Field",
+      "def": "(value: Value, dirty: 𝔹, touched: 𝔹)",
+      "d": "Field value plus interaction state"
+    },
+    {
+      "n": "Validator",
+      "def": "Value → ValidationResult",
+      "d": "Validation function for a single field value"
+    },
+    {
+      "n": "ValidationState",
+      "def": "Pristine | Valid | Invalid | Validating",
+      "d": "Current validation status for a field"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P48.1",
+      "n": "Real-Time Validation",
+      "spec": "validates\\_on\\_change",
+      "d": "Validates as user types",
+      "inv": [
+        "immediate\\_feedback"
+      ]
+    },
+    {
+      "id": "P.P48.2",
+      "n": "Clear Messages",
+      "spec": "∀error: actionable(error.message)",
+      "d": "Error messages are clear and actionable",
+      "inv": [
+        "helpful\\_errors"
+      ]
+    },
+    {
+      "id": "P.P48.3",
+      "n": "Accessibility",
+      "spec": "errors announced\\_to\\_screen\\_readers",
+      "d": "Errors announced to assistive tech",
+      "inv": [
+        "accessible\\_validation"
+      ]
+    },
+    {
+      "id": "P.P48.4",
+      "n": "Cross-Field Validation",
+      "spec": "validate_group([field₁, field₂, ...]) → ValidationResult Example: password confirmation",
+      "d": "Validates constraints that span multiple fields",
+      "inv": [
+        "cross\\_field\\_constraints"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "On Submit",
+      "sig": "on_submit(form: Form) → Effect",
+      "def": "$on\\_submit(form: Form) → Effect = validate\\_all(form.fields); if valid: submit(form)$",
+      "pre": [
+        "form \\neq null \\wedge form.fields \\neq \\emptyset"
+      ],
+      "post": [
+        "all\\_fields\\_validated(form)",
+        "valid(form) \\implies submission\\_triggered"
+      ],
+      "fx": [
+        "Validates all fields before submission",
+        "Prevents submit if validation fails"
+      ]
+    },
+    {
+      "n": "On Blur",
+      "sig": "on_blur(field: Field) → Effect",
+      "def": "$on\\_blur(field: Field) → Effect = validate(field); show\\_error(field)$",
+      "pre": [
+        "field \\neq null \\wedge field.touched = true"
+      ],
+      "post": [
+        "validated(field) = true",
+        "error\\_displayed \\iff \\neg valid(field)"
+      ],
+      "fx": [
+        "Validates field when user leaves it",
+        "Shows immediate feedback"
+      ]
+    },
+    {
+      "n": "On Change",
+      "sig": "on_change(field: Field) → Effect",
+      "def": "$on\\_change(field: Field) → Effect = clear\\_error(field); validate(field)$",
+      "pre": [
+        "field \\neq null \\wedge field.dirty = true"
+      ],
+      "post": [
+        "validated(field) = true",
+        "real\\_time\\_feedback = true"
+      ],
+      "fx": [
+        "Validates on every keystroke",
+        "Provides instant validation feedback"
+      ]
+    },
+    {
+      "n": "Hybrid (Recommended)",
+      "sig": "validate_hybrid(field: Field, timing: ValidationTiming) → Effect",
+      "def": "$validate\\_hybrid(field: Field, timing: ValidationTiming) → Effect = if timing = ON\\_BLUR: on\\_blur(field) else if timing = ON\\_CHANGE: on\\_change(field)$",
+      "pre": [
+        "field \\neq null",
+        "timing \\in \\{on\\_blur, on\\_change, on\\_submit\\}"
+      ],
+      "post": [
+        "first\\_validation\\_on\\_blur \\wedge subsequent\\_on\\_change"
+      ],
+      "fx": [
+        "Balances UX and performance",
+        "First error on blur, then real-time"
+      ]
+    },
+    {
+      "n": "Validate Form",
+      "sig": "validate_form() → 𝔹",
+      "def": "$validate_form() → 𝔹 = results := map(keys(fields), validate) return all(results, λr: r = Valid)$",
+      "pre": [
+        "form.fields \\neq \\emptyset",
+        "validation\\_rules\\_registered()"
+      ],
+      "post": [
+        "result = true \\iff \\forall f \\in form.fields: valid(f)",
+        "\\forall f \\in form.fields: validated(f) = true"
+      ],
+      "fx": [
+        "Runs all field validators",
+        "Returns true if all pass"
+      ]
+    },
+    {
+      "n": "Register Rule",
+      "sig": "register_rule(field: String, rule: Validator) → Effect",
+      "def": "$register_rule(field: String, rule: Validator) → Effect = rules[field] := compose_validators(rules[field], rule)$",
+      "pre": [
+        "field \\neq \\emptyset \\wedge rule \\neq null",
+        "valid\\_validator(rule)"
+      ],
+      "post": [
+        "rule \\in validation\\_rules[field]"
+      ],
+      "fx": [
+        "Associates validator with field",
+        "Enables field-specific validation"
+      ]
+    },
+    {
+      "n": "Built-in Validators",
+      "sig": "required(value: Value) → ValidationResult",
+      "def": "$required(value: Value) → ValidationResult = if value ≠ null ∧ value ≠ \"\": Valid else: Invalid([\"This field is required\"]) min_length(n: ℕ) → Validator = λvalue: if length(value) ≥ n: Valid else: Invalid([f\"Minimum length is {n}\"]) email(value: String) → ValidationResult = if matches(value, email_regex): Valid else: Invalid([\"Invalid email address\"]) custom(predicate: Value → 𝔹, message: String) → Validator = λvalue: if predicate(value): Valid else: Invalid([message])$",
+      "pre": [
+        "value \\neq undefined"
+      ],
+      "post": [
+        "result.valid = (value \\neq null \\wedge value \\neq \\emptyset)",
+        "\\neg result.valid \\implies result.error = ''Field is required''"
+      ],
+      "fx": [
+        "Checks if value is present",
+        "Returns error message if empty"
+      ]
+    },
+    {
+      "n": "Validate Field",
+      "sig": "validate(field: Field, value: Value) → ValidationResult",
+      "def": "$validate(field: Field, value: Value) → ValidationResult = errors := ∅; for rule in field.rules: if ¬rule.check(value): errors := errors ∪ {rule.message}; if |errors| > 0: return Invalid(errors) else: return Valid$",
+      "pre": [
+        "field ≠ null"
+      ],
+      "post": [
+        "result = Valid ∨ |result.errors| > 0"
+      ],
+      "fx": [
+        "Applies validation rules",
+        "Collects errors",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Display Errors",
+      "sig": "display(field: Field, errors: Set⟨String⟩) → Effect",
+      "def": "$display(field: Field, errors: Set⟨String⟩) → Effect = field.error\\_state := true; field.error\\_messages := errors; render\\_error\\_indicators(field); announce\\_to\\_screen\\_reader(errors)$",
+      "pre": [
+        "|errors| > 0"
+      ],
+      "post": [
+        "visible(errors)"
+      ],
+      "fx": [
+        "Sets error state",
+        "Shows error messages",
+        "Announces to screen reader"
+      ]
+    },
+    {
+      "n": "Clear Errors",
+      "sig": "clear(field: Field) → Effect",
+      "def": "$clear(field: Field) → Effect = field.error\\_state := false; field.error\\_messages := ∅; remove\\_error\\_indicators(field)$",
+      "pre": [
+        "field.error\\_state = true"
+      ],
+      "post": [
+        "field.error\\_state = false"
+      ],
+      "fx": [
+        "Clears error state",
+        "Removes messages",
+        "Removes indicators"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Registration forms",
+      "d": "Validate credentials and profile fields"
+    },
+    {
+      "n": "Login forms",
+      "d": "Validate required fields and formats"
+    },
+    {
+      "n": "Settings panels",
+      "d": "Validate preferences and account updates"
+    },
+    {
+      "n": "Data entry forms",
+      "d": "Validate structured input before submission"
+    },
+    {
+      "n": "Survey forms",
+      "d": "Validate required responses and skip logic"
+    }
+  ]
+}

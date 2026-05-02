@@ -1,0 +1,161 @@
+{
+  "id": "C4",
+  "v": "1.1",
+  "name": "Metadata Schema",
+  "cat": "concept",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Metadata",
+    "Schema Design"
+  ],
+  "updated": "2025-11-23",
+  "def": "$M = (schema, data, validators)$",
+  "desc": "Metadata schemas define structured data fields with types and validation rules.",
+  "comps": [
+    {
+      "n": "schema",
+      "t": "Map⟨String, Type⟩",
+      "d": "defines field types",
+      "nota": "schema"
+    },
+    {
+      "n": "data",
+      "t": "Map⟨String, Value⟩",
+      "d": "actual metadata",
+      "nota": "data"
+    },
+    {
+      "n": "validators",
+      "t": "Map⟨String, Predicate⟩",
+      "d": "validation rules",
+      "nota": "validators"
+    }
+  ],
+  "types": [
+    {
+      "n": "Schema",
+      "def": "Map⟨String, Type⟩",
+      "d": "Field-to-type mapping for metadata"
+    },
+    {
+      "n": "Metadata",
+      "def": "Map⟨String, Value⟩",
+      "d": "Concrete metadata values for a document or item"
+    },
+    {
+      "n": "Predicate",
+      "def": "Value → 𝔹",
+      "d": "Validation rule over a single field value"
+    },
+    {
+      "n": "Type",
+      "def": "Descriptor of allowed values",
+      "d": "Declared type for a metadata field"
+    },
+    {
+      "n": "Value",
+      "def": "Concrete instance of a Type",
+      "d": "Actual stored value in metadata"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.C4.1",
+      "n": "Type Safety",
+      "spec": "∀k ∈ keys(data): type(data[k]) = schema[k]",
+      "d": "All field values match their declared types",
+      "inv": [
+        "type\\_safe(M)"
+      ]
+    },
+    {
+      "id": "P.C4.2",
+      "n": "Validation",
+      "spec": "valid(M) ⇔ ∀k ∈ keys(data): validators[k](data[k])",
+      "d": "All fields pass their validation rules",
+      "inv": [
+        "∀k: data[k] ⇒ validates(k, data[k])"
+      ]
+    },
+    {
+      "id": "P.C4.3",
+      "n": "Extensibility",
+      "spec": "extend(M, k, v) → M' where keys(M'.data) = keys(M.data) ∪ {k}",
+      "d": "Schema can be extended with new fields",
+      "inv": [
+        "monotonic(keys)"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Add Field",
+      "sig": "add(M: Metadata, k: String, v: Value) → Metadata",
+      "def": "$add(M: Metadata, k: String, v: Value) → Metadata = M' where M'.data[k] = v ∧ validate(M'.schema[k], v)$",
+      "pre": [
+        "k ∉ keys(M.data) ∨ modifiable(k)",
+        "type(v) = schema[k].type"
+      ],
+      "post": [
+        "M'.data[k] = v",
+        "validators[k](v) = true"
+      ],
+      "fx": [
+        "Adds new field to metadata",
+        "Validates value against schema"
+      ]
+    },
+    {
+      "n": "Query",
+      "sig": "query(M: Metadata, pred: Predicate) → 𝔹",
+      "def": "$query(M: Metadata, pred: Predicate) → 𝔹 = pred(M.data)$",
+      "pre": [
+        "valid\\_predicate(pred)"
+      ],
+      "post": [
+        "result ∈ {true, false}"
+      ],
+      "fx": [
+        "Evaluates predicate on metadata"
+      ]
+    },
+    {
+      "n": "Index",
+      "sig": "index(docs: Set⟨Document⟩, field: String) → Map⟨Value, Set⟨Document⟩⟩",
+      "def": "$index(docs: Set⟨Document⟩, field: String) → Map⟨Value, Set⟨Document⟩⟩ = group documents by field value$",
+      "pre": [
+        "∀doc ∈ docs: field ∈ keys(doc.metadata)"
+      ],
+      "post": [
+        "∀v ∈ keys(result): result[v] = {doc : doc.metadata[field] = v}"
+      ],
+      "fx": [
+        "Creates inverted index",
+        "Groups documents by field value"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Tags",
+      "d": "blog posts, notes"
+    },
+    {
+      "n": "Properties",
+      "d": "CAD features"
+    },
+    {
+      "n": "Attributes",
+      "d": "HTML elements"
+    },
+    {
+      "n": "Annotations",
+      "d": "PDF, code comments"
+    },
+    {
+      "n": "Labels",
+      "d": "issue tracking"
+    }
+  ]
+}

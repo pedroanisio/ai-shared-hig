@@ -36,6 +36,8 @@ dependencies = [
     "orjson==3.9.12",
     "python-multipart==0.0.6",
     "pandas>=2.2.0",
+    "pytest-cov>=7.0.0",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]

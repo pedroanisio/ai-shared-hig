@@ -1,0 +1,171 @@
+{
+  "id": "F4.2",
+  "v": "1.1",
+  "name": "Query Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$Q = (query, filter, execute, format)$",
+  "desc": "Query flows retrieve and filter data based on criteria and return results.",
+  "comps": [
+    {
+      "n": "query",
+      "t": "Query",
+      "d": "declarative request for data",
+      "nota": "query"
+    },
+    {
+      "n": "filter",
+      "t": "Query → Predicate",
+      "d": "derives filter criteria from query",
+      "nota": "filter"
+    },
+    {
+      "n": "execute",
+      "t": "(Query, Predicate) → Result",
+      "d": "executes query against data store",
+      "nota": "execute"
+    },
+    {
+      "n": "format",
+      "t": "Result → Result",
+      "d": "formats and shapes results",
+      "nota": "format"
+    }
+  ],
+  "types": [
+    {
+      "n": "Query",
+      "def": "Structured data request",
+      "d": "Declarative specification of desired data"
+    },
+    {
+      "n": "Predicate",
+      "def": "Record → 𝔹",
+      "d": "Boolean condition for filtering"
+    },
+    {
+      "n": "Result",
+      "def": "Set⟨Record⟩",
+      "d": "Records matching query criteria"
+    },
+    {
+      "n": "Record",
+      "def": "Map⟨Field, Value⟩",
+      "d": "Row or document returned by a query"
+    },
+    {
+      "n": "Field",
+      "def": "String",
+      "d": "Named attribute in a record"
+    },
+    {
+      "n": "AggFn",
+      "def": "sum | count | avg | min | max",
+      "d": "Aggregation function used in grouping"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F4.2.1",
+      "n": "Correctness",
+      "spec": "result ⊆ {x : satisfies(x, query)}",
+      "d": "Query results match query criteria",
+      "inv": [
+        "accurate\\_results"
+      ]
+    },
+    {
+      "id": "P.F4.2.2",
+      "n": "Completeness",
+      "spec": "{x : satisfies(x, query)} ⊆ result",
+      "d": "All matching items are returned",
+      "inv": [
+        "complete\\_results"
+      ]
+    },
+    {
+      "id": "P.F4.2.3",
+      "n": "Efficiency",
+      "spec": "query\\_time < acceptable\\_latency",
+      "d": "Queries complete within acceptable time",
+      "inv": [
+        "performant\\_queries"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Read Model",
+      "sig": "read_model(query: Query) → Result",
+      "def": "$read_model(query: Query) → Result = parse(query) optimized := optimize(parse_tree) execute(optimized, read_db) format(results)$",
+      "pre": [
+        "query \\neq null \\wedge valid\\_syntax(query)"
+      ],
+      "post": [
+        "result.data \\subseteq database"
+      ],
+      "fx": [
+        "Queries optimized read model",
+        "Returns denormalized data"
+      ]
+    },
+    {
+      "n": "Project",
+      "sig": "project(data: Set⟨Record⟩, fields: Set⟨Field⟩) → Set⟨Record⟩",
+      "def": "$project(data: Set⟨Record⟩, fields: Set⟨Field⟩) → Set⟨Record⟩ = {r' | r ∈ data, r' = select_fields(r, fields)}$",
+      "pre": [
+        "fields \\subseteq available\\_fields"
+      ],
+      "post": [
+        "\\forall r \\in result: keys(r) = fields"
+      ],
+      "fx": [
+        "Selects specific fields",
+        "Reduces data volume"
+      ]
+    },
+    {
+      "n": "Aggregate",
+      "sig": "aggregate(data: Set⟨Record⟩, group_by: Set⟨Field⟩, agg_fn: AggFn) → Set⟨Record⟩",
+      "def": "$aggregate(data: Set⟨Record⟩, group_by: Set⟨Field⟩, agg_fn: AggFn) → Set⟨Record⟩ = groups := group(data, group_by) {apply(agg_fn, g) | g ∈ groups}$",
+      "pre": [
+        "|data| > 0 \\wedge agg\\_fn \\in \\{sum, count, avg, min, max\\}"
+      ],
+      "post": [
+        "|result| \\leq |data|"
+      ],
+      "fx": [
+        "Groups and aggregates data",
+        "Computes summary statistics"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Alert systems",
+      "d": "Trigger-route-deliver notification pipelines"
+    },
+    {
+      "n": "Email notifications",
+      "d": "Email delivery flows for messages"
+    },
+    {
+      "n": "Push notifications",
+      "d": "Mobile push delivery channels"
+    },
+    {
+      "n": "In-app messages",
+      "d": "In-product notification delivery"
+    },
+    {
+      "n": "Webhook deliveries",
+      "d": "Outbound HTTP callbacks to subscribers"
+    }
+  ]
+}

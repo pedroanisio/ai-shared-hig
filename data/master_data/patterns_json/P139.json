@@ -1,0 +1,195 @@
+{
+  "id": "P139",
+  "v": "1.1",
+  "name": "Learning Progress Indicator",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P_{learn} = (Model, Training_{data}, Accuracy, Progress) : Learning \\to Progress_{display}$",
+  "desc": "Learning progress indicators show advancement through learning curves and skill development.",
+  "comps": [
+    {
+      "n": "Model",
+      "t": "LearningModel",
+      "d": "Machine learning model being trained",
+      "nota": "Model"
+    },
+    {
+      "n": "Training_{data}",
+      "t": "Dataset",
+      "d": "Training dataset",
+      "nota": "Training_{data}"
+    },
+    {
+      "n": "Accuracy",
+      "t": "ℝ ∈ [0,1]",
+      "d": "Current model accuracy metric",
+      "nota": "Accuracy"
+    },
+    {
+      "n": "Progress",
+      "t": "(Epoch, Total) → ℝ",
+      "d": "Training progress as fraction of completion",
+      "nota": "Progress"
+    }
+  ],
+  "types": [
+    {
+      "n": "ProgressPoint",
+      "def": "(user_id: String, skill: Skill, performance: ℝ, timestamp: Time)",
+      "d": "Single progress measurement"
+    },
+    {
+      "n": "Skill",
+      "def": "Identifiable learnable skill",
+      "d": "Skill being learned"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P139.1",
+      "n": "Accurate Tracking",
+      "spec": "∀measurement: accurately\\_recorded(measurement)",
+      "d": "Progress is accurately tracked",
+      "inv": [
+        "precise\\_tracking"
+      ]
+    },
+    {
+      "id": "P.P139.2",
+      "n": "Motivating Feedback",
+      "spec": "shows\\_improvement ⇒ positive\\_reinforcement",
+      "d": "Progress indicators provide motivation",
+      "inv": [
+        "encouraging\\_feedback"
+      ]
+    },
+    {
+      "id": "P.P139.3",
+      "n": "Realistic Estimates",
+      "spec": "estimate\\_accuracy > threshold",
+      "d": "Time estimates are realistic",
+      "inv": [
+        "credible\\_estimates"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Track Progress",
+      "sig": "track(user: User, skill: Skill, performance: ℝ) → ProgressPoint",
+      "def": "$track(user: User, skill: Skill, performance: ℝ) → ProgressPoint = point := ProgressPoint(user.id, skill, performance, timestamp=now()); learning\\_curve[user.id][skill].append(point); return point$",
+      "pre": [
+        "0 ≤ performance ≤ 1"
+      ],
+      "post": [
+        "point ∈ learning\\_curve[user.id][skill]"
+      ],
+      "fx": [
+        "Records performance measurement",
+        "Adds to learning curve"
+      ]
+    },
+    {
+      "n": "Visualize Progress",
+      "sig": "visualize(user: User, skill: Skill) → Visualization",
+      "def": "$visualize(user: User, skill: Skill) → Visualization = curve := learning\\_curve[user.id][skill]; chart := create\\_progress\\_chart(curve); milestones := identify\\_milestones(curve); trend := compute\\_trend(curve); return Visualization(chart, milestones, trend)$",
+      "pre": [
+        "|learning\\_curve[user.id][skill]| > 0"
+      ],
+      "post": [
+        "shows\\_progress(result)"
+      ],
+      "fx": [
+        "Creates progress chart",
+        "Identifies milestones",
+        "Computes trend"
+      ]
+    },
+    {
+      "n": "Estimate Time To Mastery",
+      "sig": "estimate_mastery(user: User, skill: Skill) → Time",
+      "def": "$estimate\\_mastery(user: User, skill: Skill) → Time = curve := learning\\_curve[user.id][skill]; rate := learning\\_rate(curve); remaining := mastery\\_level - current\\_level(curve); return remaining / rate$",
+      "pre": [
+        "|curve| ≥ min\\_points"
+      ],
+      "post": [
+        "result > 0"
+      ],
+      "fx": [
+        "Computes learning rate",
+        "Estimates time to mastery"
+      ]
+    },
+    {
+      "n": "UpdateProgress",
+      "sig": "update(epoch: ℕ) → Effect",
+      "def": "update(epoch) records completion of training epoch",
+      "pre": [
+        "epoch_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing epoch",
+        "Invalidates caches"
+      ]
+    },
+    {
+      "n": "GetProgress",
+      "sig": "get_progress() → ℝ",
+      "def": "get_progress() returns current training progress",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    },
+    {
+      "n": "GetMetrics",
+      "sig": "metrics() → Map⟨String, ℝ⟩",
+      "def": "metrics() returns current accuracy and other metrics",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

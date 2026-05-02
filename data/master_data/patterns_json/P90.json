@@ -1,0 +1,152 @@
+{
+  "id": "P90",
+  "v": "1.1",
+  "name": "Explanation on Demand",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "high",
+  "domains": [
+    "AI",
+    "Explanation",
+    "Transparency"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E_{explain} = (Trace_{reason}, G_{explain}, P_{present}, Levels_{detail}) : Decision \\to Explanation$",
+  "desc": "Split pane layout divides screen into resizable panels for parallel content viewing.",
+  "comps": [
+    {
+      "n": "Trace_{reason}",
+      "t": "Component",
+      "d": "Component implementing Explanation on Demand functionality",
+      "nota": "Trace_{reason}"
+    },
+    {
+      "n": "G_{explain}",
+      "t": "Component",
+      "d": "Component implementing Explanation on Demand functionality",
+      "nota": "G_{explain}"
+    },
+    {
+      "n": "P_{present}",
+      "t": "Component",
+      "d": "Component implementing Explanation on Demand functionality",
+      "nota": "P_{present}"
+    },
+    {
+      "n": "Levels_{detail}",
+      "t": "Component",
+      "d": "Component implementing Explanation on Demand functionality",
+      "nota": "Levels_{detail}"
+    }
+  ],
+  "types": [
+    {
+      "n": "SplitPane",
+      "def": "(direction: Direction, panes: Sequence⟨Pane⟩, sizes: Sequence⟨ℝ⟩)",
+      "d": "Split pane layout"
+    },
+    {
+      "n": "Direction",
+      "def": "Horizontal | Vertical",
+      "d": "Split direction"
+    },
+    {
+      "n": "Pane",
+      "def": "(content: Content, collapsed: 𝔹, saved_size: ℝ)",
+      "d": "Single pane"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P90.1",
+      "n": "Interactive Resize",
+      "spec": "user\\_can\\_drag\\_divider",
+      "d": "Users can drag divider to resize",
+      "inv": [
+        "draggable\\_divider"
+      ]
+    },
+    {
+      "id": "P.P90.2",
+      "n": "Size Constraints",
+      "spec": "∀pane: min\\_size ≤ pane.size ≤ max\\_size",
+      "d": "Panes respect size constraints",
+      "inv": [
+        "bounded\\_sizes"
+      ]
+    },
+    {
+      "id": "P.P90.3",
+      "n": "State Persistence",
+      "spec": "sizes\\_persist\\_across\\_sessions",
+      "d": "Pane sizes persist across sessions",
+      "inv": [
+        "persistent\\_layout"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Split",
+      "sig": "split(direction: Direction, panes: Sequence⟨Pane⟩) → SplitPane",
+      "def": "$split(direction: Direction, panes: Sequence⟨Pane⟩) → SplitPane = split := SplitPane(direction, panes, sizes=equal\\_sizes(panes)); render(split); return split$",
+      "pre": [
+        "|panes| ≥ 2"
+      ],
+      "post": [
+        "∑split.sizes = 100"
+      ],
+      "fx": [
+        "Creates split pane",
+        "Equalizes sizes",
+        "Renders"
+      ]
+    },
+    {
+      "n": "Resize Pane",
+      "sig": "resize(split: SplitPane, pane_index: ℕ, new_size: ℝ) → Effect",
+      "def": "$resize(split: SplitPane, pane\\_index: ℕ, new\\_size: ℝ) → Effect = old\\_size := split.sizes[pane\\_index]; delta := new\\_size - old\\_size; split.sizes[pane\\_index] := new\\_size; split.sizes[pane\\_index + 1] := split.sizes[pane\\_index + 1] - delta; reflow()$",
+      "pre": [
+        "0 ≤ pane\\_index < |split.panes| - 1 ∧ new\\_size > 0"
+      ],
+      "post": [
+        "split.sizes[pane\\_index] = new\\_size"
+      ],
+      "fx": [
+        "Adjusts pane size",
+        "Compensates adjacent pane",
+        "Reflows layout"
+      ]
+    },
+    {
+      "n": "Collapse Pane",
+      "sig": "collapse(split: SplitPane, pane_index: ℕ) → Effect",
+      "def": "$collapse(split: SplitPane, pane\\_index: ℕ) → Effect = pane := split.panes[pane\\_index]; pane.collapsed := true; pane.saved\\_size := split.sizes[pane\\_index]; split.sizes[pane\\_index] := 0; redistribute\\_space()$",
+      "pre": [
+        "0 ≤ pane\\_index < |split.panes|"
+      ],
+      "post": [
+        "split.panes[pane\\_index].collapsed"
+      ],
+      "fx": [
+        "Saves current size",
+        "Collapses pane",
+        "Redistributes space"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, Explanation implementation",
+      "d": "Applied in ai, explanation systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

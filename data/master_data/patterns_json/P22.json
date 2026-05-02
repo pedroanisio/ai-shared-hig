@@ -1,0 +1,217 @@
+{
+  "id": "P22",
+  "v": "1.1",
+  "name": "Event Bus",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$B = (publishers, subscribers, topics, broker)$",
+  "desc": "Event buses enable decoupled pub-sub communication between system components.",
+  "comps": [
+    {
+      "n": "publishers",
+      "t": "Set⟨Publisher⟩",
+      "d": "emit events",
+      "nota": "publishers"
+    },
+    {
+      "n": "subscribers",
+      "t": "Map⟨Topic, Set⟨Subscriber⟩⟩",
+      "d": "listen for events",
+      "nota": "subscribers"
+    },
+    {
+      "n": "topics",
+      "t": "Set⟨Topic⟩",
+      "d": "event channels",
+      "nota": "topics"
+    },
+    {
+      "n": "broker",
+      "t": "(Topic, Event) → Effect",
+      "d": "routes events",
+      "nota": "broker"
+    }
+  ],
+  "types": [
+    {
+      "n": "Topic",
+      "def": "String identifier for event category",
+      "d": "Event topic"
+    },
+    {
+      "n": "EventHandler",
+      "def": "Event → Effect",
+      "d": "Function handling events"
+    },
+    {
+      "n": "Subscription",
+      "def": "(topic: Topic, handler: EventHandler, id: String)",
+      "d": "Active subscription"
+    },
+    {
+      "n": "Publisher",
+      "def": "(id: ID, publish: (Topic, Event) → Effect)",
+      "d": "Event publisher with publish function"
+    },
+    {
+      "n": "Subscriber",
+      "def": "(id: ID, handle: Event → Effect)",
+      "d": "Event subscriber with handler"
+    },
+    {
+      "n": "Event",
+      "def": "(type: String, payload: Map⟨String, Value⟩, timestamp: Time)",
+      "d": "Event payload with type and time"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P22.1",
+      "n": "Decoupling",
+      "spec": "publisher ⊥ subscribers",
+      "d": "Publishers and subscribers are decoupled",
+      "inv": [
+        "loose\\_coupling"
+      ]
+    },
+    {
+      "id": "P.P22.2",
+      "n": "Asynchronous Delivery",
+      "spec": "publish(event) returns before handlers\\_complete",
+      "d": "Event delivery is asynchronous",
+      "inv": [
+        "non\\_blocking\\_publish"
+      ]
+    },
+    {
+      "id": "P.P22.3",
+      "n": "Guaranteed Delivery",
+      "spec": "subscribed(handler, topic) ⇒ receives(handler, events\\_on\\_topic)",
+      "d": "Subscribers receive events",
+      "inv": [
+        "reliable\\_delivery"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Publish",
+      "sig": "publish(topic: Topic, event: Event) → Effect",
+      "def": "$publish(topic: Topic, event: Event) → Effect = subscribers := get\\_subscribers(topic); for sub in subscribers: dispatch(sub, event)$",
+      "pre": [
+        "event ≠ null"
+      ],
+      "post": [
+        "∀sub ∈ subscribers: dispatched(sub, event)"
+      ],
+      "fx": [
+        "Gets topic subscribers",
+        "Dispatches to all subscribers"
+      ]
+    },
+    {
+      "n": "Subscribe",
+      "sig": "subscribe(topic: Topic, handler: EventHandler) → Subscription",
+      "def": "$subscribe(topic: Topic, handler: EventHandler) → Subscription = sub := Subscription(topic, handler, id=generate\\_id()); subscriptions[topic] := subscriptions[topic] ∪ {sub}; return sub$",
+      "pre": [
+        "valid\\_handler(handler)"
+      ],
+      "post": [
+        "sub ∈ subscriptions[topic]"
+      ],
+      "fx": [
+        "Creates subscription",
+        "Adds to topic subscriptions"
+      ]
+    },
+    {
+      "n": "Unsubscribe",
+      "sig": "unsubscribe(subscription: Subscription) → Effect",
+      "def": "$unsubscribe(subscription: Subscription) → Effect = subscriptions[subscription.topic] := subscriptions[subscription.topic] \\ {subscription}$",
+      "pre": [
+        "subscription ≠ null"
+      ],
+      "post": [
+        "subscription ∉ subscriptions[subscription.topic]"
+      ],
+      "fx": [
+        "Removes subscription from topic"
+      ]
+    },
+    {
+      "n": "At-Most-Once",
+      "sig": "send_at_most_once(msg: Message) → Effect",
+      "def": "$send\\_at\\_most\\_once(msg: Message) → Effect = send(msg); // No retry, no ack$",
+      "pre": [
+        "valid_message(data)",
+        "recipient_exists(target)"
+      ],
+      "post": [
+        "message_delivered()",
+        "acknowledgment_received()"
+      ],
+      "fx": [
+        "Transmits data",
+        "Handles retries"
+      ]
+    },
+    {
+      "n": "At-Least-Once",
+      "sig": "send_at_least_once(msg: Message) → Effect",
+      "def": "$send\\_at\\_least\\_once(msg: Message) → Effect = send(msg); wait\\_for\\_ack(); if timeout: retry(msg)$",
+      "pre": [
+        "valid_message(data)",
+        "recipient_exists(target)"
+      ],
+      "post": [
+        "message_delivered()",
+        "acknowledgment_received()"
+      ],
+      "fx": [
+        "Transmits data",
+        "Handles retries"
+      ]
+    },
+    {
+      "n": "Exactly-Once",
+      "sig": "send_exactly_once(msg: Message) → Effect",
+      "def": "$send\\_exactly\\_once(msg: Message) → Effect = if not sent(msg.id): send(msg); mark\\_sent(msg.id); dedup\\_on\\_receive(msg.id)$",
+      "pre": [
+        "valid_message(data)",
+        "recipient_exists(target)"
+      ],
+      "post": [
+        "message_delivered()",
+        "acknowledgment_received()"
+      ],
+      "fx": [
+        "Transmits data",
+        "Handles retries"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "UI event system",
+      "d": "dispatches UI events to listeners"
+    },
+    {
+      "n": "Component communication",
+      "d": "decoupled events between modules"
+    },
+    {
+      "n": "Plugin events",
+      "d": "plugins publish and subscribe to hooks"
+    },
+    {
+      "n": "Message queues",
+      "d": "brokered topics for service events"
+    }
+  ]
+}

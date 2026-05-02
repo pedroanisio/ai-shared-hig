@@ -1,0 +1,188 @@
+{
+  "id": "P43",
+  "v": "1.1",
+  "name": "Application Navigation Drawer",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$D = (S_{43}, C, O, \\alpha_{43}, \\omega_{43}, \\pi_{43})$",
+  "desc": "Application navigation drawers provide primary navigation through collapsible side panels.",
+  "comps": [
+    {
+      "n": "O",
+      "t": "S_{43} → \\mathbb{B}",
+      "d": "determines **overlay visibility**",
+      "nota": "O"
+    },
+    {
+      "n": "\\alpha_{43}",
+      "t": "S_{43} \\times S_{43} → Animation",
+      "d": "**transition animation**",
+      "nota": "\\alpha_{43}"
+    },
+    {
+      "n": "\\pi_{43}",
+      "t": "C → Route",
+      "d": "maps items to **routes**",
+      "nota": "\\pi_{43}"
+    }
+  ],
+  "types": [
+    {
+      "n": "MenuItem",
+      "def": "(label: String, route: Route, icon: Icon, badge: ℕ)",
+      "d": "Navigation menu item"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P43.1",
+      "n": "Responsive Behavior",
+      "spec": "adapts\\_to\\_screen\\_size",
+      "d": "Drawer adapts to screen size",
+      "inv": [
+        "responsive\\_layout"
+      ]
+    },
+    {
+      "id": "P.P43.2",
+      "n": "Persistent State",
+      "spec": "drawer\\_state persists\\_across\\_navigation",
+      "d": "Drawer state persists",
+      "inv": [
+        "stateful\\_drawer"
+      ]
+    },
+    {
+      "id": "P.P43.3",
+      "n": "Keyboard Navigation",
+      "spec": "fully\\_keyboard\\_navigable",
+      "d": "Drawer supports keyboard navigation",
+      "inv": [
+        "keyboard\\_accessible"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Toggle Drawer",
+      "sig": "toggle() → Effect",
+      "def": "$toggle() → Effect = if drawer.open: close\\_drawer() else: open\\_drawer()$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "drawer.open = ¬old\\_drawer.open"
+      ],
+      "fx": [
+        "Toggles drawer state",
+        "Animates transition"
+      ]
+    },
+    {
+      "n": "Navigate To",
+      "sig": "navigate(item: MenuItem) → Effect",
+      "def": "$navigate(item: MenuItem) → Effect = if valid\\_route(item.route): set\\_active(item); route\\_to(item.route); on\\_mobile: close\\_drawer()$",
+      "pre": [
+        "item ∈ menu\\_items"
+      ],
+      "post": [
+        "current\\_route = item.route"
+      ],
+      "fx": [
+        "Sets item as active",
+        "Navigates to route",
+        "Closes on mobile"
+      ]
+    },
+    {
+      "n": "Update Badge",
+      "sig": "update_badge(item: MenuItem, count: ℕ) → Effect",
+      "def": "$update\\_badge(item: MenuItem, count: ℕ) → Effect = item.badge := count; refresh\\_item(item)$",
+      "pre": [
+        "item ∈ menu\\_items"
+      ],
+      "post": [
+        "item.badge = count"
+      ],
+      "fx": [
+        "Updates badge count",
+        "Refreshes item display"
+      ]
+    },
+    {
+      "n": "Toggle",
+      "sig": "toggle() → Effect",
+      "def": "$toggle() → Effect = σ₄₃ := case σ₄₃ of collapsed → expanded expanded → collapsed pinned → pinned (no change) animate(α₄₃(old_state, σ₄₃))$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Pin",
+      "sig": "pin() → Effect",
+      "def": "$pin() → Effect = σ₄₃ := pinned O := false persist(\"drawer.pinned\", true)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Navigate",
+      "sig": "navigate(item: Item) → Effect",
+      "def": "$navigate(item: Item) → Effect = route := π₄₃(item) goto(route) if mobile(): σ₄₃ := collapsed$",
+      "pre": [
+        "route_exists(path)",
+        "user_authenticated()"
+      ],
+      "post": [
+        "location = target",
+        "history_updated()"
+      ],
+      "fx": [
+        "Changes application state",
+        "Updates URL"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Gmail sidebar",
+      "d": "mailbox navigation list in a left drawer"
+    },
+    {
+      "n": "VS Code activity bar",
+      "d": "icon rail for switching primary sections"
+    },
+    {
+      "n": "Mobile hamburger menus",
+      "d": "slide-out navigation for small screens"
+    },
+    {
+      "n": "CMS tool selector",
+      "d": "drawer listing authoring tools and sections"
+    }
+  ]
+}

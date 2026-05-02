@@ -1,0 +1,217 @@
+{
+  "id": "F2.3",
+  "v": "1.1",
+  "name": "Validation Flow",
+  "cat": "flow",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "Process Flow",
+    "Architecture"
+  ],
+  "updated": "2025-11-23",
+  "def": "$I = (graph, cache, invalidate, recompute)$",
+  "desc": "Validation flows check data integrity and business rules at processing boundaries.",
+  "comps": [
+    {
+      "n": "graph",
+      "t": "DAG⟨Node, Dependency⟩",
+      "d": "computation dependency graph",
+      "nota": "graph"
+    },
+    {
+      "n": "cache",
+      "t": "Map⟨Node, Value⟩",
+      "d": "stores computed values",
+      "nota": "cache"
+    },
+    {
+      "n": "invalidate",
+      "t": "Node → Set⟨Node⟩",
+      "d": "marks affected nodes",
+      "nota": "invalidate"
+    },
+    {
+      "n": "recompute",
+      "t": "Node → Value",
+      "d": "recomputes a single node",
+      "nota": "recompute"
+    }
+  ],
+  "types": [
+    {
+      "n": "Schema",
+      "def": "Type definitions and constraints",
+      "d": "Formal schema defining expected data structure"
+    },
+    {
+      "n": "Rule",
+      "def": "(name: String, check: Data → 𝔹, message: String)",
+      "d": "Business rule with validation logic"
+    },
+    {
+      "n": "Violation",
+      "def": "(rule: String, message: String, severity: Level)",
+      "d": "Validation failure with details"
+    },
+    {
+      "n": "Node",
+      "def": "(id: String, compute: Inputs → Output, dependencies: Set⟨Node⟩)",
+      "d": "Computation node with explicit dependencies"
+    },
+    {
+      "n": "Dependency",
+      "def": "(source: Node, target: Node)",
+      "d": "Directed dependency between computation nodes"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.F2.3.1",
+      "n": "Complete Validation",
+      "spec": "∀data: validated(data) ⇒ all\\_checks\\_performed(data)",
+      "d": "All validation checks are performed before approval",
+      "inv": [
+        "exhaustive\\_validation"
+      ]
+    },
+    {
+      "id": "P.F2.3.2",
+      "n": "Fail-Fast",
+      "spec": "first\\_violation\\_found ⇒ stop\\_validation",
+      "d": "Validation stops at first critical violation",
+      "inv": [
+        "early\\_termination\\_on\\_critical"
+      ]
+    },
+    {
+      "id": "P.F2.3.3",
+      "n": "Violation Reporting",
+      "spec": "∀violation: reported(violation) ⇒ actionable(violation)",
+      "d": "All violations include actionable error messages",
+      "inv": [
+        "actionable\\_errors"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Update",
+      "sig": "update(changed: Set⟨Node⟩) → Effect",
+      "def": "$update(changed: Set⟨Node⟩) → Effect = affected := transitive_dependencies(changed) invalidate(affected) sorted := topological_sort(affected) for node in sorted: cache[node] := recompute(node)$",
+      "pre": [
+        "changed \\neq \\emptyset",
+        "\\forall n \\in changed: n \\in graph"
+      ],
+      "post": [
+        "\\forall n \\in changed: invalidated(n)",
+        "dependents\\_notified = true"
+      ],
+      "fx": [
+        "Marks changed nodes as needing validation",
+        "Triggers dependent node updates"
+      ]
+    },
+    {
+      "n": "Invalidate",
+      "sig": "invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩",
+      "def": "$invalidate(nodes: Set⟨Node⟩) → Set⟨Node⟩ = invalidated := nodes for node in nodes: for dependent in dependents(node): invalidated := invalidated ∪ invalidate({dependent}) return invalidated$",
+      "pre": [
+        "nodes \\subseteq graph.nodes"
+      ],
+      "post": [
+        "result = nodes \\cup dependents(nodes)",
+        "\\forall n \\in result: n.valid = false"
+      ],
+      "fx": [
+        "Invalidates nodes and all dependents",
+        "Returns full invalidation set"
+      ]
+    },
+    {
+      "n": "Recompute",
+      "sig": "recompute(node: Node) → Value",
+      "def": "$recompute(node: Node) → Value = inputs := {cache[d] : d ∈ dependencies(node)} return node.compute(inputs)$",
+      "pre": [
+        "node \\in graph \\wedge \\neg node.valid",
+        "\\forall d \\in dependencies(node): d.valid = true"
+      ],
+      "post": [
+        "node.value' = compute(node, dependency\\_values)",
+        "node.valid' = true"
+      ],
+      "fx": [
+        "Recalculates node value from dependencies",
+        "Marks node as valid"
+      ]
+    },
+    {
+      "n": "Validate Schema",
+      "sig": "validate_schema(data: Data, schema: Schema) → Valid | Invalid",
+      "def": "$validate\\_schema(data: Data, schema: Schema) → Valid | Invalid = check\\_types(data, schema); check\\_constraints(data, schema); if passed: Valid(data) else: Invalid(violations)$",
+      "pre": [
+        "schema ≠ null ∧ data ≠ null"
+      ],
+      "post": [
+        "result ∈ {Valid, Invalid}"
+      ],
+      "fx": [
+        "Validates type conformance",
+        "Checks business rules",
+        "Reports violations"
+      ]
+    },
+    {
+      "n": "Validate Business Rules",
+      "sig": "validate_rules(data: Data, rules: Set⟨Rule⟩) → Set⟨Violation⟩",
+      "def": "$validate\\_rules(data: Data, rules: Set⟨Rule⟩) → Set⟨Violation⟩ = {v : rule ∈ rules, v = rule.check(data), ¬v.passed}$",
+      "pre": [
+        "|rules| > 0"
+      ],
+      "post": [
+        "|result| = 0 ⇔ all\\_rules\\_passed"
+      ],
+      "fx": [
+        "Evaluates all business rules",
+        "Collects violations"
+      ]
+    },
+    {
+      "n": "Report Violations",
+      "sig": "report(violations: Set⟨Violation⟩) → Report",
+      "def": "$report(violations: Set⟨Violation⟩) → Report = format\\_violations(violations); categorize\\_by\\_severity()$",
+      "pre": [
+        "violations ≠ null"
+      ],
+      "post": [
+        "human\\_readable(result)"
+      ],
+      "fx": [
+        "Formats violation messages",
+        "Categorizes by severity"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Spreadsheet recalculation",
+      "d": "Dependency graph invalidation and recompute"
+    },
+    {
+      "n": "Build systems",
+      "d": "Make, Bazel"
+    },
+    {
+      "n": "Reactive frameworks",
+      "d": "React, Vue"
+    },
+    {
+      "n": "Query optimization",
+      "d": "Invalidate and recompute cached query plans"
+    },
+    {
+      "n": "Dataflow programming",
+      "d": "Incremental recomputation across dependency graphs"
+    }
+  ]
+}

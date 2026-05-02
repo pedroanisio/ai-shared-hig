@@ -1,0 +1,216 @@
+{
+  "id": "P42",
+  "v": "1.1",
+  "name": "Tooltip/Hint System",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$ts = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Tooltip and hint systems provide contextual help on hover or focus.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to tooltip/hint system",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from tooltip/hint system",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Tooltip",
+      "def": "(content: Content, position: Position, element: Element)",
+      "d": "Contextual tooltip"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Hover/focus context that triggers a hint"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Rendered tooltip content"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Active tooltip state and timing"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P42.1",
+      "n": "Non-Blocking",
+      "spec": "¬blocks\\_interaction",
+      "d": "Tooltips don't block interaction",
+      "inv": [
+        "non\\_intrusive"
+      ]
+    },
+    {
+      "id": "P.P42.2",
+      "n": "Smart Positioning",
+      "spec": "avoids\\_viewport\\_overflow",
+      "d": "Tooltips position to avoid overflow",
+      "inv": [
+        "visible\\_placement"
+      ]
+    },
+    {
+      "id": "P.P42.3",
+      "n": "Accessibility",
+      "spec": "keyboard\\_accessible",
+      "d": "Tooltips accessible via keyboard",
+      "inv": [
+        "accessible\\_hints"
+      ]
+    },
+    {
+      "id": "P.P42.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Hints are timely, concise, and easy to dismiss",
+      "inv": [
+        "helpful\\_hints"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Show Tooltip",
+      "sig": "show(element: Element, content: Content, position: Position) → Tooltip",
+      "def": "$show(element: Element, content: Content, position: Position) → Tooltip = tooltip := Tooltip(content, position); calculate\\_position(tooltip, element); display(tooltip); schedule\\_hide(tooltip); return tooltip$",
+      "pre": [
+        "element ≠ null"
+      ],
+      "post": [
+        "visible(tooltip)"
+      ],
+      "fx": [
+        "Creates tooltip",
+        "Positions relative to element",
+        "Displays",
+        "Schedules auto-hide"
+      ]
+    },
+    {
+      "n": "Hide Tooltip",
+      "sig": "hide(tooltip: Tooltip) → Effect",
+      "def": "$hide(tooltip: Tooltip) → Effect = fade\\_out(tooltip); remove(tooltip)$",
+      "pre": [
+        "visible(tooltip)"
+      ],
+      "post": [
+        "¬visible(tooltip)"
+      ],
+      "fx": [
+        "Fades out",
+        "Removes tooltip"
+      ]
+    },
+    {
+      "n": "Update Content",
+      "sig": "update(tooltip: Tooltip, new_content: Content) → Effect",
+      "def": "$update(tooltip: Tooltip, new\\_content: Content) → Effect = tooltip.content := new\\_content; recalculate\\_size(); reposition\\_if\\_needed()$",
+      "pre": [
+        "tooltip ≠ null"
+      ],
+      "post": [
+        "tooltip.content = new\\_content"
+      ],
+      "fx": [
+        "Updates content",
+        "Recalculates size",
+        "Repositions if needed"
+      ]
+    },
+    {
+      "n": "Process",
+      "sig": "process: Input → Output",
+      "def": "$\\text{process}(i) = o$ where $o$ is computed result",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display: Output → Effect",
+      "def": "$\\text{display}(o)$ shows output to user",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update: State → Effect",
+      "def": "$\\text{update}(s)$ refreshes display",
+      "pre": [
+        "update_exists(id)",
+        "valid_updates(changes)"
+      ],
+      "post": [
+        "changes_applied()",
+        "version_incremented()"
+      ],
+      "fx": [
+        "Modifies existing update",
+        "Invalidates caches"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Tooltip/Hint System in modern applications",
+      "d": "implements tooltip/hint system pattern"
+    },
+    {
+      "n": "Web-based tooltip/hint system",
+      "d": "browser implementation of tooltip/hint system"
+    },
+    {
+      "n": "Mobile tooltip/hint system",
+      "d": "mobile app implementation"
+    }
+  ]
+}

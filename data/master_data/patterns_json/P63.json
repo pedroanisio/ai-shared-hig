@@ -1,0 +1,260 @@
+{
+  "id": "P63",
+  "v": "1.1",
+  "name": "End-to-End Test Pattern",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$E = (scenario, browser, pages, assertions, data)$",
+  "desc": "Graceful degradation pattern maintains partial functionality when components fail.",
+  "comps": [
+    {
+      "n": "scenario",
+      "t": "UserStory",
+      "d": "user scenario being tested",
+      "nota": "scenario"
+    },
+    {
+      "n": "browser",
+      "t": "Browser",
+      "d": "automated browser",
+      "nota": "browser"
+    },
+    {
+      "n": "pages",
+      "t": "Map⟨String, PageObject⟩",
+      "d": "represent UI pages",
+      "nota": "pages"
+    },
+    {
+      "n": "assertions",
+      "t": "Sequence⟨Assertion⟩",
+      "d": "verify expected outcomes",
+      "nota": "assertions"
+    },
+    {
+      "n": "data",
+      "t": "TestData",
+      "d": "test data for the scenario",
+      "nota": "data"
+    }
+  ],
+  "types": [
+    {
+      "n": "HealthStatus",
+      "def": "Healthy | Degraded | Unhealthy",
+      "d": "Component health status"
+    },
+    {
+      "n": "Fallback",
+      "def": "Simplified functionality alternative",
+      "d": "Fallback mechanism"
+    },
+    {
+      "n": "UserStory",
+      "def": "(actor: Actor, action: Action, outcome: Outcome)",
+      "d": "Scenario describing user intent and outcome"
+    },
+    {
+      "n": "Browser",
+      "def": "(driver: WebDriver, capabilities: Set⟨Capability⟩)",
+      "d": "Automated browser runtime and capabilities"
+    },
+    {
+      "n": "PageObject",
+      "def": "(locators: Map⟨String, Locator⟩, actions: Map⟨String, Action⟩)",
+      "d": "Page abstraction with locators and actions"
+    },
+    {
+      "n": "Locator",
+      "def": "CSS(selector: String) | XPath(expression: String) | ID(id: String)",
+      "d": "Selector strategy for elements"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P63.1",
+      "n": "Partial Availability",
+      "spec": "component\\_failure ⇒ partial\\_functionality",
+      "d": "Maintains partial functionality",
+      "inv": [
+        "always\\_partially\\_available"
+      ]
+    },
+    {
+      "id": "P.P63.2",
+      "n": "Automatic Fallback",
+      "spec": "failure\\_detected ⇒ automatic\\_fallback",
+      "d": "Fallback activates automatically",
+      "inv": [
+        "auto\\_fallback"
+      ]
+    },
+    {
+      "id": "P.P63.3",
+      "n": "Transparent Recovery",
+      "spec": "recovery ⇒ seamless\\_restoration",
+      "d": "Recovery is transparent to users",
+      "inv": [
+        "seamless\\_recovery"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Basic Logging",
+      "sig": "log(level: LogLevel, message: String) → Effect",
+      "def": "$log(level: LogLevel, message: String) → Effect = if level >= min\\_level: write\\_log(timestamp(), level, message)$",
+      "pre": [
+        "level \\in \\{DEBUG, INFO, WARN, ERROR\\}",
+        "message \\neq null"
+      ],
+      "post": [
+        "log\\_entry\\_written = true",
+        "timestamp\\_recorded = true"
+      ],
+      "fx": [
+        "Writes log message with level",
+        "Timestamps each entry"
+      ]
+    },
+    {
+      "n": "Structured Logging",
+      "sig": "log_structured(level: LogLevel, message: String, context: Map) → Effect",
+      "def": "$log\\_structured(level: LogLevel, message: String, context: Map) → Effect = entry := {time: now(), level, message, context}; write\\_json(entry)$",
+      "pre": [
+        "level \\neq null \\wedge message \\neq null",
+        "context \\neq null"
+      ],
+      "post": [
+        "log\\_entry = \\{level, message, context, timestamp\\}",
+        "searchable\\_by\\_context = true"
+      ],
+      "fx": [
+        "Logs with structured context data",
+        "Enables rich querying"
+      ]
+    },
+    {
+      "n": "Launch Browser",
+      "sig": "launch_browser(config: BrowserConfig) → Browser",
+      "def": "$launch_browser(config: BrowserConfig) → Browser = driver := create_webdriver(config.type, config.capabilities) browser := Browser(driver, config) return browser$",
+      "pre": [
+        "config \\neq null",
+        "browser\\_driver\\_installed(config.browser)"
+      ],
+      "post": [
+        "result.ready = true",
+        "result.config = config"
+      ],
+      "fx": [
+        "Starts browser instance",
+        "Applies configuration settings"
+      ]
+    },
+    {
+      "n": "Execute Scenario",
+      "sig": "execute_scenario(scenario: UserStory, browser: Browser) → TestResult",
+      "def": "$execute_scenario(scenario: UserStory, browser: Browser) → TestResult = pages := load_page_objects(browser) for step in scenario.steps: execute_step(step, pages, browser) results := verify_assertions(scenario.assertions) return TestResult(results)$",
+      "pre": [
+        "scenario \\neq null \\wedge browser.ready = true",
+        "scenario.steps \\neq \\emptyset"
+      ],
+      "post": [
+        "\\forall step \\in scenario.steps: executed(step)",
+        "result.status \\in \\{passed, failed, skipped\\}"
+      ],
+      "fx": [
+        "Runs complete user workflow",
+        "Validates end-to-end behavior"
+      ]
+    },
+    {
+      "n": "Cleanup Session",
+      "sig": "cleanup(browser: Browser) → Effect",
+      "def": "$cleanup(browser: Browser) → Effect = browser.delete_cookies() browser.clear_local_storage() browser.quit() Page objects encapsulate UI structure: class LoginPage: locators = { username_input: CSS(\"#username\"), password_input: CSS(\"#password\"), login_button: CSS(\"button[type=submit]\"), error_message: CSS(\".error\") } def login(username: String, password: String) → Effect: this.find(username_input).type(username) this.find(password_input).type(password) this.find(login_button).click() def get_error() → String: return this.find(error_message).text() class DashboardPage: locators = { welcome_message: CSS(\".welcome\"), logout_button: CSS(\"#logout\") } def is_displayed() → 𝔹: return this.find(welcome_message).is_visible() def logout() → Effect: this.find(logout_button).click() e2e_test_user_login_flow() // Setup = browser := launch_browser(Chrome) test_user := create_test_user(\"testuser\", \"password123\") // Navigate to login page login_page := LoginPage(browser) browser.navigate(\"https://app.example.com/login\") // Execute login login_page.login(\"testuser\", \"password123\") // Verify redirect to dashboard dashboard := DashboardPage(browser) assert(dashboard.is_displayed()) assert(contains(dashboard.welcome_message, \"Welcome, testuser\")) // Execute logout dashboard.logout() // Verify redirect to login assert(login_page.is_displayed()) // Cleanup delete_test_user(test_user) browser.quit() Browser actions: - navigate(url) - refresh() - back() - forward() - take_screenshot() - execute_script(js) Element actions: - find(locator) → Element - click() - type(text) - clear() - submit() - select(option) - hover() - drag_and_drop(source, target) Waits: - wait_for_element(locator, timeout) - wait_for_visibility(element, timeout) - wait_for_text(element, text, timeout) - wait_for_url(url, timeout) Assertions: - assert_visible(element) - assert_text(element, expected) - assert_url(expected) - assert_title(expected) - assert_element_count(locator, count) 1. Use Page Objects: Encapsulate page structure Reusable across tests Easier maintenance 2. Explicit Waits: Wait for specific conditions Don't use sleep() Handle async behavior 3. Independent Tests: Each test starts from clean state No dependencies between tests Can run in any order 4. Minimize Test Data: Use minimum data needed Clean up after test Avoid shared test data 5. Stable Locators: Use IDs or data attributes Avoid brittle CSS selectors Don't rely on text content Test Environments:** Headless mode: browser := Chrome(headless=true) Faster, no GUI Good for CI/CD Grid/Cloud: Run tests on multiple browsers in parallel Selenium Grid, BrowserStack, Sauce Labs Docker: Consistent environment Isolated tests Easy CI/CD integration$",
+      "pre": [
+        "browser \\neq null"
+      ],
+      "post": [
+        "browser.closed = true",
+        "resources\\_released = true"
+      ],
+      "fx": [
+        "Closes browser instance",
+        "Frees system resources"
+      ]
+    },
+    {
+      "n": "Check Component Health",
+      "sig": "health(component: Component) → HealthStatus",
+      "def": "$health(component: Component) → HealthStatus = try: result := component.ping(); if result.success ∧ result.latency < threshold: return Healthy else: return Degraded catch error: return Unhealthy$",
+      "pre": [
+        "component ≠ null"
+      ],
+      "post": [
+        "result ∈ {Healthy, Degraded, Unhealthy}"
+      ],
+      "fx": [
+        "Pings component",
+        "Evaluates health",
+        "Returns status"
+      ]
+    },
+    {
+      "n": "Degrade Gracefully",
+      "sig": "degrade(feature: Feature, fallback: Fallback) → Effect",
+      "def": "$degrade(feature: Feature, fallback: Fallback) → Effect = disable\\_feature(feature); enable\\_fallback(fallback); notify\\_monitoring()$",
+      "pre": [
+        "feature.health = Unhealthy"
+      ],
+      "post": [
+        "¬enabled(feature) ∧ enabled(fallback)"
+      ],
+      "fx": [
+        "Disables failing feature",
+        "Enables fallback",
+        "Notifies monitoring"
+      ]
+    },
+    {
+      "n": "Restore Service",
+      "sig": "restore(feature: Feature) → Effect",
+      "def": "$restore(feature: Feature) → Effect = if health(feature) = Healthy: disable\\_fallback(); enable\\_feature(feature); notify\\_restored()$",
+      "pre": [
+        "health(feature) = Healthy"
+      ],
+      "post": [
+        "enabled(feature) ∧ ¬enabled(fallback)"
+      ],
+      "fx": [
+        "Disables fallback",
+        "Restores feature",
+        "Notifies restoration"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "UI automation",
+      "d": "Selenium, Playwright, Cypress"
+    },
+    {
+      "n": "Acceptance tests",
+      "d": "Validate user-visible requirements"
+    },
+    {
+      "n": "Smoke tests",
+      "d": "Basic flow checks after deployment"
+    },
+    {
+      "n": "Regression tests",
+      "d": "Re-run scenarios to catch regressions"
+    }
+  ]
+}

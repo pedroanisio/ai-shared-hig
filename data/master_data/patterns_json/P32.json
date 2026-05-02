@@ -1,0 +1,189 @@
+{
+  "id": "P32",
+  "v": "1.1",
+  "name": "Plugin Architecture",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$P = (interface, registry, loader, lifecycle)$",
+  "desc": "Plugin architecture enables dynamic extension through loadable modules with defined interfaces.",
+  "comps": [
+    {
+      "n": "interface",
+      "t": "Interface",
+      "d": "defines plugin contract",
+      "nota": "interface"
+    },
+    {
+      "n": "registry",
+      "t": "Map⟨ID, Plugin⟩",
+      "d": "stores loaded plugins",
+      "nota": "registry"
+    },
+    {
+      "n": "loader",
+      "t": "Path → Plugin",
+      "d": "loads plugins",
+      "nota": "loader"
+    },
+    {
+      "n": "lifecycle",
+      "t": "Plugin → Sequence⟨Phase⟩",
+      "d": "manages plugin lifecycle",
+      "nota": "lifecycle"
+    }
+  ],
+  "types": [
+    {
+      "n": "Plugin",
+      "def": "(id: PluginID, methods: Map⟨String, Function⟩, cleanup: () → Effect)",
+      "d": "Loadable plugin module"
+    },
+    {
+      "n": "Metadata",
+      "def": "(name: String, version: Version, dependencies: Set⟨ID⟩)",
+      "d": "Plugin metadata and dependencies"
+    },
+    {
+      "n": "Phase",
+      "def": "Initialize | Activate | Deactivate | Destroy",
+      "d": "Plugin lifecycle phase"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P32.1",
+      "n": "Interface Compliance",
+      "spec": "∀plugin: implements(plugin, required\\_interface)",
+      "d": "All plugins implement required interface",
+      "inv": [
+        "interface\\_conformance"
+      ]
+    },
+    {
+      "id": "P.P32.2",
+      "n": "Isolation",
+      "spec": "plugin\\_failure ⊥ system\\_failure",
+      "d": "Plugin failures don't crash system",
+      "inv": [
+        "fault\\_isolation"
+      ]
+    },
+    {
+      "id": "P.P32.3",
+      "n": "Dynamic Loading",
+      "spec": "can\\_load\\_plugins at\\_runtime",
+      "d": "Plugins can be loaded at runtime",
+      "inv": [
+        "runtime\\_extensibility"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Load Plugin",
+      "sig": "load(plugin_path: Path) → Plugin",
+      "def": "$load(plugin\\_path: Path) → Plugin = code := read(plugin\\_path); plugin := instantiate(code); validate\\_interface(plugin); plugins[plugin.id] := plugin; return plugin$",
+      "pre": [
+        "exists(plugin\\_path)"
+      ],
+      "post": [
+        "plugin ∈ plugins"
+      ],
+      "fx": [
+        "Reads plugin code",
+        "Instantiates",
+        "Validates interface",
+        "Registers plugin"
+      ]
+    },
+    {
+      "n": "Call Plugin",
+      "sig": "call(plugin_id: PluginID, method: String, args: Arguments) → Result",
+      "def": "$call(plugin\\_id: PluginID, method: String, args: Arguments) → Result = plugin := plugins[plugin\\_id]; return plugin[method](args)$",
+      "pre": [
+        "plugin\\_id ∈ plugins ∧ has\\_method(plugin, method)"
+      ],
+      "post": [
+        "result ≠ null ∨ void\\_method"
+      ],
+      "fx": [
+        "Gets plugin",
+        "Invokes method",
+        "Returns result"
+      ]
+    },
+    {
+      "n": "Unload Plugin",
+      "sig": "unload(plugin_id: PluginID) → Effect",
+      "def": "$unload(plugin\\_id: PluginID) → Effect = plugin := plugins[plugin\\_id]; plugin.cleanup(); plugins := plugins \\ {plugin\\_id}$",
+      "pre": [
+        "plugin\\_id ∈ plugins"
+      ],
+      "post": [
+        "plugin\\_id ∉ plugins"
+      ],
+      "fx": [
+        "Calls plugin cleanup",
+        "Removes from registry"
+      ]
+    },
+    {
+      "n": "Activate Plugin",
+      "sig": "activate(plugin: Plugin) → Effect",
+      "def": "$activate(plugin: Plugin) → Effect = lifecycle.activate(plugin) register_hooks(plugin.hooks)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Deactivate Plugin",
+      "sig": "deactivate(plugin: Plugin) → Effect",
+      "def": "$deactivate(plugin: Plugin) → Effect = unregister_hooks(plugin.hooks) lifecycle.deactivate(plugin)$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "VS Code extensions",
+      "d": "editor extension modules"
+    },
+    {
+      "n": "WordPress plugins",
+      "d": "site extensions loaded at runtime"
+    },
+    {
+      "n": "Browser extensions",
+      "d": "add-on modules for browsers"
+    },
+    {
+      "n": "Plugin systems",
+      "d": "generic modular extension frameworks"
+    }
+  ]
+}

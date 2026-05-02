@@ -1,0 +1,228 @@
+{
+  "id": "P108",
+  "v": "1.1",
+  "name": "Cross-Document Linking",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "medium",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$L_{cross} = (Docs, Relationships, Auto_{link}, Display) : \\text{Set}\\langle \\text{Document} \\rangle \\to \\text{Links}$",
+  "desc": "Cross-document linking creates and maintains references between related documents.",
+  "comps": [
+    {
+      "n": "Docs",
+      "t": "Set⟨Document⟩",
+      "d": "collection of interrelated documents",
+      "nota": "Docs"
+    },
+    {
+      "n": "Relationships",
+      "t": "Set⟨Link⟩",
+      "d": "semantic relationships between documents",
+      "nota": "Relationships"
+    },
+    {
+      "n": "Auto_{link}",
+      "t": "(Document × Document) → [0,1]",
+      "d": "AI-computed relevance score for linking",
+      "nota": "Auto_{link}"
+    },
+    {
+      "n": "Display",
+      "t": "Link → Visualization",
+      "d": "how links are rendered in UI",
+      "nota": "Display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Link",
+      "def": "(source: Document, target: Document, type: LinkType, timestamp: Time)",
+      "d": "Reference from one document to another"
+    },
+    {
+      "n": "LinkType",
+      "def": "References | Extends | Implements | Related",
+      "d": "Type of relationship between documents"
+    },
+    {
+      "n": "RelationType",
+      "def": "$\\text{RelationType} = \\{\\text{references}, \\text{extends}, \\text{contradicts}, \\text{supports}, \\text{related}\\}$",
+      "d": "Semantic relation labels between documents"
+    },
+    {
+      "n": "Document",
+      "def": "$\\text{Document} = (\\text{id}, \\text{content}, \\text{metadata}, \\text{embedding})$",
+      "d": "Document with content, metadata, and embedding"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P108.1",
+      "n": "Link Integrity",
+      "spec": "∀link: exists(link.source) ∧ (exists(link.target) ∨ marked\\_broken(link))",
+      "d": "All links point to existing documents or are marked broken",
+      "inv": [
+        "valid\\_links"
+      ]
+    },
+    {
+      "id": "P.P108.2",
+      "n": "Bidirectional Navigation",
+      "spec": "link(a,b) ⇒ navigable(a→b) ∧ navigable(b→a)",
+      "d": "Links enable navigation in both directions",
+      "inv": [
+        "bidirectional\\_links"
+      ]
+    },
+    {
+      "id": "P.P108.3",
+      "n": "Link Maintenance",
+      "spec": "delete(doc) ⇒ update\\_or\\_remove\\_links(doc)",
+      "d": "Links are updated when documents change",
+      "inv": [
+        "maintained\\_links"
+      ]
+    },
+    {
+      "id": "P.P108.4",
+      "n": "Semantic Consistency",
+      "spec": "$\\forall l : \\text{similarity}(l.source.embedding, l.target.embedding) \\geq \\epsilon > 0$",
+      "d": "Linked documents share meaningful semantic similarity",
+      "inv": [
+        "semantic_links"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Create Link",
+      "sig": "link(source: Document, target: Document, type: LinkType) → Link",
+      "def": "$link(source: Document, target: Document, type: LinkType) → Link = validate\\_documents(source, target); link := Link(source, target, type, timestamp=now()); store(link); return link$",
+      "pre": [
+        "exists(source) ∧ exists(target)"
+      ],
+      "post": [
+        "linked(source, target)"
+      ],
+      "fx": [
+        "Validates documents exist",
+        "Creates link",
+        "Stores link"
+      ]
+    },
+    {
+      "n": "Find Related",
+      "sig": "find_related(doc: Document, type: LinkType) → Set⟨Document⟩",
+      "def": "$find\\_related(doc: Document, type: LinkType) → Set⟨Document⟩ = links := get\\_links(doc); filtered := filter(links, λl: l.type = type); return {l.target : l ∈ filtered}$",
+      "pre": [
+        "exists(doc)"
+      ],
+      "post": [
+        "∀d ∈ result: linked(doc, d, type)"
+      ],
+      "fx": [
+        "Retrieves links",
+        "Filters by type",
+        "Returns related documents"
+      ]
+    },
+    {
+      "n": "Update Broken Links",
+      "sig": "update_broken() → Effect",
+      "def": "$update\\_broken() → Effect = broken := find\\_broken\\_links(); for link in broken: if redirected(link.target): update(link, new\\_target) else: mark\\_as\\_broken(link)$",
+      "pre": [
+        "true"
+      ],
+      "post": [
+        "∀link: ¬broken(link) ∨ marked\\_broken(link)"
+      ],
+      "fx": [
+        "Finds broken links",
+        "Updates redirected links",
+        "Marks truly broken links"
+      ]
+    },
+    {
+      "n": "Discover Links",
+      "sig": "discoverLinks: Set⟨Document⟩ → Set⟨Link⟩",
+      "def": "$\\text{discoverLinks}(D) = \\{(d_1, d_2, t, b) \\mid$$d_1, d_2 \\in D \\land d_1 \\neq d_2 \\land$$Auto_{link}(d_1, d_2) > \\theta \\land$$t = \\text{classifyRelation}(d_1, d_2)\\}$",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "Add Manual Link",
+      "sig": "addLink: Document × Document × RelationType → Link",
+      "def": "$\\text{addLink}(d_1, d_2, t) = l$where$l = (d_1, d_2, t, \\text{true})$$Relationships' = Relationships \\cup \\{l\\}$",
+      "pre": [
+        "valid_addLink(input)",
+        "addLink_collection ≠ null"
+      ],
+      "post": [
+        "addLink ∈ collection",
+        "id_generated()"
+      ],
+      "fx": [
+        "Adds new addLink to collection",
+        "Updates indexes"
+      ]
+    },
+    {
+      "n": "Get Related Documents",
+      "sig": "getRelated: Document × ℕ → Seq⟨Document⟩",
+      "def": "$\\text{getRelated}(d, k) = \\text{top-k}(\\{d' \\mid (d, d', t, b) \\in Relationships\\}, Auto_{link}(d, \\cdot))$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "deps": {
+    "req": [
+      "P9"
+    ],
+    "use": [
+      "P99"
+    ]
+  },
+  "manif": [
+    {
+      "n": "Roam Research backlinks",
+      "d": "bidirectional linking between notes"
+    },
+    {
+      "n": "Notion relation databases",
+      "d": "structured cross-document relationships"
+    },
+    {
+      "n": "Wikipedia \"See also\" sections",
+      "d": "related article suggestions"
+    },
+    {
+      "n": "Obsidian graph view",
+      "d": "visual network of linked documents"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "id": "P21",
+  "v": "1.1",
+  "name": "Time-Series Store",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T = (series, timestamps, values, aggregations)$",
+  "desc": "Time-series stores optimize storage and retrieval of timestamped data points for analytics.",
+  "comps": [
+    {
+      "n": "series",
+      "t": "Map⟨String, TimeSeries⟩",
+      "d": "named series",
+      "nota": "series"
+    },
+    {
+      "n": "timestamps",
+      "t": "Sequence⟨Time⟩",
+      "d": "ordered timestamps",
+      "nota": "timestamps"
+    },
+    {
+      "n": "values",
+      "t": "Map⟨Time, Value⟩",
+      "d": "data points",
+      "nota": "values"
+    },
+    {
+      "n": "aggregations",
+      "t": "(Time, Time, Func) → Value",
+      "d": "compute aggregates",
+      "nota": "aggregations"
+    }
+  ],
+  "types": [
+    {
+      "n": "DataPoint",
+      "def": "(metric: Metric, timestamp: Time, value: ℝ)",
+      "d": "Single timestamped measurement"
+    },
+    {
+      "n": "Metric",
+      "def": "String identifier for measurement type",
+      "d": "Metric identifier"
+    },
+    {
+      "n": "AggregateFunc",
+      "def": "Sum | Avg | Min | Max | Count",
+      "d": "Aggregation function"
+    },
+    {
+      "n": "TimeSeries",
+      "def": "Sequence⟨(timestamp: Time, value: Value)⟩",
+      "d": "Ordered series of timestamped values"
+    },
+    {
+      "n": "Aggregation",
+      "def": "Sum | Avg | Min | Max | Count | ...",
+      "d": "Aggregate operator for time-series windows"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P21.1",
+      "n": "Time-Ordered Storage",
+      "spec": "stored\\_data chronologically\\_ordered",
+      "d": "Data is stored in time order",
+      "inv": [
+        "chronological\\_storage"
+      ]
+    },
+    {
+      "id": "P.P21.2",
+      "n": "Compression",
+      "spec": "compressed\\_size << uncompressed\\_size",
+      "d": "Time-series data is compressed",
+      "inv": [
+        "efficient\\_storage"
+      ]
+    },
+    {
+      "id": "P.P21.3",
+      "n": "Fast Range Queries",
+      "spec": "query\\_time = O(log(n) + result\\_size)",
+      "d": "Range queries are efficient",
+      "inv": [
+        "optimized\\_queries"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Write Point",
+      "sig": "write(point: DataPoint) → Effect",
+      "def": "$write(point: DataPoint) → Effect = validate\\_timestamp(point.timestamp); buffer.append(point); if buffer.full(): flush\\_to\\_disk(); update\\_indexes(point)$",
+      "pre": [
+        "valid\\_timestamp(point.timestamp)"
+      ],
+      "post": [
+        "stored(point)"
+      ],
+      "fx": [
+        "Validates timestamp",
+        "Appends to buffer",
+        "Flushes if needed",
+        "Updates time indexes"
+      ]
+    },
+    {
+      "n": "Query Range",
+      "sig": "query(metric: Metric, start: Time, end: Time) → Sequence⟨DataPoint⟩",
+      "def": "$query(metric: Metric, start: Time, end: Time) → Sequence⟨DataPoint⟩ = index\\_scan := find\\_blocks(metric, start, end); points := {p ∈ blocks : p.metric = metric ∧ start ≤ p.timestamp ≤ end}; return sort\\_by\\_time(points)$",
+      "pre": [
+        "start ≤ end"
+      ],
+      "post": [
+        "∀p ∈ result: start ≤ p.timestamp ≤ end"
+      ],
+      "fx": [
+        "Uses time index for fast lookup",
+        "Filters by time range",
+        "Returns sorted points"
+      ]
+    },
+    {
+      "n": "Aggregate",
+      "sig": "aggregate(metric: Metric, start: Time, end: Time, func: AggregateFunc) → ℝ",
+      "def": "$aggregate(metric: Metric, start: Time, end: Time, func: AggregateFunc) → ℝ = points := query(metric, start, end); values := {p.value : p ∈ points}; return func(values)$",
+      "pre": [
+        "valid\\_aggregate\\_func(func)"
+      ],
+      "post": [
+        "result = func(query\\_values)"
+      ],
+      "fx": [
+        "Queries time range",
+        "Extracts values",
+        "Applies aggregate function"
+      ]
+    },
+    {
+      "n": "Range Query",
+      "sig": "range(t1: Time, t2: Time) → TimeSeries",
+      "def": "$range(t1: Time, t2: Time) → TimeSeries = {(t, v) ∈ series : t1 ≤ t ≤ t2}$",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Edit history",
+      "d": "timestamped edits stored as a time series"
+    },
+    {
+      "n": "Telemetry",
+      "d": "metrics and traces over time"
+    },
+    {
+      "n": "Sensor data",
+      "d": "time-stamped measurements from devices"
+    },
+    {
+      "n": "User activity log",
+      "d": "event streams of user actions"
+    },
+    {
+      "n": "Stock prices",
+      "d": "price ticks over time"
+    }
+  ]
+}

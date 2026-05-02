@@ -1,0 +1,249 @@
+{
+  "id": "P10",
+  "v": "1.1",
+  "name": "Parser/Compiler Pipeline",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "Software Architecture",
+    "Design Patterns"
+  ],
+  "updated": "2025-11-23",
+  "def": "$pp = (input, process, output, display) : \\text{Input} \\to \\text{Output}$",
+  "desc": "Parser/compiler pipelines transform source code through multiple stages to produce executable output.",
+  "comps": [
+    {
+      "n": "input",
+      "t": "Input",
+      "d": "input to parser/compiler pipeline",
+      "nota": "input"
+    },
+    {
+      "n": "process",
+      "t": "Input → Output",
+      "d": "processing function",
+      "nota": "process"
+    },
+    {
+      "n": "output",
+      "t": "Output",
+      "d": "output from parser/compiler pipeline",
+      "nota": "output"
+    },
+    {
+      "n": "display",
+      "t": "Output → Visual",
+      "d": "display function",
+      "nota": "display"
+    }
+  ],
+  "types": [
+    {
+      "n": "Token",
+      "def": "(type: TokenType, value: String, position: Pos)",
+      "d": "Lexical token with metadata"
+    },
+    {
+      "n": "AST",
+      "def": "Abstract syntax tree",
+      "d": "Structured representation of source code"
+    },
+    {
+      "n": "Code",
+      "def": "Executable output",
+      "d": "Compiled executable code"
+    },
+    {
+      "n": "Input",
+      "def": "$\\text{Input} = \\text{Data}$",
+      "d": "Source code or intermediate representation"
+    },
+    {
+      "n": "Output",
+      "def": "$\\text{Output} = \\text{Result}$",
+      "d": "Compiled artifact or analysis result"
+    },
+    {
+      "n": "State",
+      "def": "$\\text{State} = (\\text{data}, \\text{timestamp})$",
+      "d": "Compiler configuration and pipeline state"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P10.1",
+      "n": "Correctness",
+      "spec": "semantics(code) = semantics(source)",
+      "d": "Compiled code preserves source semantics",
+      "inv": [
+        "semantic\\_preservation"
+      ]
+    },
+    {
+      "id": "P.P10.2",
+      "n": "Error Reporting",
+      "spec": "∀error: location(error) ∧ message(error)",
+      "d": "Errors include location and helpful messages",
+      "inv": [
+        "actionable\\_errors"
+      ]
+    },
+    {
+      "id": "P.P10.3",
+      "n": "Optimization",
+      "spec": "performance(optimized) ≥ performance(unoptimized)",
+      "d": "Optimization improves performance",
+      "inv": [
+        "beneficial\\_optimization"
+      ]
+    },
+    {
+      "id": "P.P10.4",
+      "n": "Usability",
+      "spec": "$\\forall u : \\text{usable}(u)$",
+      "d": "Pipeline surfaces clear diagnostics and predictable behavior",
+      "inv": [
+        "actionable\\_diagnostics"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Process",
+      "sig": "process(input: Input) → Output",
+      "def": "$process(input: Input) → Output = validated := validate(input) transformed := transform(validated) optimized := optimize(transformed) return optimized$",
+      "pre": [
+        "input \\neq null"
+      ],
+      "post": [
+        "valid(result)"
+      ],
+      "fx": [
+        "Processes input through pipeline",
+        "Produces validated output"
+      ]
+    },
+    {
+      "n": "Display",
+      "sig": "display(data: Data) → Effect",
+      "def": "$display(data: Data) → Effect = formatted := format(data) rendered := render(formatted) update_view(rendered)$",
+      "pre": [
+        "data \\neq null"
+      ],
+      "post": [
+        "visible(data)"
+      ],
+      "fx": [
+        "Renders data to display",
+        "Updates user interface"
+      ]
+    },
+    {
+      "n": "Update",
+      "sig": "update(changes: Set⟨Change⟩) → Effect",
+      "def": "$update(changes: Set⟨Change⟩) → Effect = for change in changes: apply(change) notify_observers(change)$",
+      "pre": [
+        "changes \\neq \\emptyset"
+      ],
+      "post": [
+        "\\forall c \\in changes: applied(c)"
+      ],
+      "fx": [
+        "Applies changes to state",
+        "Notifies observers"
+      ]
+    },
+    {
+      "n": "Scan",
+      "sig": "scan(source: String) → Sequence⟨Token⟩",
+      "def": "$scan(source: String) → Sequence⟨Token⟩ = tokens := [] pos := 0 while pos < |source|: (token, new_pos) := next_token(source, pos) tokens := tokens + [token] pos := new_pos return tokens$",
+      "pre": [
+        "source \\neq null"
+      ],
+      "post": [
+        "\\forall t \\in result: valid\\_token(t)"
+      ],
+      "fx": [
+        "Tokenizes source code",
+        "Produces token stream"
+      ]
+    },
+    {
+      "n": "Parse",
+      "sig": "parse(tokens: Sequence⟨Token⟩) → AST",
+      "def": "$parse(tokens: Sequence⟨Token⟩) → AST = ast := build_tree(tokens, grammar) validate_syntax(ast) return ast$",
+      "pre": [
+        "|tokens| > 0 \\wedge grammar\\_defined()"
+      ],
+      "post": [
+        "well\\_formed(result)"
+      ],
+      "fx": [
+        "Builds abstract syntax tree",
+        "Validates grammar"
+      ]
+    },
+    {
+      "n": "Optimize",
+      "sig": "optimize(ast: AST) → AST",
+      "def": "$optimize(ast: AST) → AST = folded := constant_folding(ast) inlined := inline_functions(folded) dce := dead_code_elimination(inlined) return dce$",
+      "pre": [
+        "ast \\neq null \\wedge valid(ast)"
+      ],
+      "post": [
+        "semantically\\_equivalent(result, ast)",
+        "size(result) \\leq size(ast)"
+      ],
+      "fx": [
+        "Applies optimizations",
+        "Improves performance"
+      ]
+    },
+    {
+      "n": "Lex",
+      "sig": "lex(source: String) → Sequence⟨Token⟩",
+      "def": "$lex(source: String) → Sequence⟨Token⟩ = tokenize(source); classify\\_tokens()$",
+      "pre": [
+        "source ≠ null"
+      ],
+      "post": [
+        "∀token ∈ result: valid\\_token(token)"
+      ],
+      "fx": [
+        "Tokenizes source code",
+        "Classifies token types"
+      ]
+    },
+    {
+      "n": "Compile",
+      "sig": "compile(ast: AST) → Code | CompileError",
+      "def": "$compile(ast: AST) → Code | CompileError = type\\_check(ast); optimize(ast); generate\\_code()$",
+      "pre": [
+        "valid\\_ast(ast)"
+      ],
+      "post": [
+        "executable(result) ∨ error(result)"
+      ],
+      "fx": [
+        "Type checks",
+        "Optimizes",
+        "Generates code"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "Parser/Compiler Pipeline in modern applications",
+      "d": "implements parser/compiler pipeline pattern"
+    },
+    {
+      "n": "Web-based parser/compiler pipeline",
+      "d": "browser implementation of parser/compiler pipeline"
+    },
+    {
+      "n": "Mobile parser/compiler pipeline",
+      "d": "mobile app implementation"
+    }
+  ]
+}

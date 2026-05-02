@@ -1,0 +1,194 @@
+{
+  "id": "P133",
+  "v": "1.1",
+  "name": "Activity Feed",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$F_{activity} = (Events, Actors, Timestamps, Filter) : (Humans \\cup Agents) \\times Actions \\to Feed$",
+  "desc": "Activity feeds display chronological streams of user and system actions and updates.",
+  "comps": [
+    {
+      "n": "Events",
+      "t": "Sequence⟨Event⟩",
+      "d": "Chronologically ordered activity events",
+      "nota": "Events"
+    },
+    {
+      "n": "Actors",
+      "t": "Event → Actor",
+      "d": "Function mapping events to performing actor (human or AI)",
+      "nota": "Actors"
+    },
+    {
+      "n": "Timestamps",
+      "t": "Event → Time",
+      "d": "Timestamp for each event",
+      "nota": "Timestamps"
+    },
+    {
+      "n": "Filter",
+      "t": "Predicate → Sequence⟨Event⟩",
+      "d": "Filter function to select relevant events",
+      "nota": "Filter"
+    }
+  ],
+  "types": [
+    {
+      "n": "ActivityItem",
+      "def": "(actor: Actor, action: Action, object: Object, timestamp: Time)",
+      "d": "Single activity in the feed"
+    },
+    {
+      "n": "AggregatedActivity",
+      "def": "(summary: String, items: Sequence⟨ActivityItem⟩, count: ℕ)",
+      "d": "Grouped similar activities"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P133.1",
+      "n": "Chronological Order",
+      "spec": "∀i,j: i < j ⇒ feed[i].timestamp ≥ feed[j].timestamp",
+      "d": "Feed items are in reverse chronological order",
+      "inv": [
+        "newest\\_first"
+      ]
+    },
+    {
+      "id": "P.P133.2",
+      "n": "Real-Time Updates",
+      "spec": "new\\_activity ⇒ feed\\_updated immediately",
+      "d": "Feed updates in real-time",
+      "inv": [
+        "live\\_feed"
+      ]
+    },
+    {
+      "id": "P.P133.3",
+      "n": "Contextual Information",
+      "spec": "∀item: contains\\_context(item)",
+      "d": "Each item includes contextual information",
+      "inv": [
+        "informative\\_items"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Post Activity",
+      "sig": "post(actor: Actor, action: Action, object: Object) → ActivityItem",
+      "def": "$post(actor: Actor, action: Action, object: Object) → ActivityItem = item := ActivityItem(actor, action, object, timestamp=now()); feed.prepend(item); notify\\_subscribers(item); return item$",
+      "pre": [
+        "actor ≠ null ∧ action ≠ null"
+      ],
+      "post": [
+        "item ∈ feed"
+      ],
+      "fx": [
+        "Creates activity item",
+        "Adds to feed",
+        "Notifies subscribers"
+      ]
+    },
+    {
+      "n": "Filter Feed",
+      "sig": "filter(feed: Feed, criteria: FilterCriteria) → Feed",
+      "def": "$filter(feed: Feed, criteria: FilterCriteria) → Feed = {item ∈ feed : matches(item, criteria)}$",
+      "pre": [
+        "valid\\_criteria(criteria)"
+      ],
+      "post": [
+        "∀item ∈ result: matches(item, criteria)"
+      ],
+      "fx": [
+        "Filters items by criteria"
+      ]
+    },
+    {
+      "n": "Aggregate Activities",
+      "sig": "aggregate(activities: Sequence⟨ActivityItem⟩) → Sequence⟨AggregatedActivity⟩",
+      "def": "$aggregate(activities: Sequence⟨ActivityItem⟩) → Sequence⟨AggregatedActivity⟩ = groups := group\\_similar(activities); {summarize(g) : g ∈ groups}$",
+      "pre": [
+        "|activities| > 0"
+      ],
+      "post": [
+        "|result| ≤ |activities|"
+      ],
+      "fx": [
+        "Groups similar activities",
+        "Summarizes each group"
+      ]
+    },
+    {
+      "n": "RecordEvent",
+      "sig": "record(e: Event, actor: Actor) → Effect",
+      "def": "record(e, actor) appends event to feed with timestamp and actor",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "FilterFeed",
+      "sig": "filter(pred: Predicate) → Sequence⟨Event⟩",
+      "def": "filter(pred) returns events satisfying predicate",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetRecent",
+      "sig": "recent(n: ℕ) → Sequence⟨Event⟩",
+      "def": "recent(n) returns last n events from feed",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

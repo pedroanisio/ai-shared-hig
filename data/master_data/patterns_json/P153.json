@@ -1,0 +1,196 @@
+{
+  "id": "P153",
+  "v": "1.1",
+  "name": "Data Access Transparency",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$T_{access} = (Data, Accessor, Purpose, Disclosure) : Access \\to Transparency$",
+  "desc": "Data access transparency shows what data was accessed and how it was used.",
+  "comps": [
+    {
+      "n": "DataAccess",
+      "t": "Set⟨AccessEvent⟩",
+      "d": "Log of data access events",
+      "nota": "DataAccess"
+    },
+    {
+      "n": "Permissions",
+      "t": "Resource → Set⟨Permission⟩",
+      "d": "Permissions for each resource",
+      "nota": "Permissions"
+    },
+    {
+      "n": "Justification",
+      "t": "Access → Reason",
+      "d": "Justification for each access",
+      "nota": "Justification"
+    },
+    {
+      "n": "Disclosure",
+      "t": "() → AccessReport",
+      "d": "Function to generate transparency report",
+      "nota": "Disclosure"
+    }
+  ],
+  "types": [
+    {
+      "n": "AccessLog",
+      "def": "(accessor: Actor, data_id: DataID, purpose: Purpose, timestamp: Time)",
+      "d": "Data access record"
+    },
+    {
+      "n": "Purpose",
+      "def": "String describing access reason",
+      "d": "Reason for data access"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P153.1",
+      "n": "Complete Logging",
+      "spec": "∀access: logged(access)",
+      "d": "All data access is logged",
+      "inv": [
+        "comprehensive\\_logging"
+      ]
+    },
+    {
+      "id": "P.P153.2",
+      "n": "User Visibility",
+      "spec": "data\\_owner can view access\\_history",
+      "d": "Data owners can view access history",
+      "inv": [
+        "transparent\\_access"
+      ]
+    },
+    {
+      "id": "P.P153.3",
+      "n": "Purpose Clarity",
+      "spec": "∀access: clear(access.purpose)",
+      "d": "Access purposes are clear",
+      "inv": [
+        "clear\\_purposes"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Log Access",
+      "sig": "log(accessor: Actor, data: Data, purpose: Purpose) → AccessLog",
+      "def": "$log(accessor: Actor, data: Data, purpose: Purpose) → AccessLog = entry := AccessLog(accessor, data.id, purpose, timestamp=now()); access\\_logs.append(entry); notify\\_data\\_owner(entry); return entry$",
+      "pre": [
+        "authorized(accessor, data)"
+      ],
+      "post": [
+        "entry ∈ access\\_logs"
+      ],
+      "fx": [
+        "Creates access log entry",
+        "Appends to logs",
+        "Notifies data owner"
+      ]
+    },
+    {
+      "n": "Show Access History",
+      "sig": "history(data_id: DataID) → Sequence⟨AccessLog⟩",
+      "def": "$history(data\\_id: DataID) → Sequence⟨AccessLog⟩ = {log ∈ access\\_logs : log.data\\_id = data\\_id}$",
+      "pre": [
+        "authorized\\_to\\_view(current\\_user, data\\_id)"
+      ],
+      "post": [
+        "∀log ∈ result: log.data\\_id = data\\_id"
+      ],
+      "fx": [
+        "Filters logs by data ID",
+        "Returns access history"
+      ]
+    },
+    {
+      "n": "Explain Usage",
+      "sig": "explain(access: AccessLog) → Explanation",
+      "def": "$explain(access: AccessLog) → Explanation = purpose\\_desc := describe\\_purpose(access.purpose); data\\_desc := describe\\_data\\_used(access); impact := assess\\_impact(access); return Explanation(purpose\\_desc, data\\_desc, impact)$",
+      "pre": [
+        "access ≠ null"
+      ],
+      "post": [
+        "understandable(result)"
+      ],
+      "fx": [
+        "Describes access purpose",
+        "Explains data usage",
+        "Assesses impact"
+      ]
+    },
+    {
+      "n": "LogAccess",
+      "sig": "log(resource: Resource, actor: Actor) → Effect",
+      "def": "log(resource, actor) records access event",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "ShowPermissions",
+      "sig": "permissions(r: Resource) → Set⟨Permission⟩",
+      "def": "permissions(r) displays who can access resource",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GenerateReport",
+      "sig": "report() → AccessReport",
+      "def": "report() creates transparency report of all accesses",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}

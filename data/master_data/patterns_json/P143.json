@@ -1,0 +1,196 @@
+{
+  "id": "P143",
+  "v": "1.1",
+  "name": "Scheduled Agent",
+  "cat": "pattern",
+  "status": "stable",
+  "cx": "low",
+  "domains": [
+    "AI",
+    "UI"
+  ],
+  "updated": "2025-11-23",
+  "def": "$S_{scheduled} = (Agent, Schedule, Trigger, Execute) : (Agent, Time) \\to Execution$",
+  "desc": "Scheduled agents execute tasks automatically at specified times or intervals.",
+  "comps": [
+    {
+      "n": "Schedule",
+      "t": "CronExpression",
+      "d": "Time-based schedule for agent execution",
+      "nota": "Schedule"
+    },
+    {
+      "n": "Agent",
+      "t": "AIAgent",
+      "d": "AI agent to be executed",
+      "nota": "Agent"
+    },
+    {
+      "n": "Task",
+      "t": "AgentTask",
+      "d": "Task for agent to perform",
+      "nota": "Task"
+    },
+    {
+      "n": "Executor",
+      "t": "(Time, Agent, Task) → Result",
+      "d": "Function that runs agent on schedule",
+      "nota": "Executor"
+    }
+  ],
+  "types": [
+    {
+      "n": "Schedule",
+      "def": "Cron | Interval | OneTime",
+      "d": "Schedule specification"
+    },
+    {
+      "n": "ScheduledTask",
+      "def": "(task: Task, schedule: Schedule, status: TaskStatus, next_run: Time)",
+      "d": "Task with schedule"
+    }
+  ],
+  "props": [
+    {
+      "id": "P.P143.1",
+      "n": "Timing Accuracy",
+      "spec": "|execution\\_time - scheduled\\_time| < tolerance",
+      "d": "Tasks execute at scheduled times within tolerance",
+      "inv": [
+        "accurate\\_scheduling"
+      ]
+    },
+    {
+      "id": "P.P143.2",
+      "n": "Reliability",
+      "spec": "scheduled ⇒ eventually\\_executed",
+      "d": "Scheduled tasks eventually execute",
+      "inv": [
+        "guaranteed\\_execution"
+      ]
+    },
+    {
+      "id": "P.P143.3",
+      "n": "Failure Handling",
+      "spec": "execution\\_fails ⇒ retry\\_or\\_log",
+      "d": "Failed executions are retried or logged",
+      "inv": [
+        "resilient\\_scheduling"
+      ]
+    }
+  ],
+  "ops": [
+    {
+      "n": "Schedule Task",
+      "sig": "schedule(task: Task, schedule: Schedule) → ScheduledTask",
+      "def": "$schedule(task: Task, schedule: Schedule) → ScheduledTask = st := ScheduledTask(task, schedule, status=Pending); validate\\_schedule(schedule); scheduler.add(st); return st$",
+      "pre": [
+        "valid\\_schedule(schedule)"
+      ],
+      "post": [
+        "st ∈ scheduler.tasks"
+      ],
+      "fx": [
+        "Creates scheduled task",
+        "Validates schedule",
+        "Adds to scheduler"
+      ]
+    },
+    {
+      "n": "Execute On Schedule",
+      "sig": "tick(scheduler: Scheduler, time: Time) → Set⟨Result⟩",
+      "def": "$tick(scheduler: Scheduler, time: Time) → Set⟨Result⟩ = due := {st : st ∈ scheduler.tasks, should\\_run(st, time)}; results := {execute\\_task(st) : st ∈ due}; update\\_next\\_run(due); return results$",
+      "pre": [
+        "time ≠ null"
+      ],
+      "post": [
+        "∀st ∈ due: executed(st)"
+      ],
+      "fx": [
+        "Finds due tasks",
+        "Executes them",
+        "Updates next run times"
+      ]
+    },
+    {
+      "n": "Cancel Task",
+      "sig": "cancel(task_id: TaskID) → Effect",
+      "def": "$cancel(task\\_id: TaskID) → Effect = task := scheduler.tasks[task\\_id]; task.status := Cancelled; scheduler.remove(task)$",
+      "pre": [
+        "task\\_id ∈ scheduler.tasks"
+      ],
+      "post": [
+        "task\\_id ∉ scheduler.tasks"
+      ],
+      "fx": [
+        "Marks task as cancelled",
+        "Removes from scheduler"
+      ]
+    },
+    {
+      "n": "ScheduleAgent",
+      "sig": "schedule(s: Schedule, a: Agent, t: Task) → ScheduledJob",
+      "def": "schedule(s, a, t) creates scheduled job",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "CancelSchedule",
+      "sig": "cancel(job: ScheduledJob) → Effect",
+      "def": "cancel(job) removes scheduled execution",
+      "pre": [
+        "input_valid()",
+        "system_ready()"
+      ],
+      "post": [
+        "operation_complete()",
+        "state_consistent()"
+      ],
+      "fx": [
+        "Executes operation",
+        "Updates system state"
+      ]
+    },
+    {
+      "n": "GetHistory",
+      "sig": "history(job: ScheduledJob) → Sequence⟨Result⟩",
+      "def": "history(job) returns past execution results",
+      "pre": [
+        "valid_query(params)",
+        "index_available(field)"
+      ],
+      "post": [
+        "results ⊆ collection",
+        "sorted(results)"
+      ],
+      "fx": [
+        "Retrieves matching records",
+        "Applies filters and sorting"
+      ]
+    }
+  ],
+  "manif": [
+    {
+      "n": "AI, UI implementation",
+      "d": "Applied in ai, ui systems and architectures"
+    },
+    {
+      "n": "Enterprise applications",
+      "d": "Large-scale business systems"
+    },
+    {
+      "n": "Cloud architectures",
+      "d": "Distributed and scalable designs"
+    }
+  ]
+}
